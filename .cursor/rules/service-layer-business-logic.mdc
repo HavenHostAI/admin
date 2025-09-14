@@ -1,0 +1,383 @@
+---
+globs: *.ts,*.tsx
+description: Keep business logic in service layers
+---
+
+# Service Layer Business Logic
+
+Always keep business logic in dedicated service layers, separate from controllers, repositories, and UI components.
+
+## Guidelines
+
+- **Create service classes** for each domain or feature
+- **Keep controllers thin** - they should only handle HTTP concerns
+- **Keep repositories focused** - they should only handle data access
+- **Keep UI components simple** - they should only handle presentation
+- **Centralize business rules** in service methods
+- **Make services testable** with dependency injection
+- **Use consistent naming** with `Service` suffix
+
+## Architecture Layers
+
+```
+┌─────────────────┐
+│   UI Components │ ← Only presentation logic
+├─────────────────┤
+│   Controllers   │ ← Only HTTP/API concerns
+├─────────────────┤
+│   Services      │ ← Business logic and rules
+├─────────────────┤
+│  Repositories   │ ← Data access only
+├─────────────────┤
+│   Database      │ ← Data storage
+└─────────────────┘
+```
+
+## Examples
+
+### Service Layer (Business Logic)
+
+```typescript
+// services/user.service.ts
+import type { UserRepository } from "@/repositories/interfaces/user.repository";
+import type { EmailService } from "@/services/email.service";
+import type {
+  User,
+  CreateUserData,
+  UpdateUserData,
+} from "@/repositories/interfaces/user.repository";
+
+export class UserService {
+  constructor(
+    private userRepository: UserRepository,
+    private emailService: EmailService,
+  ) {}
+
+  async createUser(data: CreateUserData): Promise<User> {
+    // Business rule: Validate email format
+    if (!this.isValidEmail(data.email_address)) {
+      throw new Error("Invalid email format");
+    }
+
+    // Business rule: Check for duplicate emails
+    const existingUser = await this.userRepository.findByEmail(
+      data.email_address,
+    );
+    if (existingUser) {
+      throw new Error("User with this email already exists");
+    }
+
+    // Business rule: Normalize name data
+    const normalizedData = {
+      ...data,
+      first_name: this.normalizeName(data.first_name),
+      last_name: this.normalizeName(data.last_name),
+    };
+
+    const user = await this.userRepository.create(normalizedData);
+
+    // Business rule: Send welcome email
+    await this.emailService.sendWelcomeEmail(
+      user.email_address,
+      user.first_name,
+    );
+
+    return user;
+  }
+
+  async updateUser(id: number, data: UpdateUserData): Promise<User> {
+    // Business rule: Check if user exists
+    const existingUser = await this.userRepository.findById(id);
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
+
+    // Business rule: Prevent deactivating last admin
+    if (data.is_active === false && existingUser.role === "admin") {
+      const adminCount = await this.userRepository.countByRole("admin");
+      if (adminCount <= 1) {
+        throw new Error("Cannot deactivate the last admin user");
+      }
+    }
+
+    // Business rule: Normalize data if provided
+    const normalizedData = {
+      ...data,
+      first_name: data.first_name
+        ? this.normalizeName(data.first_name)
+        : undefined,
+      last_name: data.last_name
+        ? this.normalizeName(data.last_name)
+        : undefined,
+    };
+
+    return await this.userRepository.update(id, normalizedData);
+  }
+
+  async deactivateUser(id: number): Promise<User> {
+    // Business rule: Deactivation logic
+    return await this.updateUser(id, { is_active: false });
+  }
+
+  async getUserWithPermissions(id: number): Promise<UserWithPermissions> {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Business rule: Calculate user permissions
+    const permissions = await this.calculateUserPermissions(user);
+
+    return {
+      ...user,
+      permissions,
+    };
+  }
+
+  // Private business logic methods
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  private normalizeName(name: string): string {
+    return name
+      .trim()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  }
+
+  private async calculateUserPermissions(user: User): Promise<string[]> {
+    const permissions: string[] = [];
+
+    // Business rules for permissions
+    if (user.is_active) {
+      permissions.push("read");
+    }
+
+    if (user.role === "admin") {
+      permissions.push("write", "delete", "admin");
+    } else if (user.role === "editor") {
+      permissions.push("write");
+    }
+
+    return permissions;
+  }
+}
+```
+
+### Thin Controller (HTTP Concerns Only)
+
+```typescript
+// server/api/routers/user.ts
+import { z } from "zod";
+import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { UserService } from "@/services/user.service";
+import { createRepositories } from "@/repositories";
+import { EmailService } from "@/services/email.service";
+
+const repositories = createRepositories();
+const emailService = new EmailService();
+const userService = new UserService(repositories.userRepository, emailService);
+
+export const userRouter = createTRPCRouter({
+  create: publicProcedure
+    .input(
+      z.object({
+        first_name: z.string().min(1),
+        last_name: z.string().min(1),
+        email_address: z.string().email(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      // Controller only handles HTTP concerns - validation and response
+      try {
+        const user = await userService.createUser(input);
+        return { success: true, data: user };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        };
+      }
+    }),
+
+  update: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        first_name: z.string().optional(),
+        last_name: z.string().optional(),
+        email_address: z.string().email().optional(),
+        is_active: z.boolean().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { id, ...updateData } = input;
+      return await userService.updateUser(id, updateData);
+    }),
+
+  deactivate: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      return await userService.deactivateUser(input.id);
+    }),
+});
+```
+
+### Repository (Data Access Only)
+
+```typescript
+// repositories/implementations/drizzle-user.repository.ts
+import { eq, desc, count } from "drizzle-orm";
+import { db } from "@/server/db";
+import { users } from "@/server/db/schema";
+import type {
+  UserRepository,
+  User,
+  CreateUserData,
+  UpdateUserData,
+} from "../interfaces/user.repository";
+
+export class DrizzleUserRepository implements UserRepository {
+  // Repository only handles data access - no business logic
+  async findById(id: number): Promise<User | null> {
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+    return result[0] || null;
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.email_address, email))
+      .limit(1);
+    return result[0] || null;
+  }
+
+  async create(data: CreateUserData): Promise<User> {
+    const result = await db.insert(users).values(data).returning();
+    return result[0]!;
+  }
+
+  async countByRole(role: string): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(users)
+      .where(eq(users.role, role));
+    return result[0]?.count || 0;
+  }
+}
+```
+
+### UI Component (Presentation Only)
+
+```typescript
+// components/user-form.tsx
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { api } from "@/trpc/react";
+
+interface UserFormProps {
+  onSuccess?: () => void;
+}
+
+export const UserForm: React.FC<UserFormProps> = ({ onSuccess }) => {
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    email_address: "",
+  });
+
+  const createUser = api.user.create.useMutation({
+    onSuccess: () => {
+      onSuccess?.();
+      setFormData({ first_name: "", last_name: "", email_address: "" });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createUser.mutate(formData);
+  };
+
+  // Component only handles presentation - no business logic
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <Input
+        placeholder="First Name"
+        value={formData.first_name}
+        onChange={(e) =>
+          setFormData({ ...formData, first_name: e.target.value })
+        }
+      />
+      <Input
+        placeholder="Last Name"
+        value={formData.last_name}
+        onChange={(e) =>
+          setFormData({ ...formData, last_name: e.target.value })
+        }
+      />
+      <Input
+        placeholder="Email"
+        type="email"
+        value={formData.email_address}
+        onChange={(e) =>
+          setFormData({ ...formData, email_address: e.target.value })
+        }
+      />
+      <Button type="submit" disabled={createUser.isPending}>
+        {createUser.isPending ? "Creating..." : "Create User"}
+      </Button>
+    </form>
+  );
+};
+```
+
+## What Goes Where
+
+### Service Layer Should Contain:
+
+- Business rules and validation
+- Data transformation and normalization
+- Cross-cutting concerns (logging, notifications)
+- Complex business workflows
+- Permission calculations
+- Business logic orchestration
+
+### Controllers Should Only Handle:
+
+- HTTP request/response mapping
+- Input validation (schema validation)
+- Error handling and status codes
+- Authentication/authorization checks
+- Calling appropriate service methods
+
+### Repositories Should Only Handle:
+
+- Database queries
+- Data mapping
+- Connection management
+- Basic CRUD operations
+
+### UI Components Should Only Handle:
+
+- User interaction
+- Form state management
+- API calls (via hooks)
+- Rendering logic
+- Event handling
+
+## Benefits
+
+- **Separation of concerns**: Each layer has a single responsibility
+- **Testability**: Business logic can be tested independently
+- **Reusability**: Services can be used by multiple controllers
+- **Maintainability**: Changes to business rules are centralized
+- **Flexibility**: Easy to change UI or data access without affecting business logic

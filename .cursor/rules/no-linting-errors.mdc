@@ -1,0 +1,260 @@
+---
+alwaysApply: true
+description: Don't leave any linting errors
+---
+
+# No Linting Errors
+
+Always ensure code is free of linting errors before completing any task.
+
+## Guidelines
+
+- **Fix all linting errors** before finishing any code changes
+- **Run linter checks** after making modifications
+- **Address warnings** when they indicate potential issues
+- **Follow project linting rules** consistently
+- **Use proper formatting** (Prettier, ESLint)
+- **Resolve TypeScript errors** immediately
+
+## Common Linting Issues to Fix
+
+### ESLint Errors
+
+```typescript
+// ❌ Unused variables
+const unusedVariable = "test"; // ESLint: 'unusedVariable' is assigned a value but never used
+
+// ✅ Remove unused variables or prefix with underscore
+const _unusedVariable = "test"; // or remove entirely
+
+// ❌ Missing dependencies in useEffect
+useEffect(() => {
+  fetchData(userId);
+}, []); // ESLint: React Hook useEffect has a missing dependency: 'userId'
+
+// ✅ Include all dependencies
+useEffect(() => {
+  fetchData(userId);
+}, [userId]);
+
+// ❌ Console statements in production code
+console.log("Debug info"); // ESLint: Unexpected console statement
+
+// ✅ Use proper logging or remove
+// Use a proper logger or remove console statements
+```
+
+### TypeScript Errors
+
+```typescript
+// ❌ Missing type annotations
+function processUser(user) {
+  // TypeScript: Parameter 'user' implicitly has an 'any' type
+  return user.name;
+}
+
+// ✅ Add proper type annotations
+function processUser(user: User): string {
+  return user.name;
+}
+
+// ❌ Unhandled null/undefined
+const user = await getUserById(id);
+const name = user.name; // TypeScript: Object is possibly 'null'
+
+// ✅ Handle null/undefined cases
+const user = await getUserById(id);
+if (!user) {
+  throw new Error("User not found");
+}
+const name = user.name;
+
+// ❌ Missing return type
+async function fetchData() {
+  // TypeScript: Return type is implicitly 'any'
+  return await api.getData();
+}
+
+// ✅ Specify return type
+async function fetchData(): Promise<Data> {
+  return await api.getData();
+}
+```
+
+### Import/Export Issues
+
+```typescript
+// ❌ Unused imports
+import React, { useState, useEffect } from "react"; // ESLint: 'useEffect' is defined but never used
+
+// ✅ Remove unused imports
+import React, { useState } from "react";
+
+// ❌ Missing file extensions in imports
+import { Button } from "./components/Button"; // ESLint: Missing file extension
+
+// ✅ Use proper file extensions
+import { Button } from "./components/Button.tsx";
+
+// ❌ Default export issues
+export default function Component() {} // ESLint: Prefer named exports
+
+// ✅ Use named exports when possible
+export function Component() {}
+```
+
+## Workflow
+
+### Before Completing Any Task:
+
+1. **Check for linting errors** using your IDE or command line
+2. **Fix all errors** before marking task as complete
+3. **Address warnings** that indicate real issues
+4. **Ensure code formatting** is consistent
+5. **Verify TypeScript compilation** passes
+
+### Command Line Checks
+
+```bash
+# Check for ESLint errors
+npm run lint
+
+# Check for TypeScript errors
+npm run type-check
+
+# Fix auto-fixable issues
+npm run lint:fix
+
+# Format code with Prettier
+npm run format
+```
+
+### IDE Integration
+
+- **Enable ESLint extension** in your IDE
+- **Enable TypeScript checking** in your IDE
+- **Enable Prettier formatting** on save
+- **Fix errors as you type** when possible
+
+## Error Categories
+
+### Critical (Must Fix)
+
+- TypeScript compilation errors
+- ESLint errors that break functionality
+- Missing required dependencies
+- Unhandled null/undefined cases
+
+### Important (Should Fix)
+
+- ESLint warnings about potential bugs
+- Unused variables or imports
+- Missing type annotations
+- Console statements in production code
+
+### Style (Nice to Fix)
+
+- Formatting inconsistencies
+- Naming convention violations
+- Import order issues
+- Trailing commas or semicolons
+
+## Examples
+
+### Fixing Common Issues
+
+```typescript
+// Before (with linting errors)
+import React, { useState, useEffect } from "react";
+import { Button } from "./Button";
+
+function UserComponent({ userId }) {
+  const [user, setUser] = useState();
+
+  useEffect(() => {
+    fetchUser(userId);
+  }, []);
+
+  const fetchUser = async (id) => {
+    const response = await api.getUser(id);
+    setUser(response.data);
+  };
+
+  return (
+    <div>
+      <h1>{user.name}</h1>
+      <Button onClick={() => console.log("clicked")}>Click me</Button>
+    </div>
+  );
+}
+
+// After (linting errors fixed)
+import React, { useState, useEffect, useCallback } from "react";
+import { Button } from "./Button";
+import type { User } from "@/types/user";
+
+interface UserComponentProps {
+  userId: string;
+}
+
+function UserComponent({ userId }: UserComponentProps): JSX.Element {
+  const [user, setUser] = useState<User | null>(null);
+
+  const fetchUser = useCallback(async (id: string): Promise<void> => {
+    try {
+      const response = await api.getUser(id);
+      setUser(response.data);
+    } catch (error) {
+      console.error("Failed to fetch user:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUser(userId);
+  }, [userId, fetchUser]);
+
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div>
+      <h1>{user.name}</h1>
+      <Button onClick={() => handleClick()}>Click me</Button>
+    </div>
+  );
+
+  function handleClick(): void {
+    // Handle click logic here
+  }
+}
+```
+
+## Tools and Configuration
+
+### ESLint Configuration
+
+Ensure your `.eslintrc.js` or `eslint.config.js` includes:
+
+- TypeScript support
+- React hooks rules
+- Import/export rules
+- Unused variable detection
+
+### Prettier Configuration
+
+Ensure your `prettier.config.js` is configured for:
+
+- Consistent formatting
+- Semicolon usage
+- Quote preferences
+- Line length limits
+
+### TypeScript Configuration
+
+Ensure your `tsconfig.json` includes:
+
+- Strict mode enabled
+- No implicit any
+- Strict null checks
+- Proper module resolution

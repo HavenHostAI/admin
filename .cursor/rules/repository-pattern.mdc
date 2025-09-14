@@ -1,0 +1,271 @@
+---
+globs: *.ts,*.tsx
+description: Follow the repository pattern for data access
+---
+
+# Repository Pattern
+
+Always use the repository pattern for data access and database operations.
+
+## Guidelines
+
+- **Create repository classes** for each domain entity
+- **Abstract database operations** behind repository interfaces
+- **Use dependency injection** for repository dependencies
+- **Keep business logic separate** from data access logic
+- **Make repositories testable** with mock implementations
+- **Use consistent naming** with `Repository` suffix
+
+## Structure
+
+```
+src/
+├── repositories/
+│   ├── interfaces/
+│   │   ├── user.repository.ts
+│   │   ├── post.repository.ts
+│   │   └── index.ts
+│   ├── implementations/
+│   │   ├── drizzle-user.repository.ts
+│   │   ├── drizzle-post.repository.ts
+│   │   └── index.ts
+│   └── index.ts
+```
+
+## Examples
+
+### Repository Interface
+
+```typescript
+// repositories/interfaces/user.repository.ts
+export interface User {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email_address: string;
+  created_at: Date;
+  updated_at: Date;
+  is_active: boolean;
+}
+
+export interface CreateUserData {
+  first_name: string;
+  last_name: string;
+  email_address: string;
+}
+
+export interface UpdateUserData {
+  first_name?: string;
+  last_name?: string;
+  email_address?: string;
+  is_active?: boolean;
+}
+
+export interface UserRepository {
+  findById(id: number): Promise<User | null>;
+  findByEmail(email: string): Promise<User | null>;
+  findAll(options?: { limit?: number; offset?: number }): Promise<User[]>;
+  create(data: CreateUserData): Promise<User>;
+  update(id: number, data: UpdateUserData): Promise<User>;
+  delete(id: number): Promise<void>;
+  count(): Promise<number>;
+}
+```
+
+### Repository Implementation
+
+```typescript
+// repositories/implementations/drizzle-user.repository.ts
+import { eq, desc, count } from "drizzle-orm";
+import { db } from "@/server/db";
+import { users } from "@/server/db/schema";
+import type {
+  UserRepository,
+  User,
+  CreateUserData,
+  UpdateUserData,
+} from "../interfaces/user.repository";
+
+export class DrizzleUserRepository implements UserRepository {
+  async findById(id: number): Promise<User | null> {
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+    return result[0] || null;
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.email_address, email))
+      .limit(1);
+    return result[0] || null;
+  }
+
+  async findAll(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<User[]> {
+    let query = db.select().from(users).orderBy(desc(users.created_at));
+
+    if (options?.limit) {
+      query = query.limit(options.limit);
+    }
+
+    if (options?.offset) {
+      query = query.offset(options.offset);
+    }
+
+    return await query;
+  }
+
+  async create(data: CreateUserData): Promise<User> {
+    const result = await db
+      .insert(users)
+      .values({
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email_address: data.email_address,
+      })
+      .returning();
+
+    return result[0]!;
+  }
+
+  async update(id: number, data: UpdateUserData): Promise<User> {
+    const result = await db
+      .update(users)
+      .set({
+        ...data,
+        updated_at: new Date(),
+      })
+      .where(eq(users.id, id))
+      .returning();
+
+    return result[0]!;
+  }
+
+  async delete(id: number): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
+  }
+
+  async count(): Promise<number> {
+    const result = await db.select({ count: count() }).from(users);
+    return result[0]?.count || 0;
+  }
+}
+```
+
+### Service Layer Usage
+
+```typescript
+// services/user.service.ts
+import type { UserRepository } from "@/repositories/interfaces/user.repository";
+import type {
+  User,
+  CreateUserData,
+  UpdateUserData,
+} from "@/repositories/interfaces/user.repository";
+
+export class UserService {
+  constructor(private userRepository: UserRepository) {}
+
+  async getUserById(id: number): Promise<User | null> {
+    return await this.userRepository.findById(id);
+  }
+
+  async createUser(data: CreateUserData): Promise<User> {
+    // Business logic validation
+    const existingUser = await this.userRepository.findByEmail(
+      data.email_address,
+    );
+    if (existingUser) {
+      throw new Error("User with this email already exists");
+    }
+
+    return await this.userRepository.create(data);
+  }
+
+  async updateUser(id: number, data: UpdateUserData): Promise<User> {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return await this.userRepository.update(id, data);
+  }
+
+  async deactivateUser(id: number): Promise<User> {
+    return await this.updateUser(id, { is_active: false });
+  }
+}
+```
+
+### Dependency Injection
+
+```typescript
+// repositories/index.ts
+import { DrizzleUserRepository } from "./implementations/drizzle-user.repository";
+import { DrizzlePostRepository } from "./implementations/drizzle-post.repository";
+
+// Factory function for creating repositories
+export const createRepositories = () => ({
+  userRepository: new DrizzleUserRepository(),
+  postRepository: new DrizzlePostRepository(),
+});
+
+// Type for repository container
+export type Repositories = ReturnType<typeof createRepositories>;
+```
+
+### TRPC Router Usage
+
+```typescript
+// server/api/routers/user.ts
+import { z } from "zod";
+import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { UserService } from "@/services/user.service";
+import { createRepositories } from "@/repositories";
+
+const repositories = createRepositories();
+const userService = new UserService(repositories.userRepository);
+
+export const userRouter = createTRPCRouter({
+  getById: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input }) => {
+      return await userService.getUserById(input.id);
+    }),
+
+  create: publicProcedure
+    .input(
+      z.object({
+        first_name: z.string(),
+        last_name: z.string(),
+        email_address: z.string().email(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      return await userService.createUser(input);
+    }),
+});
+```
+
+## Benefits
+
+- **Separation of concerns**: Business logic separate from data access
+- **Testability**: Easy to mock repositories for unit tests
+- **Flexibility**: Can swap database implementations
+- **Consistency**: Standardized data access patterns
+- **Type safety**: Full TypeScript support with proper interfaces
+
+## Naming Conventions
+
+- Repository interfaces: `[Entity]Repository` (e.g., `UserRepository`)
+- Repository implementations: `[Database][Entity]Repository` (e.g., `DrizzleUserRepository`)
+- Service classes: `[Entity]Service` (e.g., `UserService`)
+- Repository files: `[entity].repository.ts`
+- Service files: `[entity].service.ts`
