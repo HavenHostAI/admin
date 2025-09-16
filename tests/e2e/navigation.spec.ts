@@ -17,9 +17,9 @@ test.describe("Navigation", () => {
 
   test("should handle page refresh", async ({ page }) => {
     await page.goto("/");
-    
+
     await page.reload();
-    
+
     await expect(page.locator("body")).toBeVisible();
   });
 

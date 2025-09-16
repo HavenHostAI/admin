@@ -72,11 +72,17 @@ export class DrizzleAuthRepository implements AuthRepository {
     }
 
     const drizzleUser = user as DrizzleUser;
-    if (typeof drizzleUser.password !== "string" || drizzleUser.password.length === 0) {
+    if (
+      typeof drizzleUser.password !== "string" ||
+      drizzleUser.password.length === 0
+    ) {
       return null;
     }
 
-    const isValidPassword = await bcrypt.compare(password, drizzleUser.password);
+    const isValidPassword = await bcrypt.compare(
+      password,
+      drizzleUser.password,
+    );
 
     if (!isValidPassword) {
       return null;
@@ -91,11 +97,9 @@ export class DrizzleAuthRepository implements AuthRepository {
       is_active: drizzleUser.is_active ?? true,
       email_verified: drizzleUser.emailVerified?.toISOString() ?? null,
       created_at:
-        drizzleUser.created_at?.toISOString() ??
-        new Date().toISOString(),
+        drizzleUser.created_at?.toISOString() ?? new Date().toISOString(),
       updated_at:
-        drizzleUser.updated_at?.toISOString() ??
-        new Date().toISOString(),
+        drizzleUser.updated_at?.toISOString() ?? new Date().toISOString(),
     };
   }
 

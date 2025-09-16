@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import { index, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
-import { type AdapterAccount } from "next-auth/adapters";
+// Note: Using string literal type instead of AdapterAccount type due to next-auth v5 beta compatibility
+type AdapterAccountType = "oauth" | "email" | "credentials";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -76,7 +77,7 @@ export const accounts = createTable(
       .varchar({ length: 255 })
       .notNull()
       .references(() => users.id),
-    type: d.varchar({ length: 255 }).$type<AdapterAccount["type"]>().notNull(),
+    type: d.varchar({ length: 255 }).$type<AdapterAccountType>().notNull(),
     provider: d.varchar({ length: 255 }).notNull(),
     providerAccountId: d.varchar({ length: 255 }).notNull(),
     refresh_token: d.text(),
@@ -123,3 +124,162 @@ export const verificationTokens = createTable(
   }),
   (t) => [primaryKey({ columns: [t.identifier, t.token] })],
 );
+
+// Roles table
+export const roles = createTable(
+  "role",
+  (d) => ({
+    id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    name: d.varchar({ length: 100 }).notNull().unique(),
+    description: d.varchar({ length: 500 }),
+    is_system: d.boolean().default(false),
+    created_at: d
+      .timestamp({
+        mode: "date",
+        withTimezone: true,
+      })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updated_at: d
+      .timestamp({
+        mode: "date",
+        withTimezone: true,
+      })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .$onUpdate(() => new Date()),
+  }),
+  (t) => [
+    index("role_name_idx").on(t.name),
+    index("role_system_idx").on(t.is_system),
+  ],
+);
+
+// Permissions table
+export const permissions = createTable(
+  "permission",
+  (d) => ({
+    id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    name: d.varchar({ length: 100 }).notNull(),
+    resource: d.varchar({ length: 50 }).notNull(),
+    action: d.varchar({ length: 20 }).notNull(),
+    description: d.varchar({ length: 500 }),
+    created_at: d
+      .timestamp({
+        mode: "date",
+        withTimezone: true,
+      })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  }),
+  (t) => [
+    index("permission_resource_action_idx").on(t.resource, t.action),
+    index("permission_name_idx").on(t.name),
+  ],
+);
+
+// User roles junction table
+export const userRoles = createTable(
+  "user_role",
+  (d) => ({
+    user_id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role_id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => roles.id, { onDelete: "cascade" }),
+    assigned_at: d
+      .timestamp({
+        mode: "date",
+        withTimezone: true,
+      })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    assigned_by: d.varchar({ length: 255 }).references(() => users.id),
+  }),
+  (t) => [
+    primaryKey({ columns: [t.user_id, t.role_id] }),
+    index("user_role_user_idx").on(t.user_id),
+    index("user_role_role_idx").on(t.role_id),
+  ],
+);
+
+// Role permissions junction table
+export const rolePermissions = createTable(
+  "role_permission",
+  (d) => ({
+    role_id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => roles.id, { onDelete: "cascade" }),
+    permission_id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => permissions.id, { onDelete: "cascade" }),
+    assigned_at: d
+      .timestamp({
+        mode: "date",
+        withTimezone: true,
+      })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    assigned_by: d.varchar({ length: 255 }).references(() => users.id),
+  }),
+  (t) => [
+    primaryKey({ columns: [t.role_id, t.permission_id] }),
+    index("role_permission_role_idx").on(t.role_id),
+    index("role_permission_permission_idx").on(t.permission_id),
+  ],
+);
+
+// Relations
+export const rolesRelations = relations(roles, ({ many }) => ({
+  userRoles: many(userRoles),
+  rolePermissions: many(rolePermissions),
+}));
+
+export const permissionsRelations = relations(permissions, ({ many }) => ({
+  rolePermissions: many(rolePermissions),
+}));
+
+export const userRolesRelations = relations(userRoles, ({ one }) => ({
+  user: one(users, { fields: [userRoles.user_id], references: [users.id] }),
+  role: one(roles, { fields: [userRoles.role_id], references: [roles.id] }),
+  assignedBy: one(users, {
+    fields: [userRoles.assigned_by],
+    references: [users.id],
+  }),
+}));
+
+export const rolePermissionsRelations = relations(
+  rolePermissions,
+  ({ one }) => ({
+    role: one(roles, {
+      fields: [rolePermissions.role_id],
+      references: [roles.id],
+    }),
+    permission: one(permissions, {
+      fields: [rolePermissions.permission_id],
+      references: [permissions.id],
+    }),
+    assignedBy: one(users, {
+      fields: [rolePermissions.assigned_by],
+      references: [users.id],
+    }),
+  }),
+);
+
+// Update users relations to include roles
+export const usersRelationsUpdated = relations(users, ({ many }) => ({
+  accounts: many(accounts),
+  userRoles: many(userRoles),
+}));

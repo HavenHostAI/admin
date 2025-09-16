@@ -1,8 +1,20 @@
-import type { AuthRepository, LoginRequest, LoginResponse } from "../repositories/interfaces/auth.repository";
+import type {
+  AuthRepository,
+  LoginRequest,
+  LoginResponse,
+} from "../repositories/interfaces/auth.repository";
+import type {
+  UserRepository,
+  RoleRepository,
+} from "../repositories/interfaces/user.repository";
 import type { User, Session } from "../types/openapi";
 
 export class AuthService {
-  constructor(private authRepository: AuthRepository) {}
+  constructor(
+    private authRepository: AuthRepository,
+    private userRepository: UserRepository,
+    private roleRepository: RoleRepository,
+  ) {}
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     // Business rule: Validate email format
@@ -80,6 +92,59 @@ export class AuthService {
     }
 
     return await this.authRepository.validateAccessToken(accessToken);
+  }
+
+  // Role-based access control methods
+  async getUserRoles(userId: string): Promise<string[]> {
+    const roles = await this.userRepository.getUserRoles(userId);
+    return roles.map((role) => role.name);
+  }
+
+  async hasRole(userId: string, roleName: string): Promise<boolean> {
+    const roles = await this.getUserRoles(userId);
+    return roles.includes(roleName);
+  }
+
+  async hasPermission(
+    userId: string,
+    resource: string,
+    action: string,
+  ): Promise<boolean> {
+    return await this.userRepository.hasPermission(userId, resource, action);
+  }
+
+  async hasAnyRole(userId: string, roleNames: string[]): Promise<boolean> {
+    const userRoles = await this.getUserRoles(userId);
+    return roleNames.some((roleName) => userRoles.includes(roleName));
+  }
+
+  async hasAllRoles(userId: string, roleNames: string[]): Promise<boolean> {
+    const userRoles = await this.getUserRoles(userId);
+    return roleNames.every((roleName) => userRoles.includes(roleName));
+  }
+
+  async canAccessResource(
+    userId: string,
+    resource: string,
+    action: string,
+  ): Promise<boolean> {
+    // Check if user has the specific permission
+    const hasSpecificPermission = await this.hasPermission(
+      userId,
+      resource,
+      action,
+    );
+    if (hasSpecificPermission) {
+      return true;
+    }
+
+    // Check if user has admin role (admin can access everything)
+    const isAdmin = await this.hasRole(userId, "admin");
+    if (isAdmin) {
+      return true;
+    }
+
+    return false;
   }
 
   // Private business logic methods
