@@ -4,7 +4,6 @@ import { users, sessions } from "../../server/db/schema";
 import type { AuthRepository } from "../interfaces/auth.repository";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { randomBytes } from "crypto";
 
 // Extended user type that includes the new database fields
 type DrizzleUser = {
@@ -72,14 +71,11 @@ export class DrizzleAuthRepository implements AuthRepository {
       return null;
     }
 
-    if (!user.password) {
+    if (typeof (user as DrizzleUser).password !== "string" || (user as DrizzleUser).password.length === 0) {
       return null;
     }
 
-    const isValidPassword = await bcrypt.compare(
-      password,
-      user.password as string,
-    );
+    const isValidPassword = await bcrypt.compare(password, (user as DrizzleUser).password);
 
     if (!isValidPassword) {
       return null;
@@ -106,8 +102,8 @@ export class DrizzleAuthRepository implements AuthRepository {
     const expires = new Date();
     expires.setDate(expires.getDate() + 7); // 7 days
 
-    // Use randomBytes to generate a secure random session token
-    const sessionToken = randomBytes(32).toString("hex");
+    // Use crypto.randomUUID() for better collision resistance and standard UUID format
+    const sessionToken = crypto.randomUUID();
 
     await db.insert(sessions).values({
       sessionToken,
@@ -188,7 +184,8 @@ export class DrizzleAuthRepository implements AuthRepository {
     try {
       const decoded = jwt.verify(token, this.JWT_SECRET) as JWTPayload;
       return await this.getUserById(decoded.userId);
-    } catch {
+    } catch (err) {
+      console.error("Error validating access token:", err);
       return null;
     }
   }

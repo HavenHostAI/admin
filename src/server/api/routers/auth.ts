@@ -4,9 +4,11 @@ import { AuthService } from "../../../services/auth.service";
 import { DrizzleAuthRepository } from "../../../repositories/implementations/drizzle-auth.repository";
 import type { LoginRequest, LoginResponse, Session } from "../../../types/openapi";
 
-// Create repository and service instances
-const authRepository = new DrizzleAuthRepository();
-const authService = new AuthService(authRepository);
+// Factory function for creating auth service instances
+const createAuthService = () => {
+  const authRepository = new DrizzleAuthRepository();
+  return new AuthService(authRepository);
+};
 
 // Zod schemas that match OpenAPI spec
 const LoginSchema = z.object({
@@ -18,6 +20,7 @@ export const authRouter = createTRPCRouter({
   login: publicProcedure
     .input(LoginSchema)
     .mutation(async ({ input }): Promise<LoginResponse> => {
+      const authService = createAuthService();
       return await authService.login(input);
     }),
 
@@ -29,6 +32,7 @@ export const authRouter = createTRPCRouter({
         throw new Error("No active session found");
       }
 
+      const authService = createAuthService();
       await authService.logout(sessionToken);
       return { message: "Logged out successfully" };
     }),
@@ -41,6 +45,7 @@ export const authRouter = createTRPCRouter({
         throw new Error("No active session found");
       }
 
+      const authService = createAuthService();
       const session = await authService.getSession(sessionToken);
       if (!session) {
         throw new Error("Session not found or expired");
@@ -57,6 +62,7 @@ export const authRouter = createTRPCRouter({
         throw new Error("No active session found");
       }
 
+      const authService = createAuthService();
       return await authService.refreshToken(sessionToken);
     }),
 });
