@@ -1,7 +1,7 @@
 # Page snapshot
 
 ```yaml
-- generic [active] [ref=e1]:
+- generic [ref=e1]:
   - main [ref=e2]:
     - generic [ref=e3]:
       - heading "Create T3 App" [level=1] [ref=e4]:
@@ -23,7 +23,156 @@
           - paragraph
           - link "Sign in" [ref=e16] [cursor=pointer]:
             - /url: /api/auth/signin
-  - button "Open Next.js Dev Tools" [ref=e22] [cursor=pointer]:
-    - img [ref=e23] [cursor=pointer]
-  - alert [ref=e26]
+  - generic [active]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - navigation [ref=e22]:
+            - button "previous" [disabled] [ref=e23]:
+              - img "previous" [ref=e24]
+            - generic [ref=e26]:
+              - generic [ref=e27]: 1/
+              - generic [ref=e28]: "1"
+            - button "next" [disabled] [ref=e29]:
+              - img "next" [ref=e30]
+          - img
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - img [ref=e34]
+            - generic "Latest available version is detected (15.5.3)." [ref=e36]: Next.js 15.5.3
+            - generic [ref=e37]: Turbopack
+          - img
+      - dialog "Build Error" [ref=e39]:
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - generic [ref=e44]:
+              - generic [ref=e46]: Build Error
+              - generic [ref=e47]:
+                - button "Copy Error Info" [ref=e48] [cursor=pointer]:
+                  - img [ref=e49] [cursor=pointer]
+                - link "Go to related documentation" [ref=e51] [cursor=pointer]:
+                  - /url: https://nextjs.org/docs/messages/module-not-found
+                  - img [ref=e52] [cursor=pointer]
+                - link "Learn more about enabling Node.js inspector for server code with Chrome DevTools" [ref=e54] [cursor=pointer]:
+                  - /url: https://nextjs.org/docs/app/building-your-application/configuring/debugging#server-side-code
+                  - img [ref=e55] [cursor=pointer]
+            - paragraph [ref=e64]: "Module not found: Can't resolve 'class-variance-authority'"
+          - generic [ref=e66]:
+            - generic [ref=e68]:
+              - img [ref=e70]
+              - generic [ref=e73]: ./src/components/ui/alert.tsx (2:1)
+              - button "Open in editor" [ref=e74] [cursor=pointer]:
+                - img [ref=e76] [cursor=pointer]
+            - generic [ref=e79]:
+              - generic [ref=e80]: "Module not found: Can't resolve 'class-variance-authority'"
+              - generic [ref=e82]: 1 |
+              - generic [ref=e84]: import
+              - generic [ref=e86]: "*"
+              - generic [ref=e88]: as
+              - generic [ref=e90]: React
+              - generic [ref=e92]: from
+              - generic [ref=e94]: "\"react\""
+              - generic [ref=e95]: ;
+              - generic [ref=e96]: ">"
+              - generic [ref=e97]: 2 |
+              - generic [ref=e99]: import
+              - generic [ref=e100]: "{ cva"
+              - generic [ref=e101]: ","
+              - generic [ref=e102]: type
+              - generic [ref=e103]: VariantProps
+              - generic [ref=e104]: "}"
+              - generic [ref=e105]: from
+              - generic [ref=e107]: "\"class-variance-authority\""
+              - generic [ref=e108]: ;
+              - generic [ref=e110]: "|"
+              - generic [ref=e112]: ^
+              - generic [ref=e113]: ^
+              - generic [ref=e114]: ^
+              - generic [ref=e115]: ^
+              - generic [ref=e116]: ^
+              - generic [ref=e117]: ^
+              - generic [ref=e118]: ^
+              - generic [ref=e119]: ^
+              - generic [ref=e120]: ^
+              - generic [ref=e121]: ^
+              - generic [ref=e122]: ^
+              - generic [ref=e123]: ^
+              - generic [ref=e124]: ^
+              - generic [ref=e125]: ^
+              - generic [ref=e126]: ^
+              - generic [ref=e127]: ^
+              - generic [ref=e128]: ^
+              - generic [ref=e129]: ^
+              - generic [ref=e130]: ^
+              - generic [ref=e131]: ^
+              - generic [ref=e132]: ^
+              - generic [ref=e133]: ^
+              - generic [ref=e134]: ^
+              - generic [ref=e135]: ^
+              - generic [ref=e136]: ^
+              - generic [ref=e137]: ^
+              - generic [ref=e138]: ^
+              - generic [ref=e139]: ^
+              - generic [ref=e140]: ^
+              - generic [ref=e141]: ^
+              - generic [ref=e142]: ^
+              - generic [ref=e143]: ^
+              - generic [ref=e144]: ^
+              - generic [ref=e145]: ^
+              - generic [ref=e146]: ^
+              - generic [ref=e147]: ^
+              - generic [ref=e148]: ^
+              - generic [ref=e149]: ^
+              - generic [ref=e150]: ^
+              - generic [ref=e151]: ^
+              - generic [ref=e152]: ^
+              - generic [ref=e153]: ^
+              - generic [ref=e154]: ^
+              - generic [ref=e155]: ^
+              - generic [ref=e156]: ^
+              - generic [ref=e157]: ^
+              - generic [ref=e158]: ^
+              - generic [ref=e159]: ^
+              - generic [ref=e160]: ^
+              - generic [ref=e161]: ^
+              - generic [ref=e162]: ^
+              - generic [ref=e163]: ^
+              - generic [ref=e164]: ^
+              - generic [ref=e165]: ^
+              - generic [ref=e166]: ^
+              - generic [ref=e167]: ^
+              - generic [ref=e168]: ^
+              - generic [ref=e169]: ^
+              - generic [ref=e170]: ^
+              - generic [ref=e171]: ^
+              - generic [ref=e172]: ^
+              - generic [ref=e173]: ^
+              - generic [ref=e174]: ^
+              - generic [ref=e175]: ^
+              - generic [ref=e176]: ^
+              - generic [ref=e177]: ^
+              - generic [ref=e179]: 3 |
+              - generic [ref=e181]: 4 |
+              - generic [ref=e183]: import
+              - generic [ref=e184]: "{ cn }"
+              - generic [ref=e185]: from
+              - generic [ref=e187]: "\"src/lib/utils\""
+              - generic [ref=e188]: ;
+              - generic [ref=e190]: 5 |
+              - generic [ref=e191]:
+                - text: "Import traces: Client Component Browser: ./src/components/ui/alert.tsx [Client Component Browser] ./src/components/role-management/RoleList.tsx [Client Component Browser] ./src/components/user-role-management/UserRoleManagement.tsx [Client Component Browser] ./src/components/user-role-management/UserRoleManagement.tsx [Server Component] ./src/app/admin/page.tsx [Server Component] Client Component SSR: ./src/components/ui/alert.tsx [Client Component SSR] ./src/components/role-management/RoleList.tsx [Client Component SSR] ./src/components/user-role-management/UserRoleManagement.tsx [Client Component SSR] ./src/components/user-role-management/UserRoleManagement.tsx [Server Component] ./src/app/admin/page.tsx [Server Component]"
+                - link "https://nextjs.org/docs/messages/module-not-found" [ref=e192] [cursor=pointer]:
+                  - /url: https://nextjs.org/docs/messages/module-not-found
+        - generic [ref=e193]:
+          - generic [ref=e194]: "1"
+          - generic [ref=e195]: "2"
+    - generic [ref=e200] [cursor=pointer]:
+      - button "Open Next.js Dev Tools" [ref=e201] [cursor=pointer]:
+        - img [ref=e202] [cursor=pointer]
+      - button "Open issues overlay" [ref=e206] [cursor=pointer]:
+        - generic [ref=e207] [cursor=pointer]:
+          - generic [ref=e208] [cursor=pointer]: "0"
+          - generic [ref=e209] [cursor=pointer]: "1"
+        - generic [ref=e210] [cursor=pointer]: Issue
+  - alert [ref=e211]
 ```
