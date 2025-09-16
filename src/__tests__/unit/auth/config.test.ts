@@ -10,7 +10,7 @@ const mockAuthConfig = {
   ],
   adapter: {},
   callbacks: {
-    session: ({ session, user }: any) => ({
+    session: ({ session, user }: { session: any; user: any }) => ({
       ...session,
       user: {
         ...session.user,

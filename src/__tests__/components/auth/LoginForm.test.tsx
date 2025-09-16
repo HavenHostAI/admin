@@ -17,8 +17,8 @@ vi.mock("~/trpc/react", () => ({
 
 describe("LoginForm", () => {
   const user = userEvent.setup();
-  let mockMutate: any;
-  let mockUseMutation: any;
+  let mockMutate: ReturnType<typeof vi.fn>;
+  let mockUseMutation: ReturnType<typeof vi.mocked>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
