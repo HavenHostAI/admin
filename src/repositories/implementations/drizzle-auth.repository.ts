@@ -22,16 +22,26 @@ interface Session {
   expires: string;
 }
 
+// JWT payload interface for type safety
+interface JWTPayload {
+  userId: string;
+  email: string;
+  role: string;
+}
+
 export class DrizzleAuthRepository implements AuthRepository {
   private readonly JWT_SECRET: string;
+  private readonly JWT_EXPIRES_IN = "7d";
+  private readonly DEFAULT_ROLE: User["role"] = "viewer";
 
   constructor() {
     if (!process.env.NEXTAUTH_SECRET) {
-      throw new Error("NEXTAUTH_SECRET environment variable must be set for JWT signing.");
+      throw new Error(
+        "NEXTAUTH_SECRET environment variable must be set for JWT signing.",
+      );
     }
     this.JWT_SECRET = process.env.NEXTAUTH_SECRET;
   }
-  private readonly JWT_EXPIRES_IN = "7d";
 
   async authenticateUser(
     email: string,
@@ -47,6 +57,7 @@ export class DrizzleAuthRepository implements AuthRepository {
 
     // For demo purposes, we'll use a hardcoded password check
     // In a real implementation, you'd store hashed passwords in the database
+    // and use: import bcrypt from "bcryptjs"; const isValidPassword = await bcrypt.compare(password, user.password);
     const isValidPassword = password === "demo-password";
 
     if (!isValidPassword) {
@@ -58,10 +69,10 @@ export class DrizzleAuthRepository implements AuthRepository {
       email: user.email,
       name: user.name ?? "",
       image: user.image ?? "",
-      role: "viewer" as const,
+      role: this.DEFAULT_ROLE,
       is_active: true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: new Date().toISOString(),
+      created_at: user.emailVerified?.toISOString() ?? new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
   }
@@ -107,10 +118,11 @@ export class DrizzleAuthRepository implements AuthRepository {
         email: session.user.email,
         name: session.user.name ?? "",
         image: session.user.image ?? "",
-        role: "viewer" as const,
+        role: this.DEFAULT_ROLE,
         is_active: true,
         email_verified: session.user.emailVerified?.toISOString() ?? null,
-        created_at: new Date().toISOString(),
+        created_at:
+          session.user.emailVerified?.toISOString() ?? new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       expires: session.expires.toISOString(),
@@ -145,11 +157,7 @@ export class DrizzleAuthRepository implements AuthRepository {
 
   async validateAccessToken(token: string): Promise<User | null> {
     try {
-      const decoded = jwt.verify(token, this.JWT_SECRET) as {
-        userId: string;
-        email: string;
-        role: string;
-      };
+      const decoded = jwt.verify(token, this.JWT_SECRET) as JWTPayload;
       return await this.getUserById(decoded.userId);
     } catch {
       return null;
@@ -170,10 +178,10 @@ export class DrizzleAuthRepository implements AuthRepository {
       email: user.email,
       name: user.name ?? "",
       image: user.image ?? "",
-      role: "viewer" as const,
+      role: this.DEFAULT_ROLE,
       is_active: true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: new Date().toISOString(),
+      created_at: user.emailVerified?.toISOString() ?? new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
   }
@@ -192,10 +200,10 @@ export class DrizzleAuthRepository implements AuthRepository {
       email: user.email,
       name: user.name ?? "",
       image: user.image ?? "",
-      role: "viewer" as const,
+      role: this.DEFAULT_ROLE,
       is_active: true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: new Date().toISOString(),
+      created_at: user.emailVerified?.toISOString() ?? new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
   }
