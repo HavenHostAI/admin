@@ -1,4 +1,4 @@
-import type { User, Session } from "@/types/openapi";
+import type { User, Session } from "~/types/openapi";
 
 export interface LoginRequest {
   email: string;
