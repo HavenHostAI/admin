@@ -3,7 +3,19 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
 
 // Mock the Button component since it might not exist yet
-const MockButton = ({ children, onClick, disabled, ...props }: any) => (
+interface MockButtonProps {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  [key: string]: unknown;
+}
+
+const MockButton = ({
+  children,
+  onClick,
+  disabled,
+  ...props
+}: MockButtonProps) => (
   <button onClick={onClick} disabled={disabled} {...props}>
     {children}
   </button>

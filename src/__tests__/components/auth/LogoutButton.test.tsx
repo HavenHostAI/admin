@@ -22,11 +22,11 @@ describe("LogoutButton", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    
+
     const { api } = await import("~/trpc/react");
     mockUseMutation = vi.mocked(api.auth.logout.useMutation);
     mockMutate = vi.fn();
-    
+
     mockUseMutation.mockReturnValue({
       mutate: mockMutate,
       isPending: false,
@@ -37,7 +37,9 @@ describe("LogoutButton", () => {
   it("should render logout button with default text", () => {
     render(<LogoutButton />);
 
-    expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Sign out" }),
+    ).toBeInTheDocument();
   });
 
   it("should call logout mutation when clicked", async () => {
@@ -58,7 +60,9 @@ describe("LogoutButton", () => {
 
     render(<LogoutButton />);
 
-    expect(screen.getByRole("button", { name: "Signing out..." })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Signing out..." }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button")).toBeDisabled();
   });
 

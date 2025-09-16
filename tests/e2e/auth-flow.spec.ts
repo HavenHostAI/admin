@@ -10,7 +10,9 @@ test.describe("Authentication Flow", () => {
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   });
 
-  test("should show validation errors for empty form submission", async ({ page }) => {
+  test("should show validation errors for empty form submission", async ({
+    page,
+  }) => {
     await page.goto("/");
 
     const submitButton = page.getByRole("button", { name: "Sign in" });
@@ -52,7 +54,7 @@ test.describe("Authentication Flow", () => {
     // Fill form and refresh
     await page.getByLabel("Email").fill("test@example.com");
     await page.getByLabel("Password").fill("password123");
-    
+
     await page.reload();
     await page.waitForLoadState("networkidle");
 
@@ -75,7 +77,7 @@ test.describe("Authentication Flow", () => {
     // Test form interaction on mobile
     await page.getByLabel("Email").fill("mobile@example.com");
     await page.getByLabel("Password").fill("mobile123");
-    
+
     await expect(page.getByLabel("Email")).toHaveValue("mobile@example.com");
     await expect(page.getByLabel("Password")).toHaveValue("mobile123");
   });

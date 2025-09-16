@@ -14,7 +14,7 @@ test.describe("Authentication", () => {
 
     // Check for basic page elements
     await expect(page.locator("body")).toBeVisible();
-    
+
     // Check that the page has some content
     const bodyText = await page.locator("body").textContent();
     expect(bodyText).toBeTruthy();
@@ -22,9 +22,9 @@ test.describe("Authentication", () => {
 
   test("should handle page refresh", async ({ page }) => {
     await page.goto("/");
-    
+
     await page.reload();
-    
+
     await expect(page.locator("body")).toBeVisible();
   });
 });

@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { LoginForm } from "@/components/auth/LoginForm";
@@ -22,11 +22,11 @@ describe("LoginForm", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    
+
     const { api } = await import("~/trpc/react");
     mockUseMutation = vi.mocked(api.auth.login.useMutation);
     mockMutate = vi.fn();
-    
+
     mockUseMutation.mockReturnValue({
       mutate: mockMutate,
       isPending: false,
@@ -81,7 +81,9 @@ describe("LoginForm", () => {
 
     render(<LoginForm />);
 
-    expect(screen.getByRole("button", { name: "Signing in..." })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Signing in..." }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button")).toBeDisabled();
   });
 
@@ -158,7 +160,7 @@ describe("LoginForm", () => {
 
     // Simulate successful login
     const mutationConfig = mockUseMutation.mock.calls[0][0];
-    
+
     await act(async () => {
       mutationConfig.onSuccess();
     });

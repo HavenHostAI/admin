@@ -100,6 +100,478 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
+  /users:
+    get:
+      summary: List users
+      description: Retrieve a paginated list of users with optional filtering
+      tags:
+        - User Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/SearchParam"
+        - $ref: "#/components/parameters/RoleFilterParam"
+        - $ref: "#/components/parameters/StatusFilterParam"
+      responses:
+        "200":
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: Create user
+      description: Create a new user account
+      tags:
+        - User Management
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /users/{userId}:
+    get:
+      summary: Get user by ID
+      description: Retrieve a specific user by their ID
+      tags:
+        - User Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserIdParam"
+      responses:
+        "200":
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      summary: Update user
+      description: Update an existing user's information
+      tags:
+        - User Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: Delete user
+      description: Delete a user account (soft delete by deactivating)
+      tags:
+        - User Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserIdParam"
+      responses:
+        "200":
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /users/{userId}/roles:
+    get:
+      summary: Get user roles
+      description: Retrieve all roles assigned to a specific user
+      tags:
+        - User Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserIdParam"
+      responses:
+        "200":
+          description: User roles retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserRolesResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: Assign role to user
+      description: Assign a role to a specific user
+      tags:
+        - User Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignRoleRequest"
+      responses:
+        "200":
+          description: Role assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /users/{userId}/roles/{roleId}:
+    delete:
+      summary: Remove role from user
+      description: Remove a specific role from a user
+      tags:
+        - User Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserIdParam"
+        - $ref: "#/components/parameters/RoleIdParam"
+      responses:
+        "200":
+          description: Role removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /roles:
+    get:
+      summary: List roles
+      description: Retrieve a paginated list of roles
+      tags:
+        - Role Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/SearchParam"
+      responses:
+        "200":
+          description: Roles retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoleListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: Create role
+      description: Create a new role with specified permissions
+      tags:
+        - Role Management
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoleRequest"
+      responses:
+        "201":
+          description: Role created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoleResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /roles/{roleId}:
+    get:
+      summary: Get role by ID
+      description: Retrieve a specific role by its ID
+      tags:
+        - Role Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RoleIdParam"
+      responses:
+        "200":
+          description: Role retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoleResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      summary: Update role
+      description: Update an existing role's information and permissions
+      tags:
+        - Role Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RoleIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRoleRequest"
+      responses:
+        "200":
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoleResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: Delete role
+      description: Delete a role (only if no users are assigned to it)
+      tags:
+        - Role Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RoleIdParam"
+      responses:
+        "200":
+          description: Role deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /roles/{roleId}/permissions:
+    get:
+      summary: Get role permissions
+      description: Retrieve all permissions assigned to a specific role
+      tags:
+        - Role Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RoleIdParam"
+      responses:
+        "200":
+          description: Role permissions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolePermissionsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: Assign permission to role
+      description: Assign a permission to a specific role
+      tags:
+        - Role Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RoleIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignPermissionRequest"
+      responses:
+        "200":
+          description: Permission assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /roles/{roleId}/permissions/{permissionId}:
+    delete:
+      summary: Remove permission from role
+      description: Remove a specific permission from a role
+      tags:
+        - Role Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RoleIdParam"
+        - $ref: "#/components/parameters/PermissionIdParam"
+      responses:
+        "200":
+          description: Permission removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /permissions:
+    get:
+      summary: List permissions
+      description: Retrieve a list of all available permissions
+      tags:
+        - Permission Management
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Permissions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PermissionListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
 components:
   schemas:
     LoginRequest:
@@ -214,6 +686,303 @@ components:
           format: date-time
           example: "2024-01-15T10:30:00Z"
 
+    Role:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          example: "role_123"
+        name:
+          type: string
+          example: "Content Manager"
+        description:
+          type: string
+          example: "Can manage content and moderate posts"
+        is_system:
+          type: boolean
+          default: false
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    Permission:
+      type: object
+      required:
+        - id
+        - name
+        - resource
+        - action
+        - created_at
+      properties:
+        id:
+          type: string
+          example: "perm_123"
+        name:
+          type: string
+          example: "Create Posts"
+        resource:
+          type: string
+          example: "posts"
+        action:
+          type: string
+          enum: [create, read, update, delete, manage]
+          example: "create"
+        description:
+          type: string
+          example: "Allows creating new posts"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    CreateUserRequest:
+      type: object
+      required:
+        - email
+        - name
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: "newuser@example.com"
+        name:
+          type: string
+          maxLength: 255
+          example: "New User"
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          example: "password123"
+        role:
+          type: string
+          enum: [admin, editor, viewer]
+          default: viewer
+          example: "viewer"
+        is_active:
+          type: boolean
+          default: true
+          example: true
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: "Updated Name"
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: "updated@example.com"
+        role:
+          type: string
+          enum: [admin, editor, viewer]
+          example: "editor"
+        is_active:
+          type: boolean
+          example: true
+
+    CreateRoleRequest:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: "Content Manager"
+        description:
+          type: string
+          maxLength: 500
+          example: "Can manage content and moderate posts"
+        permissions:
+          type: array
+          items:
+            type: string
+          example: ["perm_123", "perm_456"]
+
+    UpdateRoleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: "Updated Role Name"
+        description:
+          type: string
+          maxLength: 500
+          example: "Updated role description"
+        permissions:
+          type: array
+          items:
+            type: string
+          example: ["perm_123", "perm_456"]
+
+    AssignRoleRequest:
+      type: object
+      required:
+        - role_id
+      properties:
+        role_id:
+          type: string
+          example: "role_123"
+
+    AssignPermissionRequest:
+      type: object
+      required:
+        - permission_id
+      properties:
+        permission_id:
+          type: string
+          example: "perm_123"
+
+    UserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: "#/components/schemas/User"
+
+    UserListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            users:
+              type: array
+              items:
+                $ref: "#/components/schemas/User"
+            pagination:
+              $ref: "#/components/schemas/Pagination"
+
+    RoleResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: "#/components/schemas/Role"
+
+    RoleListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            roles:
+              type: array
+              items:
+                $ref: "#/components/schemas/Role"
+            pagination:
+              $ref: "#/components/schemas/Pagination"
+
+    UserRolesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            user_id:
+              type: string
+              example: "user_123"
+            roles:
+              type: array
+              items:
+                $ref: "#/components/schemas/Role"
+
+    RolePermissionsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            role_id:
+              type: string
+              example: "role_123"
+            permissions:
+              type: array
+              items:
+                $ref: "#/components/schemas/Permission"
+
+    PermissionListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Permission"
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operation completed successfully"
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 20
+        total:
+          type: integer
+          example: 150
+        total_pages:
+          type: integer
+          example: 8
+        has_next:
+          type: boolean
+          example: true
+        has_prev:
+          type: boolean
+          example: false
+
     Session:
       type: object
       required:
@@ -242,6 +1011,86 @@ components:
             type: string
           example: ["Invalid email or password"]
 
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Page number for pagination
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+        example: 1
+
+    LimitParam:
+      name: limit
+      in: query
+      description: Number of items per page
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+        example: 20
+
+    SearchParam:
+      name: search
+      in: query
+      description: Search term for filtering results
+      required: false
+      schema:
+        type: string
+        example: "john"
+
+    RoleFilterParam:
+      name: role
+      in: query
+      description: Filter by user role
+      required: false
+      schema:
+        type: string
+        enum: [admin, editor, viewer]
+        example: "editor"
+
+    StatusFilterParam:
+      name: status
+      in: query
+      description: Filter by user status
+      required: false
+      schema:
+        type: string
+        enum: [active, inactive]
+        example: "active"
+
+    UserIdParam:
+      name: userId
+      in: path
+      description: User ID
+      required: true
+      schema:
+        type: string
+        example: "user_123"
+
+    RoleIdParam:
+      name: roleId
+      in: path
+      description: Role ID
+      required: true
+      schema:
+        type: string
+        example: "role_123"
+
+    PermissionIdParam:
+      name: permissionId
+      in: path
+      description: Permission ID
+      required: true
+      schema:
+        type: string
+        example: "perm_123"
+
   responses:
     BadRequest:
       description: Bad request
@@ -252,6 +1101,27 @@ components:
 
     Unauthorized:
       description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    Conflict:
+      description: Resource conflict
       content:
         application/json:
           schema:
