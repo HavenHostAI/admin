@@ -76,7 +76,10 @@ export class DrizzleAuthRepository implements AuthRepository {
       return null;
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password as string);
+    const isValidPassword = await bcrypt.compare(
+      password,
+      user.password as string,
+    );
 
     if (!isValidPassword) {
       return null;
@@ -90,8 +93,12 @@ export class DrizzleAuthRepository implements AuthRepository {
       role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
       is_active: (user as DrizzleUser).is_active ?? true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: (user as DrizzleUser).created_at?.toISOString() ?? new Date().toISOString(),
-      updated_at: (user as DrizzleUser).updated_at?.toISOString() ?? new Date().toISOString(),
+      created_at:
+        (user as DrizzleUser).created_at?.toISOString() ??
+        new Date().toISOString(),
+      updated_at:
+        (user as DrizzleUser).updated_at?.toISOString() ??
+        new Date().toISOString(),
     };
   }
 
@@ -141,9 +148,11 @@ export class DrizzleAuthRepository implements AuthRepository {
         is_active: (session.user as DrizzleUser).is_active ?? true,
         email_verified: session.user.emailVerified?.toISOString() ?? null,
         created_at:
-          (session.user as DrizzleUser).created_at?.toISOString() ?? new Date().toISOString(),
+          (session.user as DrizzleUser).created_at?.toISOString() ??
+          new Date().toISOString(),
         updated_at:
-          (session.user as DrizzleUser).updated_at?.toISOString() ?? new Date().toISOString(),
+          (session.user as DrizzleUser).updated_at?.toISOString() ??
+          new Date().toISOString(),
       },
       expires: session.expires.toISOString(),
     };
@@ -201,8 +210,12 @@ export class DrizzleAuthRepository implements AuthRepository {
       role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
       is_active: (user as DrizzleUser).is_active ?? true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: (user as DrizzleUser).created_at?.toISOString() ?? new Date().toISOString(),
-      updated_at: (user as DrizzleUser).updated_at?.toISOString() ?? new Date().toISOString(),
+      created_at:
+        (user as DrizzleUser).created_at?.toISOString() ??
+        new Date().toISOString(),
+      updated_at:
+        (user as DrizzleUser).updated_at?.toISOString() ??
+        new Date().toISOString(),
     };
   }
 
@@ -223,8 +236,12 @@ export class DrizzleAuthRepository implements AuthRepository {
       role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
       is_active: (user as DrizzleUser).is_active ?? true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: (user as DrizzleUser).created_at?.toISOString() ?? new Date().toISOString(),
-      updated_at: (user as DrizzleUser).updated_at?.toISOString() ?? new Date().toISOString(),
+      created_at:
+        (user as DrizzleUser).created_at?.toISOString() ??
+        new Date().toISOString(),
+      updated_at:
+        (user as DrizzleUser).updated_at?.toISOString() ??
+        new Date().toISOString(),
     };
   }
 }
