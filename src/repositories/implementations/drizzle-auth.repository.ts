@@ -3,6 +3,8 @@ import { db } from "../../server/db";
 import { users, sessions } from "../../server/db/schema";
 import type { AuthRepository } from "../interfaces/auth.repository";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 
 // Local type definitions
 interface User {
@@ -55,10 +57,10 @@ export class DrizzleAuthRepository implements AuthRepository {
       return null;
     }
 
-    // For demo purposes, we'll use a hardcoded password check
+    // For demo purposes, we'll hash the demo password and compare it
     // In a real implementation, you'd store hashed passwords in the database
-    // and use: import bcrypt from "bcryptjs"; const isValidPassword = await bcrypt.compare(password, user.password);
-    const isValidPassword = password === "demo-password";
+    const demoPasswordHash = await bcrypt.hash("demo-password", 12);
+    const isValidPassword = await bcrypt.compare(password, demoPasswordHash);
 
     if (!isValidPassword) {
       return null;
@@ -81,7 +83,8 @@ export class DrizzleAuthRepository implements AuthRepository {
     const expires = new Date();
     expires.setDate(expires.getDate() + 7); // 7 days
 
-    const sessionToken = crypto.randomUUID();
+    // Use randomBytes for better entropy than randomUUID
+    const sessionToken = randomBytes(32).toString("hex");
 
     await db.insert(sessions).values({
       sessionToken,
