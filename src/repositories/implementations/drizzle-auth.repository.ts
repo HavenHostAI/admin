@@ -23,8 +23,14 @@ interface Session {
 }
 
 export class DrizzleAuthRepository implements AuthRepository {
-  private readonly JWT_SECRET =
-    process.env.NEXTAUTH_SECRET ?? "fallback-secret";
+  private readonly JWT_SECRET: string;
+
+  constructor() {
+    if (!process.env.NEXTAUTH_SECRET) {
+      throw new Error("NEXTAUTH_SECRET environment variable must be set for JWT signing.");
+    }
+    this.JWT_SECRET = process.env.NEXTAUTH_SECRET;
+  }
   private readonly JWT_EXPIRES_IN = "7d";
 
   async authenticateUser(
