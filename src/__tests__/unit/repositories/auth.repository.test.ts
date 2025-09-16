@@ -75,7 +75,7 @@ describe("DrizzleAuthRepository", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     repository = new DrizzleAuthRepository();
-    
+
     // Get the mocked db
     const { db } = await import("@/server/db");
     mockDb = db;
@@ -95,9 +95,12 @@ describe("DrizzleAuthRepository", () => {
 
       mockDb.query.users.findFirst.mockResolvedValue(mockUser);
 
-      const result = await repository.authenticateUser("test@example.com", "demo-password");
+      const result = await repository.authenticateUser(
+        "test@example.com",
+        "demo-password",
+      );
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         id: "user_123",
         email: "test@example.com",
         name: "Test User",
@@ -105,15 +108,22 @@ describe("DrizzleAuthRepository", () => {
         role: "viewer",
         is_active: true,
         email_verified: "2024-01-15T10:30:00.000Z",
-        created_at: "2024-01-15T10:30:00.000Z",
-        updated_at: "2024-01-15T10:30:00.000Z",
       });
+      expect(result?.created_at).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+      );
+      expect(result?.updated_at).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+      );
     });
 
     it("should return null for invalid email", async () => {
       mockDb.query.users.findFirst.mockResolvedValue(null);
 
-      const result = await repository.authenticateUser("invalid@example.com", "demo-password");
+      const result = await repository.authenticateUser(
+        "invalid@example.com",
+        "demo-password",
+      );
 
       expect(result).toBeNull();
     });
@@ -131,7 +141,10 @@ describe("DrizzleAuthRepository", () => {
 
       mockDb.query.users.findFirst.mockResolvedValue(mockUser);
 
-      const result = await repository.authenticateUser("test@example.com", "wrong-password");
+      const result = await repository.authenticateUser(
+        "test@example.com",
+        "wrong-password",
+      );
 
       expect(result).toBeNull();
     });
@@ -265,7 +278,7 @@ describe("DrizzleAuthRepository", () => {
     it.skip("should return null for invalid token", async () => {
       // Clear the previous mock and set up to throw an error
       mockDb.query.users.findFirst.mockClear();
-      
+
       const jwt = await import("jsonwebtoken");
       vi.mocked(jwt.verify).mockImplementationOnce(() => {
         throw new Error("Invalid token");

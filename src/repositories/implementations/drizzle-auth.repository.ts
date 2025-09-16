@@ -23,10 +23,14 @@ interface Session {
 }
 
 export class DrizzleAuthRepository implements AuthRepository {
-  private readonly JWT_SECRET = process.env.NEXTAUTH_SECRET ?? "fallback-secret";
+  private readonly JWT_SECRET =
+    process.env.NEXTAUTH_SECRET ?? "fallback-secret";
   private readonly JWT_EXPIRES_IN = "7d";
 
-  async authenticateUser(email: string, password: string): Promise<User | null> {
+  async authenticateUser(
+    email: string,
+    password: string,
+  ): Promise<User | null> {
     const user = await db.query.users.findFirst({
       where: eq(users.email, email),
     });
@@ -123,19 +127,23 @@ export class DrizzleAuthRepository implements AuthRepository {
 
   generateAccessToken(user: User): string {
     return jwt.sign(
-      { 
-        userId: user.id, 
+      {
+        userId: user.id,
         email: user.email,
-        role: user.role 
+        role: user.role,
       },
       this.JWT_SECRET,
-      { expiresIn: this.JWT_EXPIRES_IN }
+      { expiresIn: this.JWT_EXPIRES_IN },
     );
   }
 
   async validateAccessToken(token: string): Promise<User | null> {
     try {
-      const decoded = jwt.verify(token, this.JWT_SECRET) as { userId: string; email: string; role: string };
+      const decoded = jwt.verify(token, this.JWT_SECRET) as {
+        userId: string;
+        email: string;
+        role: string;
+      };
       return await this.getUserById(decoded.userId);
     } catch {
       return null;
