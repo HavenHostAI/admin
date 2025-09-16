@@ -19,10 +19,8 @@ export class DrizzleAuthRepository implements AuthRepository {
       return null;
     }
 
-    // In a real implementation, you would hash and compare passwords
-    // For now, we'll use a simple comparison for demo purposes
-    // TODO: Implement proper password hashing with bcrypt
-    const isValidPassword = password === "demo-password"; // Replace with actual password check
+    // Compare the provided password with the stored password hash using bcrypt
+    const isValidPassword = await bcrypt.compare(password, user.password);
 
     if (!isValidPassword) {
       return null;
