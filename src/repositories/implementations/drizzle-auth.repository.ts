@@ -57,8 +57,9 @@ export class DrizzleAuthRepository implements AuthRepository {
       return null;
     }
 
-    // For demo purposes, we'll hash the demo password and compare it
+    // For demo purposes, we'll validate against a demo password
     // In a real implementation, you'd store hashed passwords in the database
+    // and validate: const isValidPassword = await bcrypt.compare(password, user.password);
     const demoPasswordHash = await bcrypt.hash("demo-password", 12);
     const isValidPassword = await bcrypt.compare(password, demoPasswordHash);
 
@@ -74,7 +75,7 @@ export class DrizzleAuthRepository implements AuthRepository {
       role: this.DEFAULT_ROLE,
       is_active: true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: user.emailVerified?.toISOString() ?? new Date().toISOString(),
+      created_at: new Date().toISOString(), // Demo: using current time since no createdAt field in schema
       updated_at: new Date().toISOString(),
     };
   }
@@ -83,7 +84,7 @@ export class DrizzleAuthRepository implements AuthRepository {
     const expires = new Date();
     expires.setDate(expires.getDate() + 7); // 7 days
 
-    // Use randomBytes for better entropy than randomUUID
+    // Use randomBytes to generate a secure random session token
     const sessionToken = randomBytes(32).toString("hex");
 
     await db.insert(sessions).values({
@@ -184,7 +185,7 @@ export class DrizzleAuthRepository implements AuthRepository {
       role: this.DEFAULT_ROLE,
       is_active: true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: user.emailVerified?.toISOString() ?? new Date().toISOString(),
+      created_at: new Date().toISOString(), // Demo: using current time since no createdAt field in schema
       updated_at: new Date().toISOString(),
     };
   }
@@ -206,7 +207,7 @@ export class DrizzleAuthRepository implements AuthRepository {
       role: this.DEFAULT_ROLE,
       is_active: true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: user.emailVerified?.toISOString() ?? new Date().toISOString(),
+      created_at: new Date().toISOString(), // Demo: using current time since no createdAt field in schema
       updated_at: new Date().toISOString(),
     };
   }
