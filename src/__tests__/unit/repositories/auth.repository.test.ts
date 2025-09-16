@@ -83,21 +83,28 @@ describe("DrizzleAuthRepository", () => {
 
   describe("authenticateUser", () => {
     it("should return user for valid credentials", async () => {
+      // Create a hashed password for testing
+      const bcrypt = await import("bcryptjs");
+      const hashedPassword = await bcrypt.hash("test-password", 12);
+      
       const mockUser = {
         id: "user_123",
         email: "test@example.com",
         name: "Test User",
         image: null,
+        password: hashedPassword,
+        role: "viewer",
+        is_active: true,
         emailVerified: new Date("2024-01-15T10:30:00Z"),
-        createdAt: new Date("2024-01-15T10:30:00Z"),
-        updatedAt: new Date("2024-01-15T10:30:00Z"),
+        created_at: new Date("2024-01-15T10:30:00Z"),
+        updated_at: new Date("2024-01-15T10:30:00Z"),
       };
 
       mockDb.query.users.findFirst.mockResolvedValue(mockUser);
 
       const result = await repository.authenticateUser(
         "test@example.com",
-        "demo-password",
+        "test-password",
       );
 
       expect(result).toMatchObject({
@@ -129,14 +136,21 @@ describe("DrizzleAuthRepository", () => {
     });
 
     it("should return null for invalid password", async () => {
+      // Create a hashed password for testing
+      const bcrypt = await import("bcryptjs");
+      const hashedPassword = await bcrypt.hash("correct-password", 12);
+      
       const mockUser = {
         id: "user_123",
         email: "test@example.com",
         name: "Test User",
         image: null,
+        password: hashedPassword,
+        role: "viewer",
+        is_active: true,
         emailVerified: new Date("2024-01-15T10:30:00Z"),
-        createdAt: new Date("2024-01-15T10:30:00Z"),
-        updatedAt: new Date("2024-01-15T10:30:00Z"),
+        created_at: new Date("2024-01-15T10:30:00Z"),
+        updated_at: new Date("2024-01-15T10:30:00Z"),
       };
 
       mockDb.query.users.findFirst.mockResolvedValue(mockUser);

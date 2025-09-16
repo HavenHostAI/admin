@@ -39,6 +39,9 @@ export const users = createTable("user", (d) => ({
     .$defaultFn(() => crypto.randomUUID()),
   name: d.varchar({ length: 255 }),
   email: d.varchar({ length: 255 }).notNull(),
+  password: d.varchar({ length: 255 }),
+  role: d.varchar({ length: 50 }).default("viewer"),
+  is_active: d.boolean().default(true),
   emailVerified: d
     .timestamp({
       mode: "date",
@@ -46,6 +49,20 @@ export const users = createTable("user", (d) => ({
     })
     .default(sql`CURRENT_TIMESTAMP`),
   image: d.varchar({ length: 255 }),
+  created_at: d
+    .timestamp({
+      mode: "date",
+      withTimezone: true,
+    })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updated_at: d
+    .timestamp({
+      mode: "date",
+      withTimezone: true,
+    })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .$onUpdate(() => new Date()),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({

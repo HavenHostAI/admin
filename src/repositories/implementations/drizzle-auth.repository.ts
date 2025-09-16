@@ -57,11 +57,11 @@ export class DrizzleAuthRepository implements AuthRepository {
       return null;
     }
 
-    // For demo purposes, we'll validate against a demo password
-    // In a real implementation, you'd store hashed passwords in the database
-    // and validate: const isValidPassword = await bcrypt.compare(password, user.password);
-    const demoPasswordHash = await bcrypt.hash("demo-password", 12);
-    const isValidPassword = await bcrypt.compare(password, demoPasswordHash);
+    if (!user.password) {
+      return null;
+    }
+    
+    const isValidPassword = await bcrypt.compare(password, user.password);
 
     if (!isValidPassword) {
       return null;
@@ -72,11 +72,11 @@ export class DrizzleAuthRepository implements AuthRepository {
       email: user.email,
       name: user.name ?? "",
       image: user.image ?? "",
-      role: this.DEFAULT_ROLE,
+      role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
       is_active: true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: new Date().toISOString(), // Demo: using current time since no createdAt field in schema
-      updated_at: new Date().toISOString(),
+      created_at: user.created_at?.toISOString() ?? new Date().toISOString(),
+      updated_at: user.updated_at?.toISOString() ?? new Date().toISOString(),
     };
   }
 
@@ -122,12 +122,11 @@ export class DrizzleAuthRepository implements AuthRepository {
         email: session.user.email,
         name: session.user.name ?? "",
         image: session.user.image ?? "",
-        role: this.DEFAULT_ROLE,
+        role: (session.user.role as User["role"]) ?? this.DEFAULT_ROLE,
         is_active: true,
         email_verified: session.user.emailVerified?.toISOString() ?? null,
-        created_at:
-          session.user.emailVerified?.toISOString() ?? new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: session.user.created_at?.toISOString() ?? new Date().toISOString(),
+        updated_at: session.user.updated_at?.toISOString() ?? new Date().toISOString(),
       },
       expires: session.expires.toISOString(),
     };
@@ -182,11 +181,11 @@ export class DrizzleAuthRepository implements AuthRepository {
       email: user.email,
       name: user.name ?? "",
       image: user.image ?? "",
-      role: this.DEFAULT_ROLE,
+      role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
       is_active: true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: new Date().toISOString(), // Demo: using current time since no createdAt field in schema
-      updated_at: new Date().toISOString(),
+      created_at: user.created_at?.toISOString() ?? new Date().toISOString(),
+      updated_at: user.updated_at?.toISOString() ?? new Date().toISOString(),
     };
   }
 
@@ -204,11 +203,11 @@ export class DrizzleAuthRepository implements AuthRepository {
       email: user.email,
       name: user.name ?? "",
       image: user.image ?? "",
-      role: this.DEFAULT_ROLE,
+      role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
       is_active: true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: new Date().toISOString(), // Demo: using current time since no createdAt field in schema
-      updated_at: new Date().toISOString(),
+      created_at: user.created_at?.toISOString() ?? new Date().toISOString(),
+      updated_at: user.updated_at?.toISOString() ?? new Date().toISOString(),
     };
   }
 }
