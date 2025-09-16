@@ -226,11 +226,11 @@ describe("Role Management Integration", () => {
       });
 
       // Initially no users
-      let userCount = await roleService.getRoleUserCount(role.id);
+      let userCount = (await roleService.getRoleUsers(role.id)).length;
       expect(userCount).toBe(0);
 
       // Create users and assign role
-      const { userRepository } = createRepositories(ctx.db);
+      const { userRepository } = createRepositories();
       const user1 = await userRepository.createUser({
         name: "John Doe",
         email: "john@example.com",
@@ -249,12 +249,12 @@ describe("Role Management Integration", () => {
       await userRepository.assignRoleToUser(user2.id, role.id);
 
       // Check user count
-      userCount = await roleService.getRoleUserCount(role.id);
+      userCount = (await roleService.getRoleUsers(role.id)).length;
       expect(userCount).toBe(2);
 
       // Remove one user
       await userRepository.removeRoleFromUser(user1.id, role.id);
-      userCount = await roleService.getRoleUserCount(role.id);
+      userCount = (await roleService.getRoleUsers(role.id)).length;
       expect(userCount).toBe(1);
     });
   });
