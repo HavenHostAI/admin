@@ -1,0 +1,8 @@
+extends: ["spectral:oas"]
+rules:
+  info-description: true
+  info-contact: true
+  operation-description: true
+  operation-operationId: true
+  path-params: true
+  tag-description: true
