@@ -28,7 +28,7 @@ export function CreateRoleDialog({ onRoleCreated }: CreateRoleDialogProps) {
     description: "",
   });
 
-  const createRoleMutation = api.role.createRole.useMutation({
+  const createRoleMutation = api.role.create.useMutation({
     onSuccess: () => {
       setOpen(false);
       setFormData({ name: "", description: "" });

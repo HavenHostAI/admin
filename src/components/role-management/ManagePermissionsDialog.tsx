@@ -31,7 +31,7 @@ export function ManagePermissionsDialog({
     role.permissions?.map((p) => p.id) || [],
   );
 
-  const { data: allPermissions } = api.role.getAllPermissions.useQuery();
+  const { data: allPermissions } = api.permission.getAll.useQuery();
 
   const assignPermissionMutation = api.role.assignPermission.useMutation({
     onSuccess: () => {

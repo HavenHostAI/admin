@@ -42,13 +42,13 @@ export function RoleList() {
     isLoading,
     error,
     refetch,
-  } = api.role.listRoles.useQuery({
+  } = api.role.list.useQuery({
     page,
     limit,
     search: search || undefined,
   });
 
-  const deleteRoleMutation = api.role.deleteRole.useMutation({
+  const deleteRoleMutation = api.role.delete.useMutation({
     onSuccess: () => {
       refetch();
     },
@@ -61,7 +61,7 @@ export function RoleList() {
       )
     ) {
       try {
-        await deleteRoleMutation.mutateAsync({ roleId });
+        await deleteRoleMutation.mutateAsync({ id: roleId });
       } catch (error) {
         console.error("Failed to delete role:", error);
       }

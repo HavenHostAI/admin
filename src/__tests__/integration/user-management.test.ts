@@ -28,7 +28,7 @@ describe("User Management Integration", () => {
       .delete(ctx.schema.permissions)
       .where(ctx.schema.permissions.id.isNotNull());
 
-    const repositories = createRepositories(ctx.db);
+    const repositories = createRepositories();
     userService = new UserService(
       repositories.userRepository,
       repositories.roleRepository,

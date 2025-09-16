@@ -37,7 +37,7 @@ export function EditUserDialog({ user, onUserUpdated }: EditUserDialogProps) {
     status: user.status,
   });
 
-  const updateUserMutation = api.user.updateUser.useMutation({
+  const updateUserMutation = api.user.update.useMutation({
     onSuccess: () => {
       setOpen(false);
       onUserUpdated();
@@ -48,7 +48,7 @@ export function EditUserDialog({ user, onUserUpdated }: EditUserDialogProps) {
     e.preventDefault();
     try {
       await updateUserMutation.mutateAsync({
-        userId: user.id,
+        id: user.id,
         ...formData,
       });
     } catch (error) {

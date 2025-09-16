@@ -59,7 +59,7 @@ export function UserList() {
     isLoading,
     error,
     refetch,
-  } = api.user.listUsers.useQuery({
+  } = api.user.list.useQuery({
     page,
     limit,
     search: search || undefined,
@@ -67,12 +67,12 @@ export function UserList() {
     status: statusFilter as "active" | "inactive" | undefined,
   });
 
-  const { data: rolesData } = api.role.listRoles.useQuery({
+  const { data: rolesData } = api.role.list.useQuery({
     page: 1,
     limit: 100,
   });
 
-  const deleteUserMutation = api.user.deleteUser.useMutation({
+  const deleteUserMutation = api.user.delete.useMutation({
     onSuccess: () => {
       refetch();
     },
@@ -81,7 +81,7 @@ export function UserList() {
   const handleDeleteUser = async (userId: string) => {
     if (confirm("Are you sure you want to delete this user?")) {
       try {
-        await deleteUserMutation.mutateAsync({ userId });
+        await deleteUserMutation.mutateAsync({ id: userId });
       } catch (error) {
         console.error("Failed to delete user:", error);
       }

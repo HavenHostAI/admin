@@ -30,7 +30,7 @@ export function EditRoleDialog({ role, onRoleUpdated }: EditRoleDialogProps) {
     description: role.description || "",
   });
 
-  const updateRoleMutation = api.role.updateRole.useMutation({
+  const updateRoleMutation = api.role.update.useMutation({
     onSuccess: () => {
       setOpen(false);
       onRoleUpdated();
@@ -41,7 +41,7 @@ export function EditRoleDialog({ role, onRoleUpdated }: EditRoleDialogProps) {
     e.preventDefault();
     try {
       await updateRoleMutation.mutateAsync({
-        roleId: role.id,
+        id: role.id,
         ...formData,
       });
     } catch (error) {

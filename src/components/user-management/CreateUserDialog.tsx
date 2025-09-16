@@ -36,7 +36,7 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
     status: "active" as "active" | "inactive",
   });
 
-  const createUserMutation = api.user.createUser.useMutation({
+  const createUserMutation = api.user.create.useMutation({
     onSuccess: () => {
       setOpen(false);
       setFormData({ name: "", email: "", password: "", status: "active" });

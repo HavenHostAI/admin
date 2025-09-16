@@ -26,7 +26,7 @@ describe("Role Management Integration", () => {
       .delete(ctx.schema.permissions)
       .where(ctx.schema.permissions.id.isNotNull());
 
-    const repositories = createRepositories(ctx.db);
+    const repositories = createRepositories();
     roleService = new RoleService(
       repositories.roleRepository,
       repositories.permissionRepository,
