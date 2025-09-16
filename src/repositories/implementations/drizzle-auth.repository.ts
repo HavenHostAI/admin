@@ -6,6 +6,20 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
 
+// Extended user type that includes the new database fields
+type DrizzleUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  image: string | null;
+  password: string;
+  role: string | null;
+  is_active: boolean | null;
+  emailVerified: Date | null;
+  created_at: Date | null;
+  updated_at: Date | null;
+};
+
 // Local type definitions
 interface User {
   id: string;
@@ -17,6 +31,7 @@ interface User {
   email_verified: string | null;
   created_at: string;
   updated_at: string;
+  password?: string; // Added for production readiness
 }
 
 interface Session {
@@ -61,7 +76,7 @@ export class DrizzleAuthRepository implements AuthRepository {
       return null;
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await bcrypt.compare(password, user.password as string);
 
     if (!isValidPassword) {
       return null;
@@ -73,10 +88,10 @@ export class DrizzleAuthRepository implements AuthRepository {
       name: user.name ?? "",
       image: user.image ?? "",
       role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
-      is_active: user.is_active ?? true,
+      is_active: (user as DrizzleUser).is_active ?? true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: user.created_at?.toISOString() ?? new Date().toISOString(),
-      updated_at: user.updated_at?.toISOString() ?? new Date().toISOString(),
+      created_at: (user as DrizzleUser).created_at?.toISOString() ?? new Date().toISOString(),
+      updated_at: (user as DrizzleUser).updated_at?.toISOString() ?? new Date().toISOString(),
     };
   }
 
@@ -123,12 +138,12 @@ export class DrizzleAuthRepository implements AuthRepository {
         name: session.user.name ?? "",
         image: session.user.image ?? "",
         role: (session.user.role as User["role"]) ?? this.DEFAULT_ROLE,
-        is_active: session.user.is_active ?? true,
+        is_active: (session.user as DrizzleUser).is_active ?? true,
         email_verified: session.user.emailVerified?.toISOString() ?? null,
         created_at:
-          session.user.created_at?.toISOString() ?? new Date().toISOString(),
+          (session.user as DrizzleUser).created_at?.toISOString() ?? new Date().toISOString(),
         updated_at:
-          session.user.updated_at?.toISOString() ?? new Date().toISOString(),
+          (session.user as DrizzleUser).updated_at?.toISOString() ?? new Date().toISOString(),
       },
       expires: session.expires.toISOString(),
     };
@@ -184,10 +199,10 @@ export class DrizzleAuthRepository implements AuthRepository {
       name: user.name ?? "",
       image: user.image ?? "",
       role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
-      is_active: user.is_active ?? true,
+      is_active: (user as DrizzleUser).is_active ?? true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: user.created_at?.toISOString() ?? new Date().toISOString(),
-      updated_at: user.updated_at?.toISOString() ?? new Date().toISOString(),
+      created_at: (user as DrizzleUser).created_at?.toISOString() ?? new Date().toISOString(),
+      updated_at: (user as DrizzleUser).updated_at?.toISOString() ?? new Date().toISOString(),
     };
   }
 
@@ -206,10 +221,10 @@ export class DrizzleAuthRepository implements AuthRepository {
       name: user.name ?? "",
       image: user.image ?? "",
       role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
-      is_active: user.is_active ?? true,
+      is_active: (user as DrizzleUser).is_active ?? true,
       email_verified: user.emailVerified?.toISOString() ?? null,
-      created_at: user.created_at?.toISOString() ?? new Date().toISOString(),
-      updated_at: user.updated_at?.toISOString() ?? new Date().toISOString(),
+      created_at: (user as DrizzleUser).created_at?.toISOString() ?? new Date().toISOString(),
+      updated_at: (user as DrizzleUser).updated_at?.toISOString() ?? new Date().toISOString(),
     };
   }
 }
