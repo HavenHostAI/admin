@@ -60,7 +60,7 @@ export class DrizzleAuthRepository implements AuthRepository {
     if (!user.password) {
       return null;
     }
-    
+
     const isValidPassword = await bcrypt.compare(password, user.password);
 
     if (!isValidPassword) {
@@ -73,7 +73,7 @@ export class DrizzleAuthRepository implements AuthRepository {
       name: user.name ?? "",
       image: user.image ?? "",
       role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
-      is_active: true,
+      is_active: user.is_active ?? true,
       email_verified: user.emailVerified?.toISOString() ?? null,
       created_at: user.created_at?.toISOString() ?? new Date().toISOString(),
       updated_at: user.updated_at?.toISOString() ?? new Date().toISOString(),
@@ -123,10 +123,12 @@ export class DrizzleAuthRepository implements AuthRepository {
         name: session.user.name ?? "",
         image: session.user.image ?? "",
         role: (session.user.role as User["role"]) ?? this.DEFAULT_ROLE,
-        is_active: true,
+        is_active: session.user.is_active ?? true,
         email_verified: session.user.emailVerified?.toISOString() ?? null,
-        created_at: session.user.created_at?.toISOString() ?? new Date().toISOString(),
-        updated_at: session.user.updated_at?.toISOString() ?? new Date().toISOString(),
+        created_at:
+          session.user.created_at?.toISOString() ?? new Date().toISOString(),
+        updated_at:
+          session.user.updated_at?.toISOString() ?? new Date().toISOString(),
       },
       expires: session.expires.toISOString(),
     };
@@ -182,7 +184,7 @@ export class DrizzleAuthRepository implements AuthRepository {
       name: user.name ?? "",
       image: user.image ?? "",
       role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
-      is_active: true,
+      is_active: user.is_active ?? true,
       email_verified: user.emailVerified?.toISOString() ?? null,
       created_at: user.created_at?.toISOString() ?? new Date().toISOString(),
       updated_at: user.updated_at?.toISOString() ?? new Date().toISOString(),
@@ -204,7 +206,7 @@ export class DrizzleAuthRepository implements AuthRepository {
       name: user.name ?? "",
       image: user.image ?? "",
       role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
-      is_active: true,
+      is_active: user.is_active ?? true,
       email_verified: user.emailVerified?.toISOString() ?? null,
       created_at: user.created_at?.toISOString() ?? new Date().toISOString(),
       updated_at: user.updated_at?.toISOString() ?? new Date().toISOString(),

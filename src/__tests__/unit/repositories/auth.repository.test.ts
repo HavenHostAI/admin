@@ -86,7 +86,7 @@ describe("DrizzleAuthRepository", () => {
       // Create a hashed password for testing
       const bcrypt = await import("bcryptjs");
       const hashedPassword = await bcrypt.hash("test-password", 12);
-      
+
       const mockUser = {
         id: "user_123",
         email: "test@example.com",
@@ -139,7 +139,7 @@ describe("DrizzleAuthRepository", () => {
       // Create a hashed password for testing
       const bcrypt = await import("bcryptjs");
       const hashedPassword = await bcrypt.hash("correct-password", 12);
-      
+
       const mockUser = {
         id: "user_123",
         email: "test@example.com",
