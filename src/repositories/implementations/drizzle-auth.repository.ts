@@ -71,29 +71,30 @@ export class DrizzleAuthRepository implements AuthRepository {
       return null;
     }
 
-    if (typeof (user as DrizzleUser).password !== "string" || (user as DrizzleUser).password.length === 0) {
+    const drizzleUser = user as DrizzleUser;
+    if (typeof drizzleUser.password !== "string" || drizzleUser.password.length === 0) {
       return null;
     }
 
-    const isValidPassword = await bcrypt.compare(password, (user as DrizzleUser).password);
+    const isValidPassword = await bcrypt.compare(password, drizzleUser.password);
 
     if (!isValidPassword) {
       return null;
     }
 
     return {
-      id: user.id,
-      email: user.email,
-      name: user.name ?? "",
-      image: user.image ?? "",
-      role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
-      is_active: (user as DrizzleUser).is_active ?? true,
-      email_verified: user.emailVerified?.toISOString() ?? null,
+      id: drizzleUser.id,
+      email: drizzleUser.email,
+      name: drizzleUser.name ?? "",
+      image: drizzleUser.image ?? "",
+      role: (drizzleUser.role as User["role"]) ?? this.DEFAULT_ROLE,
+      is_active: drizzleUser.is_active ?? true,
+      email_verified: drizzleUser.emailVerified?.toISOString() ?? null,
       created_at:
-        (user as DrizzleUser).created_at?.toISOString() ??
+        drizzleUser.created_at?.toISOString() ??
         new Date().toISOString(),
       updated_at:
-        (user as DrizzleUser).updated_at?.toISOString() ??
+        drizzleUser.updated_at?.toISOString() ??
         new Date().toISOString(),
     };
   }
