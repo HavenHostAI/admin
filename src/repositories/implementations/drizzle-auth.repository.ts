@@ -51,12 +51,12 @@ export class DrizzleAuthRepository implements AuthRepository {
   private readonly DEFAULT_ROLE: User["role"] = "viewer";
 
   constructor() {
-    if (!process.env.NEXTAUTH_SECRET) {
+    if (!process.env.AUTH_SECRET) {
       throw new Error(
-        "NEXTAUTH_SECRET environment variable must be set for JWT signing.",
+        "AUTH_SECRET environment variable must be set for JWT signing.",
       );
     }
-    this.JWT_SECRET = process.env.NEXTAUTH_SECRET;
+    this.JWT_SECRET = process.env.AUTH_SECRET;
   }
 
   async authenticateUser(

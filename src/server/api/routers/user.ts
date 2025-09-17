@@ -25,7 +25,7 @@ const getServices = () => {
 
 export const userRouter = createTRPCRouter({
   // User CRUD operations
-  create: protectedProcedure
+  create: publicProcedure
     .input(
       z.object({
         email: z.string().email("Invalid email format"),
