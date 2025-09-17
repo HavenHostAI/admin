@@ -39,7 +39,7 @@ export const users = createTable("user", (d) => ({
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: d.varchar({ length: 255 }),
-  email: d.varchar({ length: 255 }).notNull(),
+  email: d.varchar({ length: 255 }).notNull().unique(),
   password: d.varchar({ length: 255 }).notNull(),
   role: d.varchar({ length: 50 }).default("viewer"),
   is_active: d.boolean().default(true),
