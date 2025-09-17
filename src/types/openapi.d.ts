@@ -4,1170 +4,1539 @@
  */
 
 export interface paths {
-  "/auth/login": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * User login
+         * @description Authenticate user and create session
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LoginRequest"];
+                };
+            };
+            responses: {
+                /** @description Login successful */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LoginResponse"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * User login
-     * @description Authenticate user and create session
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["LoginRequest"];
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-      responses: {
-        /** @description Login successful */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["LoginResponse"];
-          };
+        get?: never;
+        put?: never;
+        /**
+         * User logout
+         * @description End user session and clear authentication
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Logout successful */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LogoutResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                500: components["responses"]["InternalServerError"];
+            };
         };
-        400: components["responses"]["BadRequest"];
-        401: components["responses"]["Unauthorized"];
-        500: components["responses"]["InternalServerError"];
-      };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/auth/logout": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get current session
+         * @description Retrieve current user session information
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Session information retrieved */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SessionResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * User logout
-     * @description End user session and clear authentication
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Logout successful */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["LogoutResponse"];
-          };
+    "/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        401: components["responses"]["Unauthorized"];
-        500: components["responses"]["InternalServerError"];
-      };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh authentication token
+         * @description Refresh expired authentication token
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Token refreshed successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RefreshResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/auth/session": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List users
+         * @description Retrieve a paginated list of users with optional filtering
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Page number for pagination */
+                    page?: components["parameters"]["PageParam"];
+                    /** @description Number of items per page */
+                    limit?: components["parameters"]["LimitParam"];
+                    /** @description Search term for filtering results */
+                    search?: components["parameters"]["SearchParam"];
+                    /** @description Filter by user role */
+                    role?: components["parameters"]["RoleFilterParam"];
+                    /** @description Filter by user status */
+                    status?: components["parameters"]["StatusFilterParam"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Users retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserListResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        /**
+         * Create user
+         * @description Create a new user account
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateUserRequest"];
+                };
+            };
+            responses: {
+                /** @description User created successfully */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserResponse"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                409: components["responses"]["Conflict"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Get current session
-     * @description Retrieve current user session information
-     */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Session information retrieved */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["SessionResponse"];
-          };
+    "/users/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        401: components["responses"]["Unauthorized"];
-        500: components["responses"]["InternalServerError"];
-      };
+        /**
+         * Get user by ID
+         * @description Retrieve a specific user by their ID
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description User ID */
+                    userId: components["parameters"]["UserIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description User retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        /**
+         * Update user
+         * @description Update an existing user's information
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description User ID */
+                    userId: components["parameters"]["UserIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateUserRequest"];
+                };
+            };
+            responses: {
+                /** @description User updated successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserResponse"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        post?: never;
+        /**
+         * Delete user
+         * @description Delete a user account (soft delete by deactivating)
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description User ID */
+                    userId: components["parameters"]["UserIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description User deleted successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuccessResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/auth/refresh": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/users/{userId}/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get user roles
+         * @description Retrieve all roles assigned to a specific user
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description User ID */
+                    userId: components["parameters"]["UserIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description User roles retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserRolesResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        /**
+         * Assign role to user
+         * @description Assign a role to a specific user
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description User ID */
+                    userId: components["parameters"]["UserIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AssignRoleRequest"];
+                };
+            };
+            responses: {
+                /** @description Role assigned successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuccessResponse"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Refresh authentication token
-     * @description Refresh expired authentication token
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Token refreshed successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["RefreshResponse"];
-          };
+    "/users/{userId}/roles/{roleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        401: components["responses"]["Unauthorized"];
-        500: components["responses"]["InternalServerError"];
-      };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove role from user
+         * @description Remove a specific role from a user
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description User ID */
+                    userId: components["parameters"]["UserIdParam"];
+                    /** @description Role ID */
+                    roleId: components["parameters"]["RoleIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Role removed successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuccessResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/users": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List roles
+         * @description Retrieve a paginated list of roles
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Page number for pagination */
+                    page?: components["parameters"]["PageParam"];
+                    /** @description Number of items per page */
+                    limit?: components["parameters"]["LimitParam"];
+                    /** @description Search term for filtering results */
+                    search?: components["parameters"]["SearchParam"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Roles retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RoleListResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        /**
+         * Create role
+         * @description Create a new role with specified permissions
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateRoleRequest"];
+                };
+            };
+            responses: {
+                /** @description Role created successfully */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RoleResponse"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                409: components["responses"]["Conflict"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List users
-     * @description Retrieve a paginated list of users with optional filtering
-     */
-    get: {
-      parameters: {
-        query?: {
-          /** @description Page number for pagination */
-          page?: components["parameters"]["PageParam"];
-          /** @description Number of items per page */
-          limit?: components["parameters"]["LimitParam"];
-          /** @description Search term for filtering results */
-          search?: components["parameters"]["SearchParam"];
-          /** @description Filter by user role */
-          role?: components["parameters"]["RoleFilterParam"];
-          /** @description Filter by user status */
-          status?: components["parameters"]["StatusFilterParam"];
+    "/roles/{roleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Users retrieved successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["UserListResponse"];
-          };
+        /**
+         * Get role by ID
+         * @description Retrieve a specific role by its ID
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Role ID */
+                    roleId: components["parameters"]["RoleIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Role retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RoleResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
         };
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        500: components["responses"]["InternalServerError"];
-      };
+        /**
+         * Update role
+         * @description Update an existing role's information and permissions
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Role ID */
+                    roleId: components["parameters"]["RoleIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateRoleRequest"];
+                };
+            };
+            responses: {
+                /** @description Role updated successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RoleResponse"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        post?: never;
+        /**
+         * Delete role
+         * @description Delete a role (only if no users are assigned to it)
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Role ID */
+                    roleId: components["parameters"]["RoleIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Role deleted successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuccessResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["Conflict"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    put?: never;
-    /**
-     * Create user
-     * @description Create a new user account
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateUserRequest"];
+    "/roles/{roleId}/permissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-      responses: {
-        /** @description User created successfully */
-        201: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["UserResponse"];
-          };
+        /**
+         * Get role permissions
+         * @description Retrieve all permissions assigned to a specific role
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Role ID */
+                    roleId: components["parameters"]["RoleIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Role permissions retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RolePermissionsResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
         };
-        400: components["responses"]["BadRequest"];
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        409: components["responses"]["Conflict"];
-        500: components["responses"]["InternalServerError"];
-      };
+        put?: never;
+        /**
+         * Assign permission to role
+         * @description Assign a permission to a specific role
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Role ID */
+                    roleId: components["parameters"]["RoleIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AssignPermissionRequest"];
+                };
+            };
+            responses: {
+                /** @description Permission assigned successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuccessResponse"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/users/{userId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/roles/{roleId}/permissions/{permissionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove permission from role
+         * @description Remove a specific permission from a role
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Role ID */
+                    roleId: components["parameters"]["RoleIdParam"];
+                    /** @description Permission ID */
+                    permissionId: components["parameters"]["PermissionIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Permission removed successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuccessResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Get user by ID
-     * @description Retrieve a specific user by their ID
-     */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description User ID */
-          userId: components["parameters"]["UserIdParam"];
+    "/permissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description User retrieved successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["UserResponse"];
-          };
+        /**
+         * List permissions
+         * @description Retrieve a list of all available permissions
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Permissions retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PermissionListResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                500: components["responses"]["InternalServerError"];
+            };
         };
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-        500: components["responses"]["InternalServerError"];
-      };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Update user
-     * @description Update an existing user's information
-     */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description User ID */
-          userId: components["parameters"]["UserIdParam"];
+    "/properties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateUserRequest"];
+        /**
+         * List properties
+         * @description Retrieve a paginated list of hosting properties with optional filtering
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Page number for pagination */
+                    page?: components["parameters"]["PageParam"];
+                    /** @description Number of items per page */
+                    limit?: components["parameters"]["LimitParam"];
+                    /** @description Search term for filtering results */
+                    search?: components["parameters"]["SearchParam"];
+                    /** @description Filter by property type */
+                    type?: components["parameters"]["PropertyTypeFilterParam"];
+                    /** @description Filter by property status */
+                    status?: components["parameters"]["PropertyStatusFilterParam"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Properties retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PropertyListResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                500: components["responses"]["InternalServerError"];
+            };
         };
-      };
-      responses: {
-        /** @description User updated successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["UserResponse"];
-          };
+        put?: never;
+        /**
+         * Create property
+         * @description Create a new hosting property
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreatePropertyRequest"];
+                };
+            };
+            responses: {
+                /** @description Property created successfully */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PropertyResponse"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                409: components["responses"]["Conflict"];
+                500: components["responses"]["InternalServerError"];
+            };
         };
-        400: components["responses"]["BadRequest"];
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-        500: components["responses"]["InternalServerError"];
-      };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    post?: never;
-    /**
-     * Delete user
-     * @description Delete a user account (soft delete by deactivating)
-     */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description User ID */
-          userId: components["parameters"]["UserIdParam"];
+    "/properties/{propertyId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description User deleted successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["SuccessResponse"];
-          };
+        /**
+         * Get property by ID
+         * @description Retrieve a specific property by its ID
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Property ID */
+                    propertyId: components["parameters"]["PropertyIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Property retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PropertyResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
         };
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-        500: components["responses"]["InternalServerError"];
-      };
+        /**
+         * Update property
+         * @description Update an existing property's information
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Property ID */
+                    propertyId: components["parameters"]["PropertyIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdatePropertyRequest"];
+                };
+            };
+            responses: {
+                /** @description Property updated successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PropertyResponse"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        post?: never;
+        /**
+         * Delete property
+         * @description Delete a property (soft delete by deactivating)
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Property ID */
+                    propertyId: components["parameters"]["PropertyIdParam"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Property deleted successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuccessResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/users/{userId}/roles": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get user roles
-     * @description Retrieve all roles assigned to a specific user
-     */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description User ID */
-          userId: components["parameters"]["UserIdParam"];
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description User roles retrieved successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["UserRolesResponse"];
-          };
-        };
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-        500: components["responses"]["InternalServerError"];
-      };
-    };
-    put?: never;
-    /**
-     * Assign role to user
-     * @description Assign a role to a specific user
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description User ID */
-          userId: components["parameters"]["UserIdParam"];
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["AssignRoleRequest"];
-        };
-      };
-      responses: {
-        /** @description Role assigned successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["SuccessResponse"];
-          };
-        };
-        400: components["responses"]["BadRequest"];
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-        500: components["responses"]["InternalServerError"];
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/users/{userId}/roles/{roleId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Remove role from user
-     * @description Remove a specific role from a user
-     */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description User ID */
-          userId: components["parameters"]["UserIdParam"];
-          /** @description Role ID */
-          roleId: components["parameters"]["RoleIdParam"];
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Role removed successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["SuccessResponse"];
-          };
-        };
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-        500: components["responses"]["InternalServerError"];
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/roles": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * List roles
-     * @description Retrieve a paginated list of roles
-     */
-    get: {
-      parameters: {
-        query?: {
-          /** @description Page number for pagination */
-          page?: components["parameters"]["PageParam"];
-          /** @description Number of items per page */
-          limit?: components["parameters"]["LimitParam"];
-          /** @description Search term for filtering results */
-          search?: components["parameters"]["SearchParam"];
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Roles retrieved successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["RoleListResponse"];
-          };
-        };
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        500: components["responses"]["InternalServerError"];
-      };
-    };
-    put?: never;
-    /**
-     * Create role
-     * @description Create a new role with specified permissions
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateRoleRequest"];
-        };
-      };
-      responses: {
-        /** @description Role created successfully */
-        201: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["RoleResponse"];
-          };
-        };
-        400: components["responses"]["BadRequest"];
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        409: components["responses"]["Conflict"];
-        500: components["responses"]["InternalServerError"];
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/roles/{roleId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get role by ID
-     * @description Retrieve a specific role by its ID
-     */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Role ID */
-          roleId: components["parameters"]["RoleIdParam"];
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Role retrieved successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["RoleResponse"];
-          };
-        };
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-        500: components["responses"]["InternalServerError"];
-      };
-    };
-    /**
-     * Update role
-     * @description Update an existing role's information and permissions
-     */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Role ID */
-          roleId: components["parameters"]["RoleIdParam"];
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateRoleRequest"];
-        };
-      };
-      responses: {
-        /** @description Role updated successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["RoleResponse"];
-          };
-        };
-        400: components["responses"]["BadRequest"];
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-        500: components["responses"]["InternalServerError"];
-      };
-    };
-    post?: never;
-    /**
-     * Delete role
-     * @description Delete a role (only if no users are assigned to it)
-     */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Role ID */
-          roleId: components["parameters"]["RoleIdParam"];
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Role deleted successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["SuccessResponse"];
-          };
-        };
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-        409: components["responses"]["Conflict"];
-        500: components["responses"]["InternalServerError"];
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/roles/{roleId}/permissions": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get role permissions
-     * @description Retrieve all permissions assigned to a specific role
-     */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Role ID */
-          roleId: components["parameters"]["RoleIdParam"];
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Role permissions retrieved successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["RolePermissionsResponse"];
-          };
-        };
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-        500: components["responses"]["InternalServerError"];
-      };
-    };
-    put?: never;
-    /**
-     * Assign permission to role
-     * @description Assign a permission to a specific role
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Role ID */
-          roleId: components["parameters"]["RoleIdParam"];
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["AssignPermissionRequest"];
-        };
-      };
-      responses: {
-        /** @description Permission assigned successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["SuccessResponse"];
-          };
-        };
-        400: components["responses"]["BadRequest"];
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-        500: components["responses"]["InternalServerError"];
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/roles/{roleId}/permissions/{permissionId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Remove permission from role
-     * @description Remove a specific permission from a role
-     */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Role ID */
-          roleId: components["parameters"]["RoleIdParam"];
-          /** @description Permission ID */
-          permissionId: components["parameters"]["PermissionIdParam"];
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Permission removed successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["SuccessResponse"];
-          };
-        };
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-        500: components["responses"]["InternalServerError"];
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/permissions": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * List permissions
-     * @description Retrieve a list of all available permissions
-     */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Permissions retrieved successfully */
-        200: {
-          headers: Record<string, unknown>;
-          content: {
-            "application/json": components["schemas"]["PermissionListResponse"];
-          };
-        };
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        500: components["responses"]["InternalServerError"];
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    LoginRequest: {
-      /**
-       * Format: email
-       * @example user@example.com
-       */
-      email: string;
-      /** @example password123 */
-      password: string;
+    schemas: {
+        LoginRequest: {
+            /**
+             * Format: email
+             * @example user@example.com
+             */
+            email: string;
+            /** @example password123 */
+            password: string;
+        };
+        LoginResponse: {
+            /** @example true */
+            success?: boolean;
+            data?: {
+                user?: components["schemas"]["User"];
+                session?: components["schemas"]["Session"];
+                /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
+                access_token?: string;
+            };
+        };
+        LogoutResponse: {
+            /** @example true */
+            success?: boolean;
+            /** @example Logged out successfully */
+            message?: string;
+        };
+        SessionResponse: {
+            /** @example true */
+            success?: boolean;
+            data?: components["schemas"]["Session"];
+        };
+        RefreshResponse: {
+            /** @example true */
+            success?: boolean;
+            data?: {
+                /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
+                access_token?: string;
+            };
+        };
+        User: {
+            /** @example user_123 */
+            id: string;
+            /**
+             * Format: email
+             * @example user@example.com
+             */
+            email: string;
+            /** @example John Doe */
+            name: string;
+            /**
+             * Format: uri
+             * @example https://example.com/avatar.jpg
+             */
+            image?: string;
+            /**
+             * @default viewer
+             * @example viewer
+             * @enum {string}
+             */
+            role: "admin" | "editor" | "viewer";
+            /**
+             * @default true
+             * @example true
+             */
+            is_active: boolean;
+            /**
+             * Format: date-time
+             * @example 2024-01-15T10:30:00Z
+             */
+            email_verified?: string;
+            /**
+             * Format: date-time
+             * @example 2024-01-15T10:30:00Z
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @example 2024-01-15T10:30:00Z
+             */
+            updated_at: string;
+        };
+        Role: {
+            /** @example role_123 */
+            id: string;
+            /** @example Content Manager */
+            name: string;
+            /** @example Can manage content and moderate posts */
+            description: string;
+            /**
+             * @default false
+             * @example false
+             */
+            is_system: boolean;
+            /**
+             * Format: date-time
+             * @example 2024-01-15T10:30:00Z
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @example 2024-01-15T10:30:00Z
+             */
+            updated_at: string;
+        };
+        Permission: {
+            /** @example perm_123 */
+            id: string;
+            /** @example Create Posts */
+            name: string;
+            /** @example posts */
+            resource: string;
+            /**
+             * @example create
+             * @enum {string}
+             */
+            action: "create" | "read" | "update" | "delete" | "manage";
+            /** @example Allows creating new posts */
+            description?: string;
+            /**
+             * Format: date-time
+             * @example 2024-01-15T10:30:00Z
+             */
+            created_at: string;
+        };
+        CreateUserRequest: {
+            /**
+             * Format: email
+             * @example newuser@example.com
+             */
+            email: string;
+            /** @example New User */
+            name: string;
+            /** @example password123 */
+            password: string;
+            /**
+             * @default viewer
+             * @example viewer
+             * @enum {string}
+             */
+            role: "admin" | "editor" | "viewer";
+            /**
+             * @default true
+             * @example true
+             */
+            is_active: boolean;
+        };
+        UpdateUserRequest: {
+            /** @example Updated Name */
+            name?: string;
+            /**
+             * Format: email
+             * @example updated@example.com
+             */
+            email?: string;
+            /**
+             * @example editor
+             * @enum {string}
+             */
+            role?: "admin" | "editor" | "viewer";
+            /** @example true */
+            is_active?: boolean;
+        };
+        CreateRoleRequest: {
+            /** @example Content Manager */
+            name: string;
+            /** @example Can manage content and moderate posts */
+            description: string;
+            /** @example [
+             *       "perm_123",
+             *       "perm_456"
+             *     ] */
+            permissions?: string[];
+        };
+        UpdateRoleRequest: {
+            /** @example Updated Role Name */
+            name?: string;
+            /** @example Updated role description */
+            description?: string;
+            /** @example [
+             *       "perm_123",
+             *       "perm_456"
+             *     ] */
+            permissions?: string[];
+        };
+        AssignRoleRequest: {
+            /** @example role_123 */
+            role_id: string;
+        };
+        AssignPermissionRequest: {
+            /** @example perm_123 */
+            permission_id: string;
+        };
+        UserResponse: {
+            /** @example true */
+            success?: boolean;
+            data?: components["schemas"]["User"];
+        };
+        UserListResponse: {
+            /** @example true */
+            success?: boolean;
+            data?: {
+                users?: components["schemas"]["User"][];
+                pagination?: components["schemas"]["Pagination"];
+            };
+        };
+        RoleResponse: {
+            /** @example true */
+            success?: boolean;
+            data?: components["schemas"]["Role"];
+        };
+        RoleListResponse: {
+            /** @example true */
+            success?: boolean;
+            data?: {
+                roles?: components["schemas"]["Role"][];
+                pagination?: components["schemas"]["Pagination"];
+            };
+        };
+        UserRolesResponse: {
+            /** @example true */
+            success?: boolean;
+            data?: {
+                /** @example user_123 */
+                user_id?: string;
+                roles?: components["schemas"]["Role"][];
+            };
+        };
+        RolePermissionsResponse: {
+            /** @example true */
+            success?: boolean;
+            data?: {
+                /** @example role_123 */
+                role_id?: string;
+                permissions?: components["schemas"]["Permission"][];
+            };
+        };
+        PermissionListResponse: {
+            /** @example true */
+            success?: boolean;
+            data?: components["schemas"]["Permission"][];
+        };
+        Property: {
+            /** @example prop_123 */
+            id: string;
+            /** @example Production Server */
+            name: string;
+            /** @example Main production server for hosting services */
+            description?: string;
+            /**
+             * @example server
+             * @enum {string}
+             */
+            type: "server" | "domain" | "ssl_certificate" | "database" | "storage";
+            /**
+             * @example active
+             * @enum {string}
+             */
+            status: "active" | "inactive" | "maintenance" | "suspended";
+            /**
+             * @description Property-specific configuration as JSON
+             * @example {
+             *       "cpu": "4 cores",
+             *       "ram": "8GB",
+             *       "storage": "500GB SSD"
+             *     }
+             */
+            configuration?: Record<string, never>;
+            /** @example user_123 */
+            owner_id?: string;
+            /**
+             * @default true
+             * @example true
+             */
+            is_active: boolean;
+            /**
+             * Format: date-time
+             * @example 2024-01-15T10:30:00Z
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @example 2024-01-15T10:30:00Z
+             */
+            updated_at: string;
+        };
+        CreatePropertyRequest: {
+            /** @example New Server */
+            name: string;
+            /** @example Description of the property */
+            description?: string;
+            /**
+             * @example server
+             * @enum {string}
+             */
+            type: "server" | "domain" | "ssl_certificate" | "database" | "storage";
+            /**
+             * @example active
+             * @enum {string}
+             */
+            status: "active" | "inactive" | "maintenance" | "suspended";
+            /**
+             * @description Property-specific configuration as JSON
+             * @example {
+             *       "cpu": "2 cores",
+             *       "ram": "4GB",
+             *       "storage": "250GB SSD"
+             *     }
+             */
+            configuration?: Record<string, never>;
+            /** @example user_123 */
+            owner_id?: string;
+        };
+        UpdatePropertyRequest: {
+            /** @example Updated Server Name */
+            name?: string;
+            /** @example Updated description */
+            description?: string;
+            /**
+             * @example server
+             * @enum {string}
+             */
+            type?: "server" | "domain" | "ssl_certificate" | "database" | "storage";
+            /**
+             * @example maintenance
+             * @enum {string}
+             */
+            status?: "active" | "inactive" | "maintenance" | "suspended";
+            /**
+             * @description Property-specific configuration as JSON
+             * @example {
+             *       "cpu": "8 cores",
+             *       "ram": "16GB",
+             *       "storage": "1TB SSD"
+             *     }
+             */
+            configuration?: Record<string, never>;
+            /** @example user_456 */
+            owner_id?: string;
+            /** @example true */
+            is_active?: boolean;
+        };
+        PropertyResponse: {
+            /** @example true */
+            success?: boolean;
+            data?: components["schemas"]["Property"];
+        };
+        PropertyListResponse: {
+            /** @example true */
+            success?: boolean;
+            data?: {
+                properties?: components["schemas"]["Property"][];
+                pagination?: components["schemas"]["Pagination"];
+            };
+        };
+        SuccessResponse: {
+            /** @example true */
+            success?: boolean;
+            /** @example Operation completed successfully */
+            message?: string;
+        };
+        Pagination: {
+            /** @example 1 */
+            page?: number;
+            /** @example 20 */
+            limit?: number;
+            /** @example 150 */
+            total?: number;
+            /** @example 8 */
+            total_pages?: number;
+            /** @example true */
+            has_next?: boolean;
+            /** @example false */
+            has_prev?: boolean;
+        };
+        Session: {
+            user: components["schemas"]["User"];
+            /**
+             * Format: date-time
+             * @example 2024-12-31T23:59:59Z
+             */
+            expires: string;
+        };
+        ErrorResponse: {
+            /** @example false */
+            success?: boolean;
+            /** @example Authentication failed */
+            error?: string;
+            /** @example [
+             *       "Invalid email or password"
+             *     ] */
+            details?: string[];
+        };
     };
-    LoginResponse: {
-      /** @example true */
-      success?: boolean;
-      data?: {
-        user?: components["schemas"]["User"];
-        session?: components["schemas"]["Session"];
-        /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
-        access_token?: string;
-      };
+    responses: {
+        /** @description Bad request */
+        BadRequest: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        /** @description Unauthorized */
+        Unauthorized: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        /** @description Forbidden */
+        Forbidden: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        /** @description Resource not found */
+        NotFound: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        /** @description Resource conflict */
+        Conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        /** @description Internal server error */
+        InternalServerError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
     };
-    LogoutResponse: {
-      /** @example true */
-      success?: boolean;
-      /** @example Logged out successfully */
-      message?: string;
+    parameters: {
+        /** @description Page number for pagination */
+        PageParam: number;
+        /** @description Number of items per page */
+        LimitParam: number;
+        /** @description Search term for filtering results */
+        SearchParam: string;
+        /** @description Filter by user role */
+        RoleFilterParam: "admin" | "editor" | "viewer";
+        /** @description Filter by user status */
+        StatusFilterParam: "active" | "inactive";
+        /** @description User ID */
+        UserIdParam: string;
+        /** @description Role ID */
+        RoleIdParam: string;
+        /** @description Permission ID */
+        PermissionIdParam: string;
+        /** @description Property ID */
+        PropertyIdParam: string;
+        /** @description Filter by property type */
+        PropertyTypeFilterParam: "server" | "domain" | "ssl_certificate" | "database" | "storage";
+        /** @description Filter by property status */
+        PropertyStatusFilterParam: "active" | "inactive" | "maintenance" | "suspended";
     };
-    SessionResponse: {
-      /** @example true */
-      success?: boolean;
-      data?: components["schemas"]["Session"];
-    };
-    RefreshResponse: {
-      /** @example true */
-      success?: boolean;
-      data?: {
-        /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
-        access_token?: string;
-      };
-    };
-    User: {
-      /** @example user_123 */
-      id: string;
-      /**
-       * Format: email
-       * @example user@example.com
-       */
-      email: string;
-      /** @example John Doe */
-      name: string;
-      /**
-       * Format: uri
-       * @example https://example.com/avatar.jpg
-       */
-      image?: string;
-      /**
-       * @default viewer
-       * @example viewer
-       * @enum {string}
-       */
-      role: "admin" | "editor" | "viewer";
-      /**
-       * @default true
-       * @example true
-       */
-      is_active: boolean;
-      /**
-       * Format: date-time
-       * @example 2024-01-15T10:30:00Z
-       */
-      email_verified?: string;
-      /**
-       * Format: date-time
-       * @example 2024-01-15T10:30:00Z
-       */
-      created_at: string;
-      /**
-       * Format: date-time
-       * @example 2024-01-15T10:30:00Z
-       */
-      updated_at: string;
-    };
-    Role: {
-      /** @example role_123 */
-      id: string;
-      /** @example Content Manager */
-      name: string;
-      /** @example Can manage content and moderate posts */
-      description: string;
-      /**
-       * @default false
-       * @example false
-       */
-      is_system: boolean;
-      /**
-       * Format: date-time
-       * @example 2024-01-15T10:30:00Z
-       */
-      created_at: string;
-      /**
-       * Format: date-time
-       * @example 2024-01-15T10:30:00Z
-       */
-      updated_at: string;
-    };
-    Permission: {
-      /** @example perm_123 */
-      id: string;
-      /** @example Create Posts */
-      name: string;
-      /** @example posts */
-      resource: string;
-      /**
-       * @example create
-       * @enum {string}
-       */
-      action: "create" | "read" | "update" | "delete" | "manage";
-      /** @example Allows creating new posts */
-      description?: string;
-      /**
-       * Format: date-time
-       * @example 2024-01-15T10:30:00Z
-       */
-      created_at: string;
-    };
-    CreateUserRequest: {
-      /**
-       * Format: email
-       * @example newuser@example.com
-       */
-      email: string;
-      /** @example New User */
-      name: string;
-      /** @example password123 */
-      password: string;
-      /**
-       * @default viewer
-       * @example viewer
-       * @enum {string}
-       */
-      role: "admin" | "editor" | "viewer";
-      /**
-       * @default true
-       * @example true
-       */
-      is_active: boolean;
-    };
-    UpdateUserRequest: {
-      /** @example Updated Name */
-      name?: string;
-      /**
-       * Format: email
-       * @example updated@example.com
-       */
-      email?: string;
-      /**
-       * @example editor
-       * @enum {string}
-       */
-      role?: "admin" | "editor" | "viewer";
-      /** @example true */
-      is_active?: boolean;
-    };
-    CreateRoleRequest: {
-      /** @example Content Manager */
-      name: string;
-      /** @example Can manage content and moderate posts */
-      description: string;
-      /** @example [
-       *       "perm_123",
-       *       "perm_456"
-       *     ] */
-      permissions?: string[];
-    };
-    UpdateRoleRequest: {
-      /** @example Updated Role Name */
-      name?: string;
-      /** @example Updated role description */
-      description?: string;
-      /** @example [
-       *       "perm_123",
-       *       "perm_456"
-       *     ] */
-      permissions?: string[];
-    };
-    AssignRoleRequest: {
-      /** @example role_123 */
-      role_id: string;
-    };
-    AssignPermissionRequest: {
-      /** @example perm_123 */
-      permission_id: string;
-    };
-    UserResponse: {
-      /** @example true */
-      success?: boolean;
-      data?: components["schemas"]["User"];
-    };
-    UserListResponse: {
-      /** @example true */
-      success?: boolean;
-      data?: {
-        users?: components["schemas"]["User"][];
-        pagination?: components["schemas"]["Pagination"];
-      };
-    };
-    RoleResponse: {
-      /** @example true */
-      success?: boolean;
-      data?: components["schemas"]["Role"];
-    };
-    RoleListResponse: {
-      /** @example true */
-      success?: boolean;
-      data?: {
-        roles?: components["schemas"]["Role"][];
-        pagination?: components["schemas"]["Pagination"];
-      };
-    };
-    UserRolesResponse: {
-      /** @example true */
-      success?: boolean;
-      data?: {
-        /** @example user_123 */
-        user_id?: string;
-        roles?: components["schemas"]["Role"][];
-      };
-    };
-    RolePermissionsResponse: {
-      /** @example true */
-      success?: boolean;
-      data?: {
-        /** @example role_123 */
-        role_id?: string;
-        permissions?: components["schemas"]["Permission"][];
-      };
-    };
-    PermissionListResponse: {
-      /** @example true */
-      success?: boolean;
-      data?: components["schemas"]["Permission"][];
-    };
-    SuccessResponse: {
-      /** @example true */
-      success?: boolean;
-      /** @example Operation completed successfully */
-      message?: string;
-    };
-    Pagination: {
-      /** @example 1 */
-      page?: number;
-      /** @example 20 */
-      limit?: number;
-      /** @example 150 */
-      total?: number;
-      /** @example 8 */
-      total_pages?: number;
-      /** @example true */
-      has_next?: boolean;
-      /** @example false */
-      has_prev?: boolean;
-    };
-    Session: {
-      user: components["schemas"]["User"];
-      /**
-       * Format: date-time
-       * @example 2024-12-31T23:59:59Z
-       */
-      expires: string;
-    };
-    ErrorResponse: {
-      /** @example false */
-      success?: boolean;
-      /** @example Authentication failed */
-      error?: string;
-      /** @example [
-       *       "Invalid email or password"
-       *     ] */
-      details?: string[];
-    };
-  };
-  responses: {
-    /** @description Bad request */
-    BadRequest: {
-      headers: Record<string, unknown>;
-      content: {
-        "application/json": components["schemas"]["ErrorResponse"];
-      };
-    };
-    /** @description Unauthorized */
-    Unauthorized: {
-      headers: Record<string, unknown>;
-      content: {
-        "application/json": components["schemas"]["ErrorResponse"];
-      };
-    };
-    /** @description Forbidden */
-    Forbidden: {
-      headers: Record<string, unknown>;
-      content: {
-        "application/json": components["schemas"]["ErrorResponse"];
-      };
-    };
-    /** @description Resource not found */
-    NotFound: {
-      headers: Record<string, unknown>;
-      content: {
-        "application/json": components["schemas"]["ErrorResponse"];
-      };
-    };
-    /** @description Resource conflict */
-    Conflict: {
-      headers: Record<string, unknown>;
-      content: {
-        "application/json": components["schemas"]["ErrorResponse"];
-      };
-    };
-    /** @description Internal server error */
-    InternalServerError: {
-      headers: Record<string, unknown>;
-      content: {
-        "application/json": components["schemas"]["ErrorResponse"];
-      };
-    };
-  };
-  parameters: {
-    /** @description Page number for pagination */
-    PageParam: number;
-    /** @description Number of items per page */
-    LimitParam: number;
-    /** @description Search term for filtering results */
-    SearchParam: string;
-    /** @description Filter by user role */
-    RoleFilterParam: "admin" | "editor" | "viewer";
-    /** @description Filter by user status */
-    StatusFilterParam: "active" | "inactive";
-    /** @description User ID */
-    UserIdParam: string;
-    /** @description Role ID */
-    RoleIdParam: string;
-    /** @description Permission ID */
-    PermissionIdParam: string;
-  };
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

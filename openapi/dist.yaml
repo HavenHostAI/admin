@@ -559,6 +559,144 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /properties:
+    get:
+      summary: List properties
+      description: Retrieve a paginated list of hosting properties with optional filtering
+      tags:
+        - Property Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/SearchParam'
+        - $ref: '#/components/parameters/PropertyTypeFilterParam'
+        - $ref: '#/components/parameters/PropertyStatusFilterParam'
+      responses:
+        '200':
+          description: Properties retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Create property
+      description: Create a new hosting property
+      tags:
+        - Property Management
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePropertyRequest'
+      responses:
+        '201':
+          description: Property created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /properties/{propertyId}:
+    get:
+      summary: Get property by ID
+      description: Retrieve a specific property by its ID
+      tags:
+        - Property Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PropertyIdParam'
+      responses:
+        '200':
+          description: Property retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Update property
+      description: Update an existing property's information
+      tags:
+        - Property Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PropertyIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePropertyRequest'
+      responses:
+        '200':
+          description: Property updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: Delete property
+      description: Delete a property (soft delete by deactivating)
+      tags:
+        - Property Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PropertyIdParam'
+      responses:
+        '200':
+          description: Property deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   schemas:
     LoginRequest:
@@ -932,6 +1070,173 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Permission'
+    Property:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - status
+        - created_at
+        - updated_at
+        - is_active
+      properties:
+        id:
+          type: string
+          example: prop_123
+        name:
+          type: string
+          maxLength: 255
+          example: Production Server
+        description:
+          type: string
+          maxLength: 1000
+          example: Main production server for hosting services
+        type:
+          type: string
+          enum:
+            - server
+            - domain
+            - ssl_certificate
+            - database
+            - storage
+          example: server
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - maintenance
+            - suspended
+          example: active
+        configuration:
+          type: object
+          description: Property-specific configuration as JSON
+          example:
+            cpu: 4 cores
+            ram: 8GB
+            storage: 500GB SSD
+        owner_id:
+          type: string
+          example: user_123
+        is_active:
+          type: boolean
+          default: true
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:30:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:30:00Z'
+    CreatePropertyRequest:
+      type: object
+      required:
+        - name
+        - type
+        - status
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: New Server
+        description:
+          type: string
+          maxLength: 1000
+          example: Description of the property
+        type:
+          type: string
+          enum:
+            - server
+            - domain
+            - ssl_certificate
+            - database
+            - storage
+          example: server
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - maintenance
+            - suspended
+          example: active
+        configuration:
+          type: object
+          description: Property-specific configuration as JSON
+          example:
+            cpu: 2 cores
+            ram: 4GB
+            storage: 250GB SSD
+        owner_id:
+          type: string
+          example: user_123
+    UpdatePropertyRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: Updated Server Name
+        description:
+          type: string
+          maxLength: 1000
+          example: Updated description
+        type:
+          type: string
+          enum:
+            - server
+            - domain
+            - ssl_certificate
+            - database
+            - storage
+          example: server
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - maintenance
+            - suspended
+          example: maintenance
+        configuration:
+          type: object
+          description: Property-specific configuration as JSON
+          example:
+            cpu: 8 cores
+            ram: 16GB
+            storage: 1TB SSD
+        owner_id:
+          type: string
+          example: user_456
+        is_active:
+          type: boolean
+          example: true
+    PropertyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/Property'
+    PropertyListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            properties:
+              type: array
+              items:
+                $ref: '#/components/schemas/Property'
+            pagination:
+              $ref: '#/components/schemas/Pagination'
     SuccessResponse:
       type: object
       properties:
@@ -1069,6 +1374,41 @@ components:
       schema:
         type: string
         example: perm_123
+    PropertyIdParam:
+      name: propertyId
+      in: path
+      description: Property ID
+      required: true
+      schema:
+        type: string
+        example: prop_123
+    PropertyTypeFilterParam:
+      name: type
+      in: query
+      description: Filter by property type
+      required: false
+      schema:
+        type: string
+        enum:
+          - server
+          - domain
+          - ssl_certificate
+          - database
+          - storage
+        example: server
+    PropertyStatusFilterParam:
+      name: status
+      in: query
+      description: Filter by property status
+      required: false
+      schema:
+        type: string
+        enum:
+          - active
+          - inactive
+          - maintenance
+          - suspended
+        example: active
   responses:
     BadRequest:
       description: Bad request
