@@ -1136,7 +1136,7 @@ components:
         configuration:
           type: object
           description: "Property-specific configuration as JSON"
-          example: {"cpu": "4 cores", "ram": "8GB", "storage": "500GB SSD"}
+          example: { "cpu": "4 cores", "ram": "8GB", "storage": "500GB SSD" }
         owner_id:
           type: string
           example: "user_123"
@@ -1179,7 +1179,7 @@ components:
         configuration:
           type: object
           description: "Property-specific configuration as JSON"
-          example: {"cpu": "2 cores", "ram": "4GB", "storage": "250GB SSD"}
+          example: { "cpu": "2 cores", "ram": "4GB", "storage": "250GB SSD" }
         owner_id:
           type: string
           example: "user_123"
@@ -1206,7 +1206,7 @@ components:
         configuration:
           type: object
           description: "Property-specific configuration as JSON"
-          example: {"cpu": "8 cores", "ram": "16GB", "storage": "1TB SSD"}
+          example: { "cpu": "8 cores", "ram": "16GB", "storage": "1TB SSD" }
         owner_id:
           type: string
           example: "user_456"
