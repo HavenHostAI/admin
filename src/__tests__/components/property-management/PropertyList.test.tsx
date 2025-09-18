@@ -1,12 +1,29 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PropertyList } from "@/components/property-management/PropertyList";
+import type { Mock } from "vitest";
+
+type TrpcReactModule = typeof import("~/trpc/react");
+type PropertyListQueryHook =
+  TrpcReactModule["api"]["property"]["list"]["useQuery"];
+type PropertyListQueryResult = ReturnType<PropertyListQueryHook>;
+type PropertyDeleteMutationHook =
+  TrpcReactModule["api"]["property"]["delete"]["useMutation"];
+type PropertyDeleteMutationResult = ReturnType<PropertyDeleteMutationHook>;
 
 // Mock tRPC
-const mockRefetch = vi.fn();
-const mockMutateAsync = vi.fn();
+let mockRefetch: ReturnType<typeof vi.fn>;
+let mockMutateAsync: ReturnType<typeof vi.fn>;
+let listUseQueryMock: Mock<
+  Parameters<PropertyListQueryHook>,
+  PropertyListQueryResult
+>;
+let deleteUseMutationMock: Mock<
+  Parameters<PropertyDeleteMutationHook>,
+  PropertyDeleteMutationResult
+>;
 
 const mockPropertiesData = {
   properties: [
@@ -56,33 +73,57 @@ vi.mock("~/trpc/react", () => ({
           mutateAsync: mockMutateAsync,
         })),
       },
+      update: {
+        useMutation: vi.fn(() => ({
+          mutate: vi.fn(),
+          isPending: false,
+          error: null,
+        })),
+      },
     },
   },
 }));
 
 // Mock the dialog components
 vi.mock("@/components/property-management/CreatePropertyDialog", () => ({
-  CreatePropertyDialog: ({ onPropertyCreated }: { onPropertyCreated: () => void }) => (
-    <button onClick={onPropertyCreated}>Create Property</button>
-  ),
-}));
-
-vi.mock("@/components/property-management/EditPropertyDialog", () => ({
-  EditPropertyDialog: ({ property, onPropertyUpdated }: { property: any; onPropertyUpdated: () => void }) => (
-    <button onClick={onPropertyUpdated}>Edit {property.name}</button>
-  ),
+  CreatePropertyDialog: ({
+    onPropertyCreated,
+  }: {
+    onPropertyCreated: () => void;
+  }) => <button onClick={onPropertyCreated}>Create Property</button>,
 }));
 
 describe("PropertyList", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    mockRefetch = vi.fn();
+    mockMutateAsync = vi.fn();
+
+    const { api } = await import("~/trpc/react");
+    listUseQueryMock = vi.mocked(api.property.list.useQuery);
+    deleteUseMutationMock = vi.mocked(api.property.delete.useMutation);
+
+    listUseQueryMock.mockReturnValue({
+      data: mockPropertiesData,
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+    } as PropertyListQueryResult);
+
+    deleteUseMutationMock.mockReturnValue({
+      mutateAsync: mockMutateAsync,
+    } as PropertyDeleteMutationResult);
   });
 
   it("should render properties list with correct data", () => {
     render(<PropertyList />);
 
     expect(screen.getByText("Property Management")).toBeInTheDocument();
-    expect(screen.getByText("Manage hosting properties, servers, domains, and resources")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Manage hosting properties, servers, domains, and resources",
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText("Test Server")).toBeInTheDocument();
     expect(screen.getByText("Test Domain")).toBeInTheDocument();
   });
@@ -99,7 +140,9 @@ describe("PropertyList", () => {
   it("should show search input and filters", () => {
     render(<PropertyList />);
 
-    expect(screen.getByPlaceholderText("Search properties...")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Search properties..."),
+    ).toBeInTheDocument();
     expect(screen.getByText("Filter by type")).toBeInTheDocument();
     expect(screen.getByText("Filter by status")).toBeInTheDocument();
   });
@@ -120,16 +163,22 @@ describe("PropertyList", () => {
     expect(screen.getByText("Create Property")).toBeInTheDocument();
   });
 
-  it("should show edit property dialogs for each property", () => {
+  it("should render edit dialogs for each property", async () => {
+    const user = userEvent.setup();
     render(<PropertyList />);
 
-    expect(screen.getByText("Edit Test Server")).toBeInTheDocument();
-    expect(screen.getByText("Edit Test Domain")).toBeInTheDocument();
+    const actionButtons = screen.getAllByLabelText(/Actions for/i);
+    expect(actionButtons).toHaveLength(mockPropertiesData.properties.length);
+
+    await user.click(actionButtons[0]);
+    const editMenuButton = await screen.findByRole("button", { name: "Edit" });
+    await user.click(editMenuButton);
+
+    expect(await screen.findByText("Edit Property")).toBeInTheDocument();
   });
 
   it("should show pagination when there are more items than limit", () => {
-    const { api } = require("~/trpc/react");
-    api.property.list.useQuery.mockReturnValue({
+    listUseQueryMock.mockReturnValue({
       data: {
         ...mockPropertiesData,
         total: 25,
@@ -141,14 +190,15 @@ describe("PropertyList", () => {
 
     render(<PropertyList />);
 
-    expect(screen.getByText("Showing 1 to 10 of 25 properties")).toBeInTheDocument();
+    expect(
+      screen.getByText("Showing 1 to 10 of 25 properties"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Previous")).toBeInTheDocument();
     expect(screen.getByText("Next")).toBeInTheDocument();
   });
 
   it("should show loading state", () => {
-    const { api } = require("~/trpc/react");
-    api.property.list.useQuery.mockReturnValue({
+    listUseQueryMock.mockReturnValue({
       data: null,
       isLoading: true,
       error: null,
@@ -161,8 +211,7 @@ describe("PropertyList", () => {
   });
 
   it("should show error state", () => {
-    const { api } = require("~/trpc/react");
-    api.property.list.useQuery.mockReturnValue({
+    listUseQueryMock.mockReturnValue({
       data: null,
       isLoading: false,
       error: { message: "Failed to load properties" },
@@ -171,19 +220,22 @@ describe("PropertyList", () => {
 
     render(<PropertyList />);
 
-    expect(screen.getByText("Failed to load properties: Failed to load properties")).toBeInTheDocument();
+    expect(
+      screen.getByText("Failed to load properties: Failed to load properties"),
+    ).toBeInTheDocument();
   });
 
   it("should display property descriptions correctly", () => {
     render(<PropertyList />);
 
-    expect(screen.getByText("A test server for development")).toBeInTheDocument();
+    expect(
+      screen.getByText("A test server for development"),
+    ).toBeInTheDocument();
     expect(screen.getByText("A test domain")).toBeInTheDocument();
   });
 
   it("should handle properties without descriptions", () => {
-    const { api } = require("~/trpc/react");
-    api.property.list.useQuery.mockReturnValue({
+    listUseQueryMock.mockReturnValue({
       data: {
         properties: [
           {

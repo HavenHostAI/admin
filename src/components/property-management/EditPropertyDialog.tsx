@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -58,6 +58,10 @@ export function EditPropertyDialog({
     owner_id: property.owner_id || "",
     is_active: property.is_active,
   });
+  const typeFieldId = useId();
+  const statusFieldId = useId();
+  const typeLabelId = `${typeFieldId}-label`;
+  const statusLabelId = `${statusFieldId}-label`;
 
   const updateProperty = api.property.update.useMutation({
     onSuccess: () => {
@@ -130,14 +134,16 @@ export function EditPropertyDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Type *</Label>
+            <Label htmlFor={typeFieldId} id={typeLabelId}>
+              Type *
+            </Label>
             <Select
               value={formData.type}
               onValueChange={(value) =>
                 setFormData({ ...formData, type: value })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger id={typeFieldId} aria-labelledby={typeLabelId}>
                 <SelectValue placeholder="Select property type" />
               </SelectTrigger>
               <SelectContent>
@@ -151,14 +157,16 @@ export function EditPropertyDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
+            <Label htmlFor={statusFieldId} id={statusLabelId}>
+              Status
+            </Label>
             <Select
               value={formData.status}
               onValueChange={(value) =>
                 setFormData({ ...formData, status: value })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger id={statusFieldId} aria-labelledby={statusLabelId}>
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>

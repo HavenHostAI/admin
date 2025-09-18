@@ -120,7 +120,10 @@ describe("LoginForm", () => {
 
     // Simulate successful login by calling the onSuccess from the mutation
     const mutationConfig = mockUseMutation.mock.calls[0][0];
-    mutationConfig.onSuccess();
+
+    await act(async () => {
+      mutationConfig.onSuccess();
+    });
 
     expect(onSuccess).toHaveBeenCalled();
   });

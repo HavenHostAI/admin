@@ -94,19 +94,19 @@ export function PropertyList() {
     page,
     limit,
     search: search || undefined,
-    type: typeFilter && typeFilter !== "all" ? typeFilter as
-      | "server"
-      | "domain"
-      | "ssl_certificate"
-      | "database"
-      | "storage"
-      : undefined,
-    status: statusFilter && statusFilter !== "all" ? statusFilter as
-      | "active"
-      | "inactive"
-      | "maintenance"
-      | "suspended"
-      : undefined,
+    type:
+      typeFilter && typeFilter !== "all"
+        ? (typeFilter as
+            | "server"
+            | "domain"
+            | "ssl_certificate"
+            | "database"
+            | "storage")
+        : undefined,
+    status:
+      statusFilter && statusFilter !== "all"
+        ? (statusFilter as "active" | "inactive" | "maintenance" | "suspended")
+        : undefined,
   });
 
   const deletePropertyMutation = api.property.delete.useMutation({
@@ -245,7 +245,11 @@ export function PropertyList() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              aria-label={`Actions for ${property.name}`}
+                            >
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
