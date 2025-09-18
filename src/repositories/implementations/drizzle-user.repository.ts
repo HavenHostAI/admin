@@ -1,4 +1,4 @@
-import { eq, and, or, like, count, desc, asc } from "drizzle-orm";
+import { eq, and, or, like, count, desc } from "drizzle-orm";
 import { db } from "../../server/db";
 import {
   users,

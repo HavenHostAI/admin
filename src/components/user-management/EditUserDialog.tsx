@@ -98,9 +98,9 @@ export function EditUserDialog({ user, onUserUpdated }: EditUserDialogProps) {
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
             <Select
-              value={formData.status}
+              value={formData.is_active ? "active" : "inactive"}
               onValueChange={(value: "active" | "inactive") =>
-                setFormData({ ...formData, status: value })
+                setFormData({ ...formData, is_active: value === "active" })
               }
             >
               <SelectTrigger>

@@ -166,19 +166,13 @@ export function UserList() {
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={
-                          user.is_active ? "default" : "secondary"
-                        }
-                      >
+                      <Badge variant={user.is_active ? "default" : "secondary"}>
                         {user.is_active ? "active" : "inactive"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        <Badge variant="outline">
-                          {user.role}
-                        </Badge>
+                        <Badge variant="outline">{user.role}</Badge>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -217,33 +211,41 @@ export function UserList() {
         )}
 
         {/* Pagination */}
-        {usersData && (usersData as any).data?.pagination?.total && (usersData as any).data.pagination.total > limit && (
-          <div className="mt-4 flex items-center justify-between">
-            <div className="text-sm text-gray-500">
-              Showing {(page - 1) * limit + 1} to{" "}
-              {Math.min(page * limit, (usersData as any).data.pagination.total)} of {(usersData as any).data.pagination.total}{" "}
-              users
+        {usersData &&
+          (usersData as any).data?.pagination?.total &&
+          (usersData as any).data.pagination.total > limit && (
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-gray-500">
+                Showing {(page - 1) * limit + 1} to{" "}
+                {Math.min(
+                  page * limit,
+                  (usersData as any).data.pagination.total,
+                )}{" "}
+                of {(usersData as any).data.pagination.total} users
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page + 1)}
+                  disabled={
+                    page * limit >=
+                    ((usersData as any).data?.pagination?.total || 0)
+                  }
+                >
+                  Next
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page - 1)}
-                disabled={page === 1}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page + 1)}
-                disabled={page * limit >= ((usersData as any).data?.pagination?.total || 0)}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
+          )}
       </CardContent>
     </Card>
   );
