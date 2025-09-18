@@ -8,6 +8,13 @@
       "when": 1758038749353,
       "tag": "0000_curly_roland_deschain",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1758120751912,
+      "tag": "0001_lean_thor",
+      "breakpoints": true
     }
   ]
 }

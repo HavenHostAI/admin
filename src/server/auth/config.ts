@@ -62,7 +62,7 @@ export const authConfig = {
           credentials.password,
         );
 
-        if (!user || !user.is_active) {
+        if (!user?.is_active) {
           return null;
         }
 

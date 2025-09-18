@@ -278,8 +278,57 @@ export const rolePermissionsRelations = relations(
   }),
 );
 
-// Update users relations to include roles
+// Properties table
+export const properties = createTable(
+  "property",
+  (d) => ({
+    id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    name: d.varchar({ length: 255 }).notNull(),
+    description: d.varchar({ length: 1000 }),
+    type: d.varchar({ length: 50 }).notNull(),
+    status: d.varchar({ length: 50 }).notNull().default("active"),
+    configuration: d.jsonb(),
+    owner_id: d.varchar({ length: 255 }).references(() => users.id),
+    is_active: d.boolean().default(true),
+    created_at: d
+      .timestamp({
+        mode: "date",
+        withTimezone: true,
+      })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updated_at: d
+      .timestamp({
+        mode: "date",
+        withTimezone: true,
+      })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .$onUpdate(() => new Date()),
+  }),
+  (t) => [
+    index("property_name_idx").on(t.name),
+    index("property_type_idx").on(t.type),
+    index("property_status_idx").on(t.status),
+    index("property_owner_idx").on(t.owner_id),
+    index("property_active_idx").on(t.is_active),
+  ],
+);
+
+// Properties relations
+export const propertiesRelations = relations(properties, ({ one }) => ({
+  owner: one(users, {
+    fields: [properties.owner_id],
+    references: [users.id],
+  }),
+}));
+
+// Update users relations to include roles and properties
 export const usersRelationsUpdated = relations(users, ({ many }) => ({
   accounts: many(accounts),
   userRoles: many(userRoles),
+  properties: many(properties),
 }));

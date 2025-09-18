@@ -4,6 +4,7 @@ import {
   DrizzleRoleRepository,
   DrizzlePermissionRepository,
 } from "./implementations/drizzle-role.repository";
+import { DrizzlePropertyRepository } from "./implementations/drizzle-property.repository";
 
 // Export types
 export type { AuthRepository } from "./interfaces/auth.repository";
@@ -12,6 +13,7 @@ export type {
   RoleRepository,
   PermissionRepository,
 } from "./interfaces/role.repository";
+export type { PropertyRepository } from "./interfaces/property.repository";
 
 // Factory function for creating repositories
 export const createRepositories = () => ({
@@ -19,6 +21,7 @@ export const createRepositories = () => ({
   userRepository: new DrizzleUserRepository(),
   roleRepository: new DrizzleRoleRepository(),
   permissionRepository: new DrizzlePermissionRepository(),
+  propertyRepository: new DrizzlePropertyRepository(),
 });
 
 // Type for repository container
