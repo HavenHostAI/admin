@@ -94,19 +94,19 @@ export function PropertyList() {
     page,
     limit,
     search: search || undefined,
-    type: typeFilter as
+    type: typeFilter && typeFilter !== "all" ? typeFilter as
       | "server"
       | "domain"
       | "ssl_certificate"
       | "database"
       | "storage"
-      | undefined,
-    status: statusFilter as
+      : undefined,
+    status: statusFilter && statusFilter !== "all" ? statusFilter as
       | "active"
       | "inactive"
       | "maintenance"
       | "suspended"
-      | undefined,
+      : undefined,
   });
 
   const deletePropertyMutation = api.property.delete.useMutation({
@@ -168,7 +168,7 @@ export function PropertyList() {
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All types</SelectItem>
+                <SelectItem value="all">All types</SelectItem>
                 {Object.entries(propertyTypeLabels).map(([value, label]) => (
                   <SelectItem key={value} value={value}>
                     {label}
@@ -181,7 +181,7 @@ export function PropertyList() {
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
                 <SelectItem value="maintenance">Maintenance</SelectItem>

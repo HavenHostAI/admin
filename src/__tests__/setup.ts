@@ -33,34 +33,56 @@ vi.mock("next-auth/react", () => ({
 }));
 
 // Mock tRPC
+const mockRefetch = vi.fn();
+const mockMutate = vi.fn();
+const mockMutateAsync = vi.fn();
+
 vi.mock("~/trpc/react", () => ({
   api: {
     property: {
       list: {
         useQuery: vi.fn(() => ({
-          data: null,
+          data: {
+            properties: [
+              {
+                id: "1",
+                name: "Test Server",
+                description: "A test server",
+                type: "server",
+                status: "active",
+                configuration: {},
+                owner_id: "user1",
+                is_active: true,
+                created_at: "2024-01-01T00:00:00Z",
+                updated_at: "2024-01-01T00:00:00Z",
+              },
+            ],
+            total: 1,
+            page: 1,
+            limit: 10,
+          },
           isLoading: false,
           error: null,
-          refetch: vi.fn(),
+          refetch: mockRefetch,
         })),
       },
       create: {
         useMutation: vi.fn(() => ({
-          mutate: vi.fn(),
+          mutate: mockMutate,
           isPending: false,
           error: null,
         })),
       },
       update: {
         useMutation: vi.fn(() => ({
-          mutate: vi.fn(),
+          mutate: mockMutate,
           isPending: false,
           error: null,
         })),
       },
       delete: {
         useMutation: vi.fn(() => ({
-          mutateAsync: vi.fn(),
+          mutateAsync: mockMutateAsync,
         })),
       },
     },
