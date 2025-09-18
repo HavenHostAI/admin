@@ -32,6 +32,41 @@ vi.mock("next-auth/react", () => ({
   signOut: vi.fn(),
 }));
 
+// Mock tRPC
+vi.mock("~/trpc/react", () => ({
+  api: {
+    property: {
+      list: {
+        useQuery: vi.fn(() => ({
+          data: null,
+          isLoading: false,
+          error: null,
+          refetch: vi.fn(),
+        })),
+      },
+      create: {
+        useMutation: vi.fn(() => ({
+          mutate: vi.fn(),
+          isPending: false,
+          error: null,
+        })),
+      },
+      update: {
+        useMutation: vi.fn(() => ({
+          mutate: vi.fn(),
+          isPending: false,
+          error: null,
+        })),
+      },
+      delete: {
+        useMutation: vi.fn(() => ({
+          mutateAsync: vi.fn(),
+        })),
+      },
+    },
+  },
+}));
+
 // Mock environment variables
 process.env.NEXTAUTH_URL = "http://localhost:3000";
 process.env.AUTH_SECRET = "test-secret";
