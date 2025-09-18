@@ -36,6 +36,7 @@ export interface PropertyListOptions {
   search?: string;
   type?: "server" | "domain" | "ssl_certificate" | "database" | "storage";
   status?: "active" | "inactive" | "maintenance" | "suspended";
+  owner_id?: string;
 }
 
 export interface PropertyListResult {

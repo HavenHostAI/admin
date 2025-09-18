@@ -829,7 +829,10 @@ export interface paths {
     };
     /**
      * List properties
-     * @description Retrieve a paginated list of hosting properties with optional filtering
+     * @description Retrieve a paginated list of hosting properties with optional filtering.
+     *     Only returns properties owned by the authenticated user (tenant filtering).
+     *     Requires Viewer+ role permissions.
+     *
      */
     get: {
       parameters: {
@@ -866,7 +869,10 @@ export interface paths {
     put?: never;
     /**
      * Create property
-     * @description Create a new hosting property
+     * @description Create a new hosting property.
+     *     The property will be automatically assigned to the authenticated user as the owner.
+     *     Requires Manager+ role permissions.
+     *
      */
     post: {
       parameters: {
@@ -910,7 +916,10 @@ export interface paths {
     };
     /**
      * Get property by ID
-     * @description Retrieve a specific property by its ID
+     * @description Retrieve a specific property by its ID.
+     *     Only returns the property if it is owned by the authenticated user.
+     *     Requires Viewer+ role permissions.
+     *
      */
     get: {
       parameters: {
@@ -939,7 +948,10 @@ export interface paths {
     };
     /**
      * Update property
-     * @description Update an existing property's information
+     * @description Update an existing property's information.
+     *     Only allows updating properties owned by the authenticated user.
+     *     Requires Manager+ role permissions.
+     *
      */
     put: {
       parameters: {
@@ -974,7 +986,10 @@ export interface paths {
     post?: never;
     /**
      * Delete property
-     * @description Delete a property (soft delete by deactivating)
+     * @description Delete a property (soft delete by deactivating).
+     *     Only allows deleting properties owned by the authenticated user.
+     *     Requires Admin role permissions.
+     *
      */
     delete: {
       parameters: {

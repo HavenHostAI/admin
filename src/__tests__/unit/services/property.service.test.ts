@@ -5,6 +5,9 @@ import type { PropertyRepository } from "@/repositories/interfaces/property.repo
 describe("PropertyService", () => {
   let propertyService: PropertyService;
   let mockPropertyRepository: PropertyRepository;
+  let mockUser: any;
+  let mockManagerUser: any;
+  let mockAdminUser: any;
 
   beforeEach(() => {
     mockPropertyRepository = {
@@ -17,6 +20,31 @@ describe("PropertyService", () => {
       count: vi.fn(),
     };
     propertyService = new PropertyService(mockPropertyRepository);
+
+    // Mock users with different roles
+    mockUser = {
+      id: "user_123",
+      name: "Test User",
+      email: "test@example.com",
+      role: "viewer",
+      is_active: true,
+    };
+
+    mockManagerUser = {
+      id: "manager_123",
+      name: "Test Manager",
+      email: "manager@example.com",
+      role: "manager",
+      is_active: true,
+    };
+
+    mockAdminUser = {
+      id: "admin_123",
+      name: "Test Admin",
+      email: "admin@example.com",
+      role: "admin",
+      is_active: true,
+    };
   });
 
   describe("getPropertyById", () => {
@@ -38,7 +66,10 @@ describe("PropertyService", () => {
         mockProperty,
       );
 
-      const result = await propertyService.getPropertyById("prop_123");
+      const result = await propertyService.getPropertyById(
+        "prop_123",
+        mockUser,
+      );
 
       expect(mockPropertyRepository.findById).toHaveBeenCalledWith("prop_123");
       expect(result).toEqual(mockProperty);
@@ -47,7 +78,10 @@ describe("PropertyService", () => {
     it("should return null when property not found", async () => {
       vi.mocked(mockPropertyRepository.findById).mockResolvedValue(null);
 
-      const result = await propertyService.getPropertyById("nonexistent");
+      const result = await propertyService.getPropertyById(
+        "nonexistent",
+        mockUser,
+      );
 
       expect(result).toBeNull();
     });
@@ -106,7 +140,7 @@ describe("PropertyService", () => {
 
       vi.mocked(mockPropertyRepository.findAll).mockResolvedValue(mockResult);
 
-      const result = await propertyService.listProperties({
+      const result = await propertyService.listProperties(mockUser, {
         page: 1,
         limit: 20,
       });
@@ -114,6 +148,7 @@ describe("PropertyService", () => {
       expect(mockPropertyRepository.findAll).toHaveBeenCalledWith({
         page: 1,
         limit: 20,
+        owner_id: "user_123", // Should include tenant filtering
       });
       expect(result).toEqual(mockResult);
     });
@@ -143,7 +178,10 @@ describe("PropertyService", () => {
         createdProperty,
       );
 
-      const result = await propertyService.createProperty(createData);
+      const result = await propertyService.createProperty(
+        createData,
+        mockManagerUser,
+      );
 
       expect(mockPropertyRepository.findByName).toHaveBeenCalledWith(
         "New Server",
@@ -151,6 +189,7 @@ describe("PropertyService", () => {
       expect(mockPropertyRepository.create).toHaveBeenCalledWith({
         ...createData,
         name: "New Server", // normalized
+        owner_id: "manager_123", // Should be set to current user
       });
       expect(result).toEqual(createdProperty);
     });
@@ -176,9 +215,9 @@ describe("PropertyService", () => {
         existingProperty,
       );
 
-      await expect(propertyService.createProperty(createData)).rejects.toThrow(
-        "Property with this name already exists",
-      );
+      await expect(
+        propertyService.createProperty(createData, mockManagerUser),
+      ).rejects.toThrow("Property with this name already exists");
     });
 
     it("should throw error for invalid SSL certificate status", async () => {
@@ -190,9 +229,9 @@ describe("PropertyService", () => {
 
       vi.mocked(mockPropertyRepository.findByName).mockResolvedValue(null);
 
-      await expect(propertyService.createProperty(createData)).rejects.toThrow(
-        "SSL certificates cannot be in maintenance status",
-      );
+      await expect(
+        propertyService.createProperty(createData, mockManagerUser),
+      ).rejects.toThrow("SSL certificates cannot be in maintenance status");
     });
 
     it("should throw error for invalid storage status", async () => {
@@ -204,9 +243,9 @@ describe("PropertyService", () => {
 
       vi.mocked(mockPropertyRepository.findByName).mockResolvedValue(null);
 
-      await expect(propertyService.createProperty(createData)).rejects.toThrow(
-        "Storage cannot be suspended",
-      );
+      await expect(
+        propertyService.createProperty(createData, mockManagerUser),
+      ).rejects.toThrow("Storage cannot be suspended");
     });
   });
 
@@ -217,6 +256,8 @@ describe("PropertyService", () => {
         name: "Old Server",
         type: "server" as const,
         status: "active" as const,
+        configuration: {},
+        owner_id: "manager_123", // Match the manager user ID
         is_active: true,
         created_at: new Date(),
         updated_at: new Date(),
@@ -244,6 +285,7 @@ describe("PropertyService", () => {
       const result = await propertyService.updateProperty(
         "prop_123",
         updateData,
+        mockManagerUser,
       );
 
       expect(mockPropertyRepository.findById).toHaveBeenCalledWith("prop_123");
@@ -258,7 +300,11 @@ describe("PropertyService", () => {
       vi.mocked(mockPropertyRepository.findById).mockResolvedValue(null);
 
       await expect(
-        propertyService.updateProperty("nonexistent", { name: "New Name" }),
+        propertyService.updateProperty(
+          "nonexistent",
+          { name: "New Name" },
+          mockManagerUser,
+        ),
       ).rejects.toThrow("Property not found");
     });
 
@@ -268,6 +314,8 @@ describe("PropertyService", () => {
         name: "Old Server",
         type: "server" as const,
         status: "active" as const,
+        configuration: {},
+        owner_id: "manager_123", // Match the manager user ID
         is_active: true,
         created_at: new Date(),
         updated_at: new Date(),
@@ -291,7 +339,11 @@ describe("PropertyService", () => {
       );
 
       await expect(
-        propertyService.updateProperty("prop_123", { name: "Existing Server" }),
+        propertyService.updateProperty(
+          "prop_123",
+          { name: "Existing Server" },
+          mockManagerUser,
+        ),
       ).rejects.toThrow("Property with this name already exists");
     });
   });
@@ -303,6 +355,8 @@ describe("PropertyService", () => {
         name: "Test Server",
         type: "server" as const,
         status: "active" as const,
+        configuration: {},
+        owner_id: "admin_123", // Match the admin user ID
         is_active: true,
         created_at: new Date(),
         updated_at: new Date(),
@@ -316,7 +370,7 @@ describe("PropertyService", () => {
         is_active: false,
       });
 
-      await propertyService.deleteProperty("prop_123");
+      await propertyService.deleteProperty("prop_123", mockAdminUser);
 
       expect(mockPropertyRepository.findById).toHaveBeenCalledWith("prop_123");
       expect(mockPropertyRepository.update).toHaveBeenCalledWith("prop_123", {
@@ -328,7 +382,7 @@ describe("PropertyService", () => {
       vi.mocked(mockPropertyRepository.findById).mockResolvedValue(null);
 
       await expect(
-        propertyService.deleteProperty("nonexistent"),
+        propertyService.deleteProperty("nonexistent", mockAdminUser),
       ).rejects.toThrow("Property not found");
     });
   });
@@ -340,6 +394,8 @@ describe("PropertyService", () => {
         name: "Test Server",
         type: "server" as const,
         status: "active" as const,
+        configuration: {},
+        owner_id: "manager_123", // Match the manager user ID
         is_active: true,
         created_at: new Date(),
         updated_at: new Date(),
@@ -357,7 +413,10 @@ describe("PropertyService", () => {
         deactivatedProperty,
       );
 
-      const result = await propertyService.deactivateProperty("prop_123");
+      const result = await propertyService.deactivateProperty(
+        "prop_123",
+        mockManagerUser,
+      );
 
       expect(result).toEqual(deactivatedProperty);
     });
@@ -370,6 +429,8 @@ describe("PropertyService", () => {
         name: "Test Server",
         type: "server" as const,
         status: "active" as const,
+        configuration: {},
+        owner_id: "manager_123", // Match the manager user ID
         is_active: false,
         created_at: new Date(),
         updated_at: new Date(),
@@ -387,7 +448,10 @@ describe("PropertyService", () => {
         activatedProperty,
       );
 
-      const result = await propertyService.activateProperty("prop_123");
+      const result = await propertyService.activateProperty(
+        "prop_123",
+        mockManagerUser,
+      );
 
       expect(result).toEqual(activatedProperty);
     });
@@ -397,12 +461,111 @@ describe("PropertyService", () => {
     it("should return property count", async () => {
       vi.mocked(mockPropertyRepository.count).mockResolvedValue(5);
 
-      const result = await propertyService.getPropertyCount({ type: "server" });
+      const result = await propertyService.getPropertyCount(mockUser, {
+        type: "server",
+      });
 
       expect(mockPropertyRepository.count).toHaveBeenCalledWith({
         type: "server",
+        owner_id: "user_123", // Should include tenant filtering
       });
       expect(result).toBe(5);
+    });
+  });
+
+  describe("Permission and Tenant Filtering", () => {
+    it("should throw error when viewer tries to create property", async () => {
+      const createData = {
+        name: "New Server",
+        description: "New server description",
+        type: "server" as const,
+        status: "active" as const,
+      };
+
+      await expect(
+        propertyService.createProperty(createData, mockUser), // viewer user
+      ).rejects.toThrow("Insufficient permissions to create properties");
+    });
+
+    it("should throw error when viewer tries to update property", async () => {
+      const updateData = { name: "Updated Server" };
+
+      await expect(
+        propertyService.updateProperty("prop_123", updateData, mockUser), // viewer user
+      ).rejects.toThrow("Insufficient permissions to update properties");
+    });
+
+    it("should throw error when manager tries to delete property", async () => {
+      const existingProperty = {
+        id: "prop_123",
+        name: "Test Server",
+        description: "Test description",
+        type: "server" as const,
+        status: "active" as const,
+        configuration: {},
+        owner_id: "manager_123",
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      vi.mocked(mockPropertyRepository.findById).mockResolvedValue(
+        existingProperty,
+      );
+
+      await expect(
+        propertyService.deleteProperty("prop_123", mockManagerUser), // manager user
+      ).rejects.toThrow("Insufficient permissions to delete properties");
+    });
+
+    it("should throw error when user tries to update property they don't own", async () => {
+      const existingProperty = {
+        id: "prop_123",
+        name: "Test Server",
+        description: "Test description",
+        type: "server" as const,
+        status: "active" as const,
+        configuration: {},
+        owner_id: "other_user_123", // Different owner
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      vi.mocked(mockPropertyRepository.findById).mockResolvedValue(
+        existingProperty,
+      );
+
+      await expect(
+        propertyService.updateProperty(
+          "prop_123",
+          { name: "Updated" },
+          mockManagerUser,
+        ),
+      ).rejects.toThrow("Property not found or access denied");
+    });
+
+    it("should throw error when user tries to delete property they don't own", async () => {
+      const existingProperty = {
+        id: "prop_123",
+        name: "Test Server",
+        description: "Test description",
+        type: "server" as const,
+        status: "active" as const,
+        configuration: {},
+        owner_id: "other_user_123", // Different owner
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      vi.mocked(mockPropertyRepository.findById).mockResolvedValue(
+        existingProperty,
+      );
+
+      await expect(
+        propertyService.deleteProperty("prop_123", mockAdminUser),
+      ).rejects.toThrow("Property not found or access denied");
     });
   });
 });

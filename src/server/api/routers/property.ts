@@ -52,50 +52,53 @@ const PropertyListSchema = z.object({
 export const propertyRouter = createTRPCRouter({
   list: protectedProcedure
     .input(PropertyListSchema)
-    .query(async ({ input }) => {
-      return await propertyService.listProperties(input);
+    .query(async ({ input, ctx }) => {
+      return await propertyService.listProperties(ctx.session.user, input);
     }),
 
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .query(async ({ input }) => {
-      const property = await propertyService.getPropertyById(input.id);
-      if (!property) {
-        throw new Error("Property not found");
-      }
-      return property;
+    .query(async ({ input, ctx }) => {
+      return await propertyService.getPropertyById(input.id, ctx.session.user);
     }),
 
   create: protectedProcedure
     .input(CreatePropertySchema)
-    .mutation(async ({ input }) => {
-      return await propertyService.createProperty(input);
+    .mutation(async ({ input, ctx }) => {
+      return await propertyService.createProperty(input, ctx.session.user);
     }),
 
   update: protectedProcedure
     .input(z.object({ id: z.string() }).merge(UpdatePropertySchema))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { id, ...updateData } = input;
-      return await propertyService.updateProperty(id, updateData);
+      return await propertyService.updateProperty(
+        id,
+        updateData,
+        ctx.session.user,
+      );
     }),
 
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      await propertyService.deleteProperty(input.id);
+    .mutation(async ({ input, ctx }) => {
+      await propertyService.deleteProperty(input.id, ctx.session.user);
       return { success: true };
     }),
 
   deactivate: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      return await propertyService.deactivateProperty(input.id);
+    .mutation(async ({ input, ctx }) => {
+      return await propertyService.deactivateProperty(
+        input.id,
+        ctx.session.user,
+      );
     }),
 
   activate: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      return await propertyService.activateProperty(input.id);
+    .mutation(async ({ input, ctx }) => {
+      return await propertyService.activateProperty(input.id, ctx.session.user);
     }),
 
   count: protectedProcedure
@@ -106,7 +109,7 @@ export const propertyRouter = createTRPCRouter({
         status: PropertyStatusSchema.optional(),
       }),
     )
-    .query(async ({ input }) => {
-      return await propertyService.getPropertyCount(input);
+    .query(async ({ input, ctx }) => {
+      return await propertyService.getPropertyCount(ctx.session.user, input);
     }),
 });

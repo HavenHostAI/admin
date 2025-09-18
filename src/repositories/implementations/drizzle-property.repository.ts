@@ -54,6 +54,10 @@ export class DrizzlePropertyRepository implements PropertyRepository {
       conditions.push(eq(properties.status, options.status));
     }
 
+    if (options?.owner_id) {
+      conditions.push(eq(properties.owner_id, options.owner_id));
+    }
+
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     // Get total count
@@ -140,6 +144,10 @@ export class DrizzlePropertyRepository implements PropertyRepository {
 
     if (options?.status) {
       conditions.push(eq(properties.status, options.status));
+    }
+
+    if (options?.owner_id) {
+      conditions.push(eq(properties.owner_id, options.owner_id));
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
