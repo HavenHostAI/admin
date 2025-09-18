@@ -29,11 +29,15 @@ async function createTestUser() {
       })
       .returning();
 
-    console.log("Test user created successfully:");
-    console.log("Email: admin@example.com");
-    console.log("Password: password123");
-    console.log("Role: admin");
-    console.log("User ID:", newUser.id);
+    if (newUser) {
+      console.log("Test user created successfully:");
+      console.log("Email: admin@example.com");
+      console.log("Password: password123");
+      console.log("Role: admin");
+      console.log("User ID:", newUser.id);
+    } else {
+      console.error("Failed to create test user");
+    }
   } catch (error) {
     console.error("Error creating test user:", error);
   }

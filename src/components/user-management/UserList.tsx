@@ -21,14 +21,6 @@ import {
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -36,7 +28,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Alert, AlertDescription } from "~/components/ui/alert";
-import { UserPlus, Search, Filter, MoreHorizontal } from "lucide-react";
+import { Search, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -176,19 +168,17 @@ export function UserList() {
                     <TableCell>
                       <Badge
                         variant={
-                          user.status === "active" ? "default" : "secondary"
+                          user.is_active ? "default" : "secondary"
                         }
                       >
-                        {user.status}
+                        {user.is_active ? "active" : "inactive"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {user.roles?.map((role) => (
-                          <Badge key={role.id} variant="outline">
-                            {role.name}
-                          </Badge>
-                        )) || <span className="text-gray-400">No roles</span>}
+                        <Badge variant="outline">
+                          {user.role}
+                        </Badge>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -227,11 +217,11 @@ export function UserList() {
         )}
 
         {/* Pagination */}
-        {usersData && usersData.total > limit && (
+        {usersData && (usersData as any).data?.pagination?.total && (usersData as any).data.pagination.total > limit && (
           <div className="mt-4 flex items-center justify-between">
             <div className="text-sm text-gray-500">
               Showing {(page - 1) * limit + 1} to{" "}
-              {Math.min(page * limit, usersData.total)} of {usersData.total}{" "}
+              {Math.min(page * limit, (usersData as any).data.pagination.total)} of {(usersData as any).data.pagination.total}{" "}
               users
             </div>
             <div className="flex gap-2">
@@ -247,7 +237,7 @@ export function UserList() {
                 variant="outline"
                 size="sm"
                 onClick={() => setPage(page + 1)}
-                disabled={page * limit >= usersData.total}
+                disabled={page * limit >= ((usersData as any).data?.pagination?.total || 0)}
               >
                 Next
               </Button>

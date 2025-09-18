@@ -122,7 +122,7 @@ export function RoleList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rolesData?.roles.map((role) => (
+                {(rolesData as any)?.data?.roles?.map((role: any) => (
                   <TableRow key={role.id}>
                     <TableCell className="font-medium">{role.name}</TableCell>
                     <TableCell>
@@ -178,11 +178,11 @@ export function RoleList() {
         )}
 
         {/* Pagination */}
-        {rolesData && rolesData.total > limit && (
+        {rolesData && (rolesData as any).data?.pagination?.total && (rolesData as any).data.pagination.total > limit && (
           <div className="mt-4 flex items-center justify-between">
             <div className="text-sm text-gray-500">
               Showing {(page - 1) * limit + 1} to{" "}
-              {Math.min(page * limit, rolesData.total)} of {rolesData.total}{" "}
+              {Math.min(page * limit, (rolesData as any).data.pagination.total)} of {(rolesData as any).data.pagination.total}{" "}
               roles
             </div>
             <div className="flex gap-2">
@@ -198,7 +198,7 @@ export function RoleList() {
                 variant="outline"
                 size="sm"
                 onClick={() => setPage(page + 1)}
-                disabled={page * limit >= rolesData.total}
+                disabled={page * limit >= ((rolesData as any).data?.pagination?.total || 0)}
               >
                 Next
               </Button>

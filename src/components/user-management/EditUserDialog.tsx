@@ -34,7 +34,7 @@ export function EditUserDialog({ user, onUserUpdated }: EditUserDialogProps) {
   const [formData, setFormData] = useState({
     name: user.name,
     email: user.email,
-    status: user.status,
+    is_active: user.is_active,
   });
 
   const updateUserMutation = api.user.update.useMutation({

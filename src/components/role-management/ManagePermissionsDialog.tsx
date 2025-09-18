@@ -28,7 +28,7 @@ export function ManagePermissionsDialog({
 }: ManagePermissionsDialogProps) {
   const [open, setOpen] = useState(false);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>(
-    role.permissions?.map((p) => p.id) || [],
+    role.permissions?.map((p: any) => p.id) || [],
   );
 
   const { data: allPermissions } = api.permission.getAll.useQuery();
@@ -76,10 +76,10 @@ export function ManagePermissionsDialog({
         if (!acc[permission.resource]) {
           acc[permission.resource] = [];
         }
-        acc[permission.resource].push(permission);
+        acc[permission.resource]!.push(permission);
         return acc;
       },
-      {} as Record<string, typeof allPermissions>,
+      {} as Record<string, any[]>,
     ) || {};
 
   return (
@@ -104,7 +104,7 @@ export function ManagePermissionsDialog({
             <h4 className="mb-2 text-sm font-medium">Current Permissions</h4>
             <div className="flex flex-wrap gap-2">
               {role.permissions && role.permissions.length > 0 ? (
-                role.permissions.map((permission) => (
+                role.permissions.map((permission: any) => (
                   <Badge key={permission.id} variant="default">
                     {permission.resource}:{permission.action}
                   </Badge>
@@ -126,7 +126,7 @@ export function ManagePermissionsDialog({
                   <div key={resource} className="rounded-lg border p-4">
                     <h5 className="mb-3 font-medium capitalize">{resource}</h5>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {permissions.map((permission) => (
+                      {permissions.map((permission: any) => (
                         <div
                           key={permission.id}
                           className="flex items-center space-x-2"

@@ -35,7 +35,7 @@ export function AssignRoleDialog({
   const [open, setOpen] = useState(false);
   const [selectedRoleId, setSelectedRoleId] = useState("");
 
-  const { data: rolesData } = api.role.listRoles.useQuery({
+  const { data: rolesData } = api.role.list.useQuery({
     page: 1,
     limit: 100,
   });
@@ -67,22 +67,10 @@ export function AssignRoleDialog({
     }
   };
 
-  const handleRemoveRole = async (roleId: string) => {
-    if (confirm("Are you sure you want to remove this role from the user?")) {
-      try {
-        await removeRoleMutation.mutateAsync({
-          userId: user.id,
-          roleId,
-        });
-      } catch (error) {
-        console.error("Failed to remove role:", error);
-      }
-    }
-  };
 
   const availableRoles =
-    rolesData?.roles.filter(
-      (role) => !user.roles?.some((userRole) => userRole.id === role.id),
+    (rolesData as any)?.data?.roles?.filter(
+      (role: any) => role.id !== user.role,
     ) || [];
 
   return (
@@ -102,30 +90,20 @@ export function AssignRoleDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Current Roles */}
+          {/* Current Role */}
           <div>
-            <h4 className="mb-2 text-sm font-medium">Current Roles</h4>
-            {user.roles && user.roles.length > 0 ? (
+            <h4 className="mb-2 text-sm font-medium">Current Role</h4>
+            {user.role ? (
               <div className="flex flex-wrap gap-2">
-                {user.roles.map((role) => (
-                  <Badge
-                    key={role.id}
-                    variant="default"
-                    className="flex items-center gap-1"
-                  >
-                    {role.name}
-                    <button
-                      onClick={() => handleRemoveRole(role.id)}
-                      className="ml-1 hover:text-red-500"
-                      disabled={removeRoleMutation.isPending}
-                    >
-                      ×
-                    </button>
-                  </Badge>
-                ))}
+                <Badge
+                  variant="default"
+                  className="flex items-center gap-1"
+                >
+                  {user.role}
+                </Badge>
               </div>
             ) : (
-              <p className="text-sm text-gray-500">No roles assigned</p>
+              <p className="text-sm text-gray-500">No role assigned</p>
             )}
           </div>
 
@@ -138,7 +116,7 @@ export function AssignRoleDialog({
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableRoles.map((role) => (
+                  {availableRoles.map((role: any) => (
                     <SelectItem key={role.id} value={role.id}>
                       {role.name}
                     </SelectItem>

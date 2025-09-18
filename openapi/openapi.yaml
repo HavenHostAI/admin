@@ -871,6 +871,12 @@ components:
           type: string
           format: date-time
           example: "2024-01-15T10:30:00Z"
+        permissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Permission"
+          description: "List of permissions assigned to this role"
+          example: []
 
     Permission:
       type: object
