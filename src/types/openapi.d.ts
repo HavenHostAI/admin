@@ -32,9 +32,7 @@ export interface paths {
             responses: {
                 /** @description Login successful */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["LoginResponse"];
                     };
@@ -74,9 +72,7 @@ export interface paths {
             responses: {
                 /** @description Logout successful */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["LogoutResponse"];
                     };
@@ -113,9 +109,7 @@ export interface paths {
             responses: {
                 /** @description Session information retrieved */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["SessionResponse"];
                     };
@@ -156,9 +150,7 @@ export interface paths {
             responses: {
                 /** @description Token refreshed successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["RefreshResponse"];
                     };
@@ -206,9 +198,7 @@ export interface paths {
             responses: {
                 /** @description Users retrieved successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["UserListResponse"];
                     };
@@ -238,9 +228,7 @@ export interface paths {
             responses: {
                 /** @description User created successfully */
                 201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["UserResponse"];
                     };
@@ -283,9 +271,7 @@ export interface paths {
             responses: {
                 /** @description User retrieved successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["UserResponse"];
                     };
@@ -318,9 +304,7 @@ export interface paths {
             responses: {
                 /** @description User updated successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["UserResponse"];
                     };
@@ -351,9 +335,7 @@ export interface paths {
             responses: {
                 /** @description User deleted successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["SuccessResponse"];
                     };
@@ -394,9 +376,7 @@ export interface paths {
             responses: {
                 /** @description User roles retrieved successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["UserRolesResponse"];
                     };
@@ -430,9 +410,7 @@ export interface paths {
             responses: {
                 /** @description Role assigned successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["SuccessResponse"];
                     };
@@ -480,9 +458,7 @@ export interface paths {
             responses: {
                 /** @description Role removed successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["SuccessResponse"];
                     };
@@ -527,9 +503,7 @@ export interface paths {
             responses: {
                 /** @description Roles retrieved successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["RoleListResponse"];
                     };
@@ -559,9 +533,7 @@ export interface paths {
             responses: {
                 /** @description Role created successfully */
                 201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["RoleResponse"];
                     };
@@ -604,9 +576,7 @@ export interface paths {
             responses: {
                 /** @description Role retrieved successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["RoleResponse"];
                     };
@@ -639,9 +609,7 @@ export interface paths {
             responses: {
                 /** @description Role updated successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["RoleResponse"];
                     };
@@ -672,9 +640,7 @@ export interface paths {
             responses: {
                 /** @description Role deleted successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["SuccessResponse"];
                     };
@@ -716,9 +682,7 @@ export interface paths {
             responses: {
                 /** @description Role permissions retrieved successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["RolePermissionsResponse"];
                     };
@@ -752,9 +716,7 @@ export interface paths {
             responses: {
                 /** @description Permission assigned successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["SuccessResponse"];
                     };
@@ -802,9 +764,7 @@ export interface paths {
             responses: {
                 /** @description Permission removed successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["SuccessResponse"];
                     };
@@ -842,9 +802,7 @@ export interface paths {
             responses: {
                 /** @description Permissions retrieved successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["PermissionListResponse"];
                     };
@@ -898,9 +856,7 @@ export interface paths {
             responses: {
                 /** @description Properties retrieved successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["PropertyListResponse"];
                     };
@@ -933,9 +889,7 @@ export interface paths {
             responses: {
                 /** @description Property created successfully */
                 201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["PropertyResponse"];
                     };
@@ -981,9 +935,7 @@ export interface paths {
             responses: {
                 /** @description Property retrieved successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["PropertyResponse"];
                     };
@@ -1019,9 +971,7 @@ export interface paths {
             responses: {
                 /** @description Property updated successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["PropertyResponse"];
                     };
@@ -1055,9 +1005,7 @@ export interface paths {
             responses: {
                 /** @description Property deleted successfully */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
+                    headers: Record<string, unknown>;
                     content: {
                         "application/json": components["schemas"]["SuccessResponse"];
                     };
@@ -1472,54 +1420,42 @@ export interface components {
     responses: {
         /** @description Bad request */
         BadRequest: {
-            headers: {
-                [name: string]: unknown;
-            };
+            headers: Record<string, unknown>;
             content: {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
         /** @description Unauthorized */
         Unauthorized: {
-            headers: {
-                [name: string]: unknown;
-            };
+            headers: Record<string, unknown>;
             content: {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
         /** @description Forbidden */
         Forbidden: {
-            headers: {
-                [name: string]: unknown;
-            };
+            headers: Record<string, unknown>;
             content: {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
         /** @description Resource not found */
         NotFound: {
-            headers: {
-                [name: string]: unknown;
-            };
+            headers: Record<string, unknown>;
             content: {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
         /** @description Resource conflict */
         Conflict: {
-            headers: {
-                [name: string]: unknown;
-            };
+            headers: Record<string, unknown>;
             content: {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
         /** @description Internal server error */
         InternalServerError: {
-            headers: {
-                [name: string]: unknown;
-            };
+            headers: Record<string, unknown>;
             content: {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
@@ -1555,3 +1491,21 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;
+
+// Direct type exports for easier importing
+export type User = components["schemas"]["User"];
+export type Role = components["schemas"]["Role"];
+export type Permission = components["schemas"]["Permission"];
+export type LoginRequest = components["schemas"]["LoginRequest"];
+export type LoginResponse = components["schemas"]["LoginResponse"];
+export type Session = components["schemas"]["Session"];
+export type CreateUserRequest = components["schemas"]["CreateUserRequest"];
+export type UpdateUserRequest = components["schemas"]["UpdateUserRequest"];
+export type UserListResponse = components["schemas"]["UserListResponse"];
+export type CreateRoleRequest = components["schemas"]["CreateRoleRequest"];
+export type UpdateRoleRequest = components["schemas"]["UpdateRoleRequest"];
+export type RoleListResponse = components["schemas"]["RoleListResponse"];
+export type Property = components["schemas"]["Property"];
+export type CreatePropertyRequest = components["schemas"]["CreatePropertyRequest"];
+export type UpdatePropertyRequest = components["schemas"]["UpdatePropertyRequest"];
+export type PropertyListResponse = components["schemas"]["PropertyListResponse"];

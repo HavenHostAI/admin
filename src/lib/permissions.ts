@@ -118,7 +118,6 @@ export function getUserPermissionsForResource(
   }
 
   // Return permissions based on role hierarchy
-  const rolePermissions: Permission[] = [];
   const roleHierarchy = {
     admin: 4,
     manager: 3,
@@ -143,8 +142,8 @@ export function getUserPermissionsForResource(
     id: `${resource}-${action}`,
     name: `${action} ${resource}`,
     resource,
-    action,
+    action: action as "create" | "update" | "delete" | "read" | "manage",
     description: `Permission to ${action} ${resource}`,
-    created_at: new Date(),
+    created_at: new Date().toISOString(),
   }));
 }

@@ -21,7 +21,7 @@ import {
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
 import { Alert, AlertDescription } from "~/components/ui/alert";
-import { Search, MoreHorizontal, Shield } from "lucide-react";
+import { Search, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -1,4 +1,4 @@
-import { eq, desc, count, and, or, like, sql } from "drizzle-orm";
+import { eq, desc, count, and, or, like } from "drizzle-orm";
 import { db } from "@/server/db";
 import { properties } from "@/server/db/schema";
 import type {
@@ -11,13 +11,28 @@ import type {
 } from "../interfaces/property.repository";
 
 export class DrizzlePropertyRepository implements PropertyRepository {
+  private mapDbPropertyToProperty(dbProperty: any): Property {
+    return {
+      id: dbProperty.id,
+      name: dbProperty.name,
+      description: dbProperty.description || undefined,
+      type: dbProperty.type as "server" | "domain" | "ssl_certificate" | "database" | "storage",
+      status: dbProperty.status as "active" | "inactive" | "maintenance" | "suspended",
+      configuration: dbProperty.configuration || {},
+      owner_id: dbProperty.owner_id || undefined,
+      is_active: dbProperty.is_active ?? true,
+      created_at: dbProperty.created_at,
+      updated_at: dbProperty.updated_at || dbProperty.created_at,
+    };
+  }
+
   async findById(id: string): Promise<Property | null> {
     const result = await db
       .select()
       .from(properties)
       .where(eq(properties.id, id))
       .limit(1);
-    return result[0] || null;
+    return result[0] ? this.mapDbPropertyToProperty(result[0]) : null;
   }
 
   async findByName(name: string): Promise<Property | null> {
@@ -26,7 +41,7 @@ export class DrizzlePropertyRepository implements PropertyRepository {
       .from(properties)
       .where(eq(properties.name, name))
       .limit(1);
-    return result[0] || null;
+    return result[0] ? this.mapDbPropertyToProperty(result[0]) : null;
   }
 
   async findAll(options?: PropertyListOptions): Promise<PropertyListResult> {
@@ -68,22 +83,17 @@ export class DrizzlePropertyRepository implements PropertyRepository {
     const total = totalResult[0]?.count || 0;
 
     // Get properties with pagination
-    let query = db
+    const propertiesList = await db
       .select()
       .from(properties)
+      .where(whereClause)
       .orderBy(desc(properties.created_at))
       .limit(limit)
       .offset(offset);
-
-    if (whereClause) {
-      query = query.where(whereClause);
-    }
-
-    const propertiesList = await query;
     const total_pages = Math.ceil(total / limit);
 
     return {
-      properties: propertiesList,
+      properties: propertiesList.map(p => this.mapDbPropertyToProperty(p)),
       total,
       page,
       limit,
@@ -104,7 +114,7 @@ export class DrizzlePropertyRepository implements PropertyRepository {
       })
       .returning();
 
-    return result[0]!;
+    return this.mapDbPropertyToProperty(result[0]!);
   }
 
   async update(id: string, data: UpdatePropertyData): Promise<Property> {
@@ -117,7 +127,7 @@ export class DrizzlePropertyRepository implements PropertyRepository {
       .where(eq(properties.id, id))
       .returning();
 
-    return result[0]!;
+    return this.mapDbPropertyToProperty(result[0]!);
   }
 
   async delete(id: string): Promise<void> {

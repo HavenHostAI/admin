@@ -140,7 +140,7 @@ export function EditPropertyDialog({
             <Select
               value={formData.type}
               onValueChange={(value) =>
-                setFormData({ ...formData, type: value })
+                setFormData({ ...formData, type: value as "server" | "domain" | "ssl_certificate" | "database" | "storage" })
               }
             >
               <SelectTrigger id={typeFieldId} aria-labelledby={typeLabelId}>
@@ -163,7 +163,7 @@ export function EditPropertyDialog({
             <Select
               value={formData.status}
               onValueChange={(value) =>
-                setFormData({ ...formData, status: value })
+                setFormData({ ...formData, status: value as "active" | "inactive" | "maintenance" | "suspended" })
               }
             >
               <SelectTrigger id={statusFieldId} aria-labelledby={statusLabelId}>
