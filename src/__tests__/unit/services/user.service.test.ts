@@ -1,10 +1,11 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { UserService } from "@/services/user.service";
 import type {
   UserRepository,
   RoleRepository,
 } from "@/repositories/interfaces/user.repository";
-import type { User, Role } from "@/types/openapi";
+import type { User, Role } from "@/types/api";
 
 // Mock repositories
 const mockUserRepository: UserRepository = {

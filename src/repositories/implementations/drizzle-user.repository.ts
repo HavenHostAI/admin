@@ -14,7 +14,7 @@ import type {
   UserListFilters,
   UserListResponse,
 } from "../interfaces/user.repository";
-import type { User, Role, Permission } from "~/types/openapi";
+import type { User, Role, Permission } from "~/types/api";
 import bcrypt from "bcryptjs";
 
 // Extended user type that includes the new database fields
@@ -51,6 +51,20 @@ type DrizzlePermission = {
   created_at: Date | null;
 };
 
+const normalizePermissionAction = (action: string): Permission["action"] => {
+  const allowedActions: Permission["action"][] = [
+    "create",
+    "read",
+    "update",
+    "delete",
+    "manage",
+  ];
+
+  return allowedActions.includes(action as Permission["action"])
+    ? (action as Permission["action"])
+    : "read";
+};
+
 export class DrizzleUserRepository implements UserRepository {
   private readonly DEFAULT_ROLE: User["role"] = "viewer";
   private readonly DEFAULT_PAGE_SIZE = 20;
@@ -60,10 +74,10 @@ export class DrizzleUserRepository implements UserRepository {
       id: drizzleUser.id,
       email: drizzleUser.email,
       name: drizzleUser.name ?? "",
-      image: drizzleUser.image ?? "",
+      image: drizzleUser.image ?? undefined,
       role: (drizzleUser.role as User["role"]) ?? this.DEFAULT_ROLE,
       is_active: drizzleUser.is_active ?? true,
-      email_verified: drizzleUser.emailVerified?.toISOString() ?? null,
+      email_verified: drizzleUser.emailVerified?.toISOString() ?? undefined,
       created_at:
         drizzleUser.created_at?.toISOString() ?? new Date().toISOString(),
       updated_at:
@@ -91,7 +105,7 @@ export class DrizzleUserRepository implements UserRepository {
       id: drizzlePermission.id,
       name: drizzlePermission.name,
       resource: drizzlePermission.resource,
-      action: drizzlePermission.action,
+      action: normalizePermissionAction(drizzlePermission.action),
       description: drizzlePermission.description ?? "",
       created_at:
         drizzlePermission.created_at?.toISOString() ?? new Date().toISOString(),
@@ -113,6 +127,10 @@ export class DrizzleUserRepository implements UserRepository {
         is_active: data.is_active ?? true,
       })
       .returning();
+
+    if (!newUser) {
+      throw new Error("Failed to create user");
+    }
 
     return this.mapDrizzleUserToUser(newUser as DrizzleUser);
   }
@@ -142,7 +160,9 @@ export class DrizzleUserRepository implements UserRepository {
   }
 
   async updateUser(id: string, data: UpdateUserRequest): Promise<User> {
-    const updateData: Partial<DrizzleUser> = {};
+    const updateData: Partial<
+      Pick<DrizzleUser, "name" | "email" | "role" | "is_active">
+    > = {};
 
     if (data.name !== undefined) updateData.name = data.name;
     if (data.email !== undefined) updateData.email = data.email;

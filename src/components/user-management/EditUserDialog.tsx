@@ -22,7 +22,7 @@ import {
 } from "~/components/ui/select";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Edit } from "lucide-react";
-import type { User } from "~/types/openapi";
+import type { User } from "~/types/api";
 
 interface EditUserDialogProps {
   user: User;

@@ -24,10 +24,10 @@ interface User {
   id: string;
   email: string;
   name: string;
-  image: string;
+  image?: string;
   role: "viewer" | "editor" | "admin";
   is_active: boolean;
-  email_verified: string | null;
+  email_verified?: string;
   created_at: string;
   updated_at: string;
   password?: string; // Added for production readiness
@@ -92,10 +92,10 @@ export class DrizzleAuthRepository implements AuthRepository {
       id: drizzleUser.id,
       email: drizzleUser.email,
       name: drizzleUser.name ?? "",
-      image: drizzleUser.image ?? "",
+      image: drizzleUser.image ?? undefined,
       role: (drizzleUser.role as User["role"]) ?? this.DEFAULT_ROLE,
       is_active: drizzleUser.is_active ?? true,
-      email_verified: drizzleUser.emailVerified?.toISOString() ?? null,
+      email_verified: drizzleUser.emailVerified?.toISOString() ?? undefined,
       created_at:
         drizzleUser.created_at?.toISOString() ?? new Date().toISOString(),
       updated_at:
@@ -144,10 +144,10 @@ export class DrizzleAuthRepository implements AuthRepository {
         id: session.user.id,
         email: session.user.email,
         name: session.user.name ?? "",
-        image: session.user.image ?? "",
+        image: session.user.image ?? undefined,
         role: (session.user.role as User["role"]) ?? this.DEFAULT_ROLE,
         is_active: (session.user as DrizzleUser).is_active ?? true,
-        email_verified: session.user.emailVerified?.toISOString() ?? null,
+        email_verified: session.user.emailVerified?.toISOString() ?? undefined,
         created_at:
           (session.user as DrizzleUser).created_at?.toISOString() ??
           new Date().toISOString(),
@@ -208,10 +208,10 @@ export class DrizzleAuthRepository implements AuthRepository {
       id: user.id,
       email: user.email,
       name: user.name ?? "",
-      image: user.image ?? "",
+      image: user.image ?? undefined,
       role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
       is_active: (user as DrizzleUser).is_active ?? true,
-      email_verified: user.emailVerified?.toISOString() ?? null,
+      email_verified: user.emailVerified?.toISOString() ?? undefined,
       created_at:
         (user as DrizzleUser).created_at?.toISOString() ??
         new Date().toISOString(),
@@ -237,7 +237,7 @@ export class DrizzleAuthRepository implements AuthRepository {
       image: user.image ?? "",
       role: (user.role as User["role"]) ?? this.DEFAULT_ROLE,
       is_active: (user as DrizzleUser).is_active ?? true,
-      email_verified: user.emailVerified?.toISOString() ?? null,
+      email_verified: user.emailVerified?.toISOString() ?? undefined,
       created_at:
         (user as DrizzleUser).created_at?.toISOString() ??
         new Date().toISOString(),

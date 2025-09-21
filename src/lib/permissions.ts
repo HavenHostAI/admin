@@ -1,4 +1,4 @@
-import type { User, Permission } from "~/types/openapi";
+import type { User, Permission } from "~/types/api";
 
 /**
  * Permission checking utilities for role-based access control
@@ -48,7 +48,7 @@ export function hasRolePermission(
   };
 
   const userRoleLevel =
-    roleHierarchy[user.role as keyof typeof roleHierarchy] || 0;
+    roleHierarchy[user.role as keyof typeof roleHierarchy] ?? 0;
 
   // Define minimum role levels for different actions
   const actionRequirements: Record<string, Record<string, number>> = {
@@ -73,7 +73,7 @@ export function hasRolePermission(
   };
 
   const requiredLevel =
-    actionRequirements[permission.resource]?.[permission.action] || 1;
+    actionRequirements[permission.resource]?.[permission.action] ?? 1;
   return userRoleLevel >= requiredLevel;
 }
 
@@ -126,7 +126,7 @@ export function getUserPermissionsForResource(
   };
 
   const userRoleLevel =
-    roleHierarchy[user.role as keyof typeof roleHierarchy] || 0;
+    roleHierarchy[user.role as keyof typeof roleHierarchy] ?? 0;
 
   // Define permissions for each role level
   const rolePermissionMap: Record<number, string[]> = {
@@ -136,7 +136,7 @@ export function getUserPermissionsForResource(
     1: ["read"], // Viewer
   };
 
-  const allowedActions = rolePermissionMap[userRoleLevel] || [];
+  const allowedActions = rolePermissionMap[userRoleLevel] ?? [];
 
   return allowedActions.map((action) => ({
     id: `${resource}-${action}`,

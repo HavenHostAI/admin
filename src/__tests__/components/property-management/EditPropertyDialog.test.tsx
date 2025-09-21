@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { EditPropertyDialog } from "@/components/property-management/EditPropertyDialog";
-import type { Mock } from "vitest";
+import type { MockedFunction } from "vitest";
 
 type TrpcReactModule = typeof import("~/trpc/react");
 type PropertyUpdateMutationHook =
@@ -12,11 +12,8 @@ type PropertyUpdateMutationResult = ReturnType<PropertyUpdateMutationHook>;
 
 // Mock tRPC
 const mockOnPropertyUpdated = vi.fn();
-let mockMutate: ReturnType<typeof vi.fn>;
-let updateUseMutationMock: Mock<
-  Parameters<PropertyUpdateMutationHook>,
-  PropertyUpdateMutationResult
->;
+let mockMutate: MockedFunction<PropertyUpdateMutationResult["mutate"]>;
+let updateUseMutationMock: MockedFunction<PropertyUpdateMutationHook>;
 
 const mockProperty = {
   id: "1",
@@ -27,8 +24,8 @@ const mockProperty = {
   configuration: {},
   owner_id: "user_123",
   is_active: true,
-  created_at: "2024-01-01T00:00:00Z",
-  updated_at: "2024-01-01T00:00:00Z",
+  created_at: new Date("2024-01-01T00:00:00Z"),
+  updated_at: new Date("2024-01-02T00:00:00Z"),
 };
 
 vi.mock("~/trpc/react", () => ({
@@ -46,6 +43,16 @@ vi.mock("~/trpc/react", () => ({
 }));
 
 describe("EditPropertyDialog", () => {
+  const buildMutationResult = (
+    overrides: Partial<PropertyUpdateMutationResult> = {},
+  ): PropertyUpdateMutationResult =>
+    ({
+      mutate: mockMutate,
+      isPending: false,
+      error: null,
+      ...overrides,
+    }) as unknown as PropertyUpdateMutationResult;
+
   const openDialog = async (user = userEvent.setup()) => {
     render(
       <EditPropertyDialog
@@ -63,16 +70,12 @@ describe("EditPropertyDialog", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    mockMutate = vi.fn();
+    mockMutate = vi.fn<PropertyUpdateMutationResult["mutate"]>();
 
     const { api } = await import("~/trpc/react");
     updateUseMutationMock = vi.mocked(api.property.update.useMutation);
 
-    updateUseMutationMock.mockReturnValue({
-      mutate: mockMutate,
-      isPending: false,
-      error: null,
-    } as PropertyUpdateMutationResult);
+    updateUseMutationMock.mockReturnValue(buildMutationResult());
   });
 
   it("should render edit button trigger", () => {
@@ -140,11 +143,13 @@ describe("EditPropertyDialog", () => {
   });
 
   it("should show error message when mutation fails", async () => {
-    updateUseMutationMock.mockReturnValue({
-      mutate: mockMutate,
-      isPending: false,
-      error: { message: "Failed to update property" },
-    });
+    updateUseMutationMock.mockReturnValue(
+      buildMutationResult({
+        error: {
+          message: "Failed to update property",
+        } as unknown as PropertyUpdateMutationResult["error"],
+      }),
+    );
 
     await openDialog();
 
@@ -152,11 +157,9 @@ describe("EditPropertyDialog", () => {
   });
 
   it("should show loading state during submission", async () => {
-    updateUseMutationMock.mockReturnValue({
-      mutate: mockMutate,
-      isPending: true,
-      error: null,
-    });
+    updateUseMutationMock.mockReturnValue(
+      buildMutationResult({ isPending: true }),
+    );
 
     await openDialog();
 

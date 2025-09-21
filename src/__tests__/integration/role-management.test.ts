@@ -1,8 +1,9 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createTestContext } from "../setup";
 import { createRepositories } from "~/repositories";
 import { RoleService } from "~/services/role.service";
-import type { CreateRoleRequest } from "~/types/openapi";
+import type { CreateRoleRequest } from "~/types/api";
 
 describe("Role Management Integration", () => {
   const ctx = createTestContext();

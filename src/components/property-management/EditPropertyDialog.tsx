@@ -40,6 +40,21 @@ const propertyStatuses = [
   { value: "suspended", label: "Suspended" },
 ];
 
+type PropertyFormState = {
+  name: string;
+  description: string;
+  type: Property["type"];
+  status: Property["status"];
+  owner_id: string;
+  is_active: boolean;
+};
+
+const isPropertyType = (value: string): value is Property["type"] =>
+  propertyTypes.some((type) => type.value === value);
+
+const isPropertyStatus = (value: string): value is Property["status"] =>
+  propertyStatuses.some((status) => status.value === value);
+
 interface EditPropertyDialogProps {
   property: Property;
   onPropertyUpdated?: () => void;
@@ -50,12 +65,12 @@ export function EditPropertyDialog({
   onPropertyUpdated,
 }: EditPropertyDialogProps) {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<PropertyFormState>({
     name: property.name,
-    description: property.description || "",
+    description: property.description ?? "",
     type: property.type,
     status: property.status,
-    owner_id: property.owner_id || "",
+    owner_id: property.owner_id ?? "",
     is_active: property.is_active,
   });
   const typeFieldId = useId();
@@ -80,19 +95,11 @@ export function EditPropertyDialog({
     updateProperty.mutate({
       id: property.id,
       name: formData.name,
-      description: formData.description || undefined,
-      type: formData.type as
-        | "server"
-        | "domain"
-        | "ssl_certificate"
-        | "database"
-        | "storage",
-      status: formData.status as
-        | "active"
-        | "inactive"
-        | "maintenance"
-        | "suspended",
-      owner_id: formData.owner_id || undefined,
+      description:
+        formData.description.trim() === "" ? undefined : formData.description,
+      type: formData.type,
+      status: formData.status,
+      owner_id: formData.owner_id.trim() === "" ? undefined : formData.owner_id,
       is_active: formData.is_active,
     });
   };
@@ -139,9 +146,11 @@ export function EditPropertyDialog({
             </Label>
             <Select
               value={formData.type}
-              onValueChange={(value) =>
-                setFormData({ ...formData, type: value as "server" | "domain" | "ssl_certificate" | "database" | "storage" })
-              }
+              onValueChange={(value) => {
+                if (isPropertyType(value)) {
+                  setFormData((prev) => ({ ...prev, type: value }));
+                }
+              }}
             >
               <SelectTrigger id={typeFieldId} aria-labelledby={typeLabelId}>
                 <SelectValue placeholder="Select property type" />
@@ -162,9 +171,11 @@ export function EditPropertyDialog({
             </Label>
             <Select
               value={formData.status}
-              onValueChange={(value) =>
-                setFormData({ ...formData, status: value as "active" | "inactive" | "maintenance" | "suspended" })
-              }
+              onValueChange={(value) => {
+                if (isPropertyStatus(value)) {
+                  setFormData((prev) => ({ ...prev, status: value }));
+                }
+              }}
             >
               <SelectTrigger id={statusFieldId} aria-labelledby={statusLabelId}>
                 <SelectValue placeholder="Select status" />

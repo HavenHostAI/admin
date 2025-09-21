@@ -16,7 +16,7 @@ import {
 } from "~/components/ui/dialog";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Edit } from "lucide-react";
-import type { Role } from "~/types/openapi";
+import type { Role } from "~/types/api";
 
 interface EditRoleDialogProps {
   role: Role;

@@ -21,7 +21,7 @@ import {
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Shield } from "lucide-react";
-import type { User } from "~/types/openapi";
+import type { Role, User } from "~/types/api";
 
 interface AssignRoleDialogProps {
   user: User;
@@ -67,11 +67,8 @@ export function AssignRoleDialog({
     }
   };
 
-
-  const availableRoles =
-    (rolesData as any)?.data?.roles?.filter(
-      (role: any) => role.id !== user.role,
-    ) || [];
+  const roles: Role[] = rolesData?.roles ?? [];
+  const availableRoles = roles.filter((role) => role.name !== user.role);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -95,10 +92,7 @@ export function AssignRoleDialog({
             <h4 className="mb-2 text-sm font-medium">Current Role</h4>
             {user.role ? (
               <div className="flex flex-wrap gap-2">
-                <Badge
-                  variant="default"
-                  className="flex items-center gap-1"
-                >
+                <Badge variant="default" className="flex items-center gap-1">
                   {user.role}
                 </Badge>
               </div>
@@ -116,7 +110,7 @@ export function AssignRoleDialog({
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableRoles.map((role: any) => (
+                  {availableRoles.map((role) => (
                     <SelectItem key={role.id} value={role.id}>
                       {role.name}
                     </SelectItem>
@@ -133,10 +127,10 @@ export function AssignRoleDialog({
             </div>
           </div>
 
-          {(assignRoleMutation.error || removeRoleMutation.error) && (
+          {(assignRoleMutation.error ?? removeRoleMutation.error) && (
             <Alert variant="destructive">
               <AlertDescription>
-                {assignRoleMutation.error?.message ||
+                {assignRoleMutation.error?.message ??
                   removeRoleMutation.error?.message}
               </AlertDescription>
             </Alert>

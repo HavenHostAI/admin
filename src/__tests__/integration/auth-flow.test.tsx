@@ -11,6 +11,8 @@ vi.mock("next-auth/react", () => ({
   signIn: vi.fn(),
 }));
 
+type SignInResult = Awaited<ReturnType<typeof signIn>>;
+
 // Mock next/navigation
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
@@ -47,7 +49,8 @@ describe("Authentication Flow Integration Tests", () => {
         error: "CredentialsSignin",
         ok: false,
         status: 401,
-        url: null,
+        url: "",
+        code: "CredentialsSignin",
       });
 
       render(<SignInForm />);
@@ -61,12 +64,16 @@ describe("Authentication Flow Integration Tests", () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Invalid email or password")).toBeInTheDocument();
+        expect(
+          screen.getByText("Invalid email or password"),
+        ).toBeInTheDocument();
       });
     });
 
     it("should show loading state during sign in", async () => {
-      mockSignIn.mockImplementation(() => new Promise(() => {})); // Never resolves
+      mockSignIn.mockImplementation(
+        () => new Promise<SignInResult>(() => undefined),
+      ); // Never resolves
 
       render(<SignInForm />);
 
@@ -86,10 +93,11 @@ describe("Authentication Flow Integration Tests", () => {
 
     it("should redirect on successful sign in", async () => {
       mockSignIn.mockResolvedValue({
-        error: null,
+        error: undefined,
         ok: true,
         status: 200,
         url: "/",
+        code: "Success",
       });
 
       render(<SignInForm />);
@@ -117,12 +125,16 @@ describe("Authentication Flow Integration Tests", () => {
       const emailInput = screen.getByLabelText("Email");
       const passwordInput = screen.getByLabelText("Password");
       const confirmPasswordInput = screen.getByLabelText("Confirm Password");
-      const submitButton = screen.getByRole("button", { name: "Create Account" });
+      const submitButton = screen.getByRole("button", {
+        name: "Create Account",
+      });
 
       fireEvent.change(nameInput, { target: { value: "Test User" } });
       fireEvent.change(emailInput, { target: { value: "test@example.com" } });
       fireEvent.change(passwordInput, { target: { value: "password123" } });
-      fireEvent.change(confirmPasswordInput, { target: { value: "differentpassword" } });
+      fireEvent.change(confirmPasswordInput, {
+        target: { value: "differentpassword" },
+      });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -137,7 +149,9 @@ describe("Authentication Flow Integration Tests", () => {
       const emailInput = screen.getByLabelText("Email");
       const passwordInput = screen.getByLabelText("Password");
       const confirmPasswordInput = screen.getByLabelText("Confirm Password");
-      const submitButton = screen.getByRole("button", { name: "Create Account" });
+      const submitButton = screen.getByRole("button", {
+        name: "Create Account",
+      });
 
       fireEvent.change(nameInput, { target: { value: "Test User" } });
       fireEvent.change(emailInput, { target: { value: "test@example.com" } });
@@ -146,7 +160,9 @@ describe("Authentication Flow Integration Tests", () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Password must be at least 8 characters long")).toBeInTheDocument();
+        expect(
+          screen.getByText("Password must be at least 8 characters long"),
+        ).toBeInTheDocument();
       });
     });
 
@@ -159,12 +175,16 @@ describe("Authentication Flow Integration Tests", () => {
       const emailInput = screen.getByLabelText("Email");
       const passwordInput = screen.getByLabelText("Password");
       const confirmPasswordInput = screen.getByLabelText("Confirm Password");
-      const submitButton = screen.getByRole("button", { name: "Create Account" });
+      const submitButton = screen.getByRole("button", {
+        name: "Create Account",
+      });
 
       fireEvent.change(nameInput, { target: { value: "Test User" } });
       fireEvent.change(emailInput, { target: { value: "test@example.com" } });
       fireEvent.change(passwordInput, { target: { value: "password123" } });
-      fireEvent.change(confirmPasswordInput, { target: { value: "password123" } });
+      fireEvent.change(confirmPasswordInput, {
+        target: { value: "password123" },
+      });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -173,7 +193,10 @@ describe("Authentication Flow Integration Tests", () => {
     });
 
     it("should redirect on successful sign up", async () => {
-      mockMutateAsync.mockResolvedValue({ id: "123", email: "test@example.com" });
+      mockMutateAsync.mockResolvedValue({
+        id: "123",
+        email: "test@example.com",
+      });
 
       render(<SignUpForm />);
 
@@ -181,17 +204,21 @@ describe("Authentication Flow Integration Tests", () => {
       const emailInput = screen.getByLabelText("Email");
       const passwordInput = screen.getByLabelText("Password");
       const confirmPasswordInput = screen.getByLabelText("Confirm Password");
-      const submitButton = screen.getByRole("button", { name: "Create Account" });
+      const submitButton = screen.getByRole("button", {
+        name: "Create Account",
+      });
 
       fireEvent.change(nameInput, { target: { value: "Test User" } });
       fireEvent.change(emailInput, { target: { value: "test@example.com" } });
       fireEvent.change(passwordInput, { target: { value: "password123" } });
-      fireEvent.change(confirmPasswordInput, { target: { value: "password123" } });
+      fireEvent.change(confirmPasswordInput, {
+        target: { value: "password123" },
+      });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
         expect(mockPush).toHaveBeenCalledWith(
-          "/auth/signin?message=Account created successfully. Please sign in."
+          "/auth/signin?message=Account created successfully. Please sign in.",
         );
       });
     });

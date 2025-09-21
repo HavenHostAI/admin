@@ -1,4 +1,4 @@
-import type { User, Role, Permission } from "~/types/openapi";
+import type { User, Role, Permission } from "~/types/api";
 
 export interface CreateUserRequest {
   email: string;

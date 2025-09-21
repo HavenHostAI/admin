@@ -6,7 +6,7 @@ import type {
   UserListResponse,
 } from "~/repositories/interfaces/user.repository";
 import type { RoleRepository } from "~/repositories/interfaces/role.repository";
-import type { User, Role, Permission } from "~/types/openapi";
+import type { User, Role, Permission } from "~/types/api";
 
 export class UserService {
   constructor(

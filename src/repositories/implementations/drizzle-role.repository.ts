@@ -14,7 +14,7 @@ import type {
   RoleListFilters,
   RoleListResponse,
 } from "../interfaces/role.repository";
-import type { Role, Permission } from "~/types/openapi";
+import type { Role, Permission } from "~/types/api";
 
 // Extended role type
 type DrizzleRole = {
@@ -34,6 +34,20 @@ type DrizzlePermission = {
   action: string;
   description: string | null;
   created_at: Date | null;
+};
+
+const normalizePermissionAction = (action: string): Permission["action"] => {
+  const allowedActions: Permission["action"][] = [
+    "create",
+    "read",
+    "update",
+    "delete",
+    "manage",
+  ];
+
+  return allowedActions.includes(action as Permission["action"])
+    ? (action as Permission["action"])
+    : "read";
 };
 
 export class DrizzleRoleRepository implements RoleRepository {
@@ -59,7 +73,7 @@ export class DrizzleRoleRepository implements RoleRepository {
       id: drizzlePermission.id,
       name: drizzlePermission.name,
       resource: drizzlePermission.resource,
-      action: drizzlePermission.action,
+      action: normalizePermissionAction(drizzlePermission.action),
       description: drizzlePermission.description ?? "",
       created_at:
         drizzlePermission.created_at?.toISOString() ?? new Date().toISOString(),
@@ -75,6 +89,10 @@ export class DrizzleRoleRepository implements RoleRepository {
         description: data.description,
       })
       .returning();
+
+    if (!newRole) {
+      throw new Error("Failed to create role");
+    }
 
     // Assign permissions if provided
     if (data.permissions && data.permissions.length > 0) {
@@ -114,7 +132,7 @@ export class DrizzleRoleRepository implements RoleRepository {
   }
 
   async updateRole(id: string, data: UpdateRoleRequest): Promise<Role> {
-    const updateData: Partial<DrizzleRole> = {};
+    const updateData: Partial<Pick<DrizzleRole, "name" | "description">> = {};
 
     if (data.name !== undefined) updateData.name = data.name;
     if (data.description !== undefined)
@@ -277,7 +295,7 @@ export class DrizzlePermissionRepository implements PermissionRepository {
       id: drizzlePermission.id,
       name: drizzlePermission.name,
       resource: drizzlePermission.resource,
-      action: drizzlePermission.action,
+      action: normalizePermissionAction(drizzlePermission.action),
       description: drizzlePermission.description ?? "",
       created_at:
         drizzlePermission.created_at?.toISOString() ?? new Date().toISOString(),
@@ -340,7 +358,7 @@ export class DrizzlePermissionRepository implements PermissionRepository {
       .values({
         name: data.name,
         resource: data.resource,
-        action: data.action,
+        action: normalizePermissionAction(data.action),
         description: data.description,
       })
       .returning();

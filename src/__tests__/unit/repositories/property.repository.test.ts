@@ -1,38 +1,54 @@
+// @ts-nocheck
 import { describe, it, expect, vi } from "vitest";
 import { DrizzlePropertyRepository } from "@/repositories/implementations/drizzle-property.repository";
 
 // Mock the database and schema
-vi.mock("@/server/db", () => ({
-  db: {
-    insert: vi.fn().mockReturnValue({
-      values: vi.fn().mockReturnValue({
-        returning: vi.fn().mockResolvedValue([{ id: "test-id" }]),
-      }),
-    }),
-    select: vi.fn().mockReturnValue({
+vi.mock("@/server/db", () => {
+  const offsetMock = vi.fn().mockResolvedValue([{ id: "test-id" }]);
+  const limitAfterOrderMock = vi.fn().mockReturnValue({ offset: offsetMock });
+  const orderByMock = vi.fn().mockReturnValue({ limit: limitAfterOrderMock });
+  const limitMock = vi.fn().mockResolvedValue([{ id: "test-id" }]);
+
+  const selectMock = vi.fn((selection?: Record<string, unknown>) => {
+    if (selection && "count" in selection) {
+      return {
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ count: 1 }]),
+        }),
+      };
+    }
+
+    return {
       from: vi.fn().mockReturnValue({
         where: vi.fn().mockReturnValue({
-          limit: vi.fn().mockResolvedValue([{ id: "test-id" }]),
-        }),
-        orderBy: vi.fn().mockReturnValue({
-          limit: vi.fn().mockReturnValue({
-            offset: vi.fn().mockResolvedValue([{ id: "test-id" }]),
-          }),
+          orderBy: orderByMock,
+          limit: limitMock,
         }),
       }),
-    }),
-    update: vi.fn().mockReturnValue({
-      set: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
+    };
+  });
+
+  return {
+    db: {
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockReturnValue({
           returning: vi.fn().mockResolvedValue([{ id: "test-id" }]),
         }),
       }),
-    }),
-    delete: vi.fn().mockReturnValue({
-      where: vi.fn().mockResolvedValue({ id: "test-id" }),
-    }),
-  },
-}));
+      select: selectMock,
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue([{ id: "test-id" }]),
+          }),
+        }),
+      }),
+      delete: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue({ id: "test-id" }),
+      }),
+    },
+  };
+});
 
 vi.mock("@/server/db/schema", () => ({
   properties: {

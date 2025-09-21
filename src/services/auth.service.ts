@@ -1,19 +1,14 @@
 import type {
   AuthRepository,
   LoginRequest,
-  LoginResponse,
 } from "../repositories/interfaces/auth.repository";
-import type {
-  UserRepository,
-  RoleRepository,
-} from "../repositories/interfaces/user.repository";
-import type { User, Session } from "../types/openapi";
+import type { UserRepository } from "../repositories/interfaces/user.repository";
+import type { User, Session, LoginResponse } from "../types/api";
 
 export class AuthService {
   constructor(
     private authRepository: AuthRepository,
     private userRepository: UserRepository,
-    private roleRepository: RoleRepository,
   ) {}
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
@@ -49,9 +44,12 @@ export class AuthService {
     const access_token = this.authRepository.generateAccessToken(user);
 
     return {
-      user,
-      session,
-      access_token,
+      success: true,
+      data: {
+        user,
+        session,
+        access_token,
+      },
     };
   }
 

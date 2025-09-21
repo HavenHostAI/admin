@@ -1,4 +1,4 @@
-import type { Role, Permission } from "~/types/openapi";
+import type { Role, Permission } from "~/types/api";
 
 export interface CreateRoleRequest {
   name: string;

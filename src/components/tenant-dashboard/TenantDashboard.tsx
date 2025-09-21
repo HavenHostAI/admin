@@ -114,7 +114,7 @@ export function TenantDashboard() {
             Tenant Dashboard
           </h1>
           <p className="text-muted-foreground">
-            Overview of your tenant's performance and activity
+            Overview of your tenant&rsquo;s performance and activity
           </p>
         </div>
         <div className="flex items-center space-x-2">

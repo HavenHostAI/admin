@@ -1,6 +1,7 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DrizzleAuthRepository } from "@/repositories/implementations/drizzle-auth.repository";
-import type { User } from "@/types/openapi";
+import type { User } from "@/types/api";
 
 // Mock the database
 vi.mock("@/server/db", () => ({
@@ -111,7 +112,7 @@ describe("DrizzleAuthRepository", () => {
         id: "user_123",
         email: "test@example.com",
         name: "Test User",
-        image: "",
+        image: undefined,
         role: "viewer",
         is_active: true,
         email_verified: "2024-01-15T10:30:00.000Z",

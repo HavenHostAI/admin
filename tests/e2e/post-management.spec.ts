@@ -51,5 +51,6 @@ test.describe("Post Management", () => {
 
     // At minimum, the page should have some content
     expect(hasAnyContent).toBeTruthy();
+    expect(hasPosts || hasNoPosts).toBeTruthy();
   });
 });

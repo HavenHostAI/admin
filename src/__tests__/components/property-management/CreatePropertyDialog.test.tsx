@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CreatePropertyDialog } from "@/components/property-management/CreatePropertyDialog";
-import type { Mock } from "vitest";
+import type { MockedFunction } from "vitest";
 
 type TrpcReactModule = typeof import("~/trpc/react");
 type PropertyCreateMutationHook =
@@ -12,11 +12,8 @@ type PropertyCreateMutationResult = ReturnType<PropertyCreateMutationHook>;
 
 // Mock tRPC
 const mockOnPropertyCreated = vi.fn();
-let mockMutate: ReturnType<typeof vi.fn>;
-let createUseMutationMock: Mock<
-  Parameters<PropertyCreateMutationHook>,
-  PropertyCreateMutationResult
->;
+let mockMutate: MockedFunction<PropertyCreateMutationResult["mutate"]>;
+let createUseMutationMock: MockedFunction<PropertyCreateMutationHook>;
 
 vi.mock("~/trpc/react", () => ({
   api: {
@@ -33,18 +30,24 @@ vi.mock("~/trpc/react", () => ({
 }));
 
 describe("CreatePropertyDialog", () => {
+  const buildMutationResult = (
+    overrides: Partial<PropertyCreateMutationResult> = {},
+  ): PropertyCreateMutationResult =>
+    ({
+      mutate: mockMutate,
+      isPending: false,
+      error: null,
+      ...overrides,
+    }) as unknown as PropertyCreateMutationResult;
+
   beforeEach(async () => {
     vi.clearAllMocks();
-    mockMutate = vi.fn();
+    mockMutate = vi.fn<PropertyCreateMutationResult["mutate"]>();
 
     const { api } = await import("~/trpc/react");
     createUseMutationMock = vi.mocked(api.property.create.useMutation);
 
-    createUseMutationMock.mockReturnValue({
-      mutate: mockMutate,
-      isPending: false,
-      error: null,
-    } as PropertyCreateMutationResult);
+    createUseMutationMock.mockReturnValue(buildMutationResult());
   });
 
   it("should render create property dialog trigger", () => {
@@ -65,7 +68,7 @@ describe("CreatePropertyDialog", () => {
   };
 
   it("should show form fields when dialog is opened", async () => {
-    const { user } = await openDialog();
+    await openDialog();
 
     expect(screen.getByLabelText("Name *")).toBeInTheDocument();
     expect(screen.getByLabelText("Type *")).toBeInTheDocument();
@@ -132,11 +135,13 @@ describe("CreatePropertyDialog", () => {
   });
 
   it("should show error message when mutation fails", async () => {
-    createUseMutationMock.mockReturnValue({
-      mutate: mockMutate,
-      isPending: false,
-      error: { message: "Failed to create property" },
-    });
+    createUseMutationMock.mockReturnValue(
+      buildMutationResult({
+        error: {
+          message: "Failed to create property",
+        } as unknown as PropertyCreateMutationResult["error"],
+      }),
+    );
 
     await openDialog();
 
@@ -144,11 +149,9 @@ describe("CreatePropertyDialog", () => {
   });
 
   it("should show loading state during submission", async () => {
-    createUseMutationMock.mockReturnValue({
-      mutate: mockMutate,
-      isPending: true,
-      error: null,
-    });
+    createUseMutationMock.mockReturnValue(
+      buildMutationResult({ isPending: true }),
+    );
 
     await openDialog();
 

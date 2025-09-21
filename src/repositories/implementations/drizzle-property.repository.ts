@@ -10,19 +10,22 @@ import type {
   PropertyListResult,
 } from "../interfaces/property.repository";
 
+type DbProperty = typeof properties.$inferSelect;
+
 export class DrizzlePropertyRepository implements PropertyRepository {
-  private mapDbPropertyToProperty(dbProperty: any): Property {
+  private mapDbPropertyToProperty(dbProperty: DbProperty): Property {
     return {
       id: dbProperty.id,
       name: dbProperty.name,
-      description: dbProperty.description || undefined,
-      type: dbProperty.type as "server" | "domain" | "ssl_certificate" | "database" | "storage",
-      status: dbProperty.status as "active" | "inactive" | "maintenance" | "suspended",
-      configuration: dbProperty.configuration || {},
-      owner_id: dbProperty.owner_id || undefined,
+      description: dbProperty.description ?? undefined,
+      type: dbProperty.type as Property["type"],
+      status: dbProperty.status as Property["status"],
+      configuration:
+        (dbProperty.configuration as Record<string, unknown> | null) ?? {},
+      owner_id: dbProperty.owner_id ?? undefined,
       is_active: dbProperty.is_active ?? true,
       created_at: dbProperty.created_at,
-      updated_at: dbProperty.updated_at || dbProperty.created_at,
+      updated_at: dbProperty.updated_at ?? dbProperty.created_at,
     };
   }
 
@@ -45,8 +48,8 @@ export class DrizzlePropertyRepository implements PropertyRepository {
   }
 
   async findAll(options?: PropertyListOptions): Promise<PropertyListResult> {
-    const page = options?.page || 1;
-    const limit = options?.limit || 20;
+    const page = options?.page ?? 1;
+    const limit = options?.limit ?? 20;
     const offset = (page - 1) * limit;
 
     // Build where conditions
@@ -80,7 +83,7 @@ export class DrizzlePropertyRepository implements PropertyRepository {
       .select({ count: count() })
       .from(properties)
       .where(whereClause);
-    const total = totalResult[0]?.count || 0;
+    const total = totalResult[0]?.count ?? 0;
 
     // Get properties with pagination
     const propertiesList = await db
@@ -93,7 +96,9 @@ export class DrizzlePropertyRepository implements PropertyRepository {
     const total_pages = Math.ceil(total / limit);
 
     return {
-      properties: propertiesList.map(p => this.mapDbPropertyToProperty(p)),
+      properties: propertiesList.map((dbProperty) =>
+        this.mapDbPropertyToProperty(dbProperty),
+      ),
       total,
       page,
       limit,
@@ -167,6 +172,6 @@ export class DrizzlePropertyRepository implements PropertyRepository {
       .from(properties)
       .where(whereClause);
 
-    return result[0]?.count || 0;
+    return result[0]?.count ?? 0;
   }
 }

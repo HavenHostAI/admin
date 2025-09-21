@@ -4,7 +4,7 @@ import type {
   RoleRepository,
   PermissionRepository,
 } from "@/repositories/interfaces/role.repository";
-import type { Role, Permission } from "@/types/openapi";
+import type { Role, Permission } from "@/types/api";
 
 // Mock repositories
 const mockRoleRepository: RoleRepository = {

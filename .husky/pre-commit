@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-pnpm test && pnpm typecheck
+pnpm test && pnpm check && pnpm format:check && pnpm openapi:validate

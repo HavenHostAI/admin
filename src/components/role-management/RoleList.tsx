@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { api } from "~/trpc/react";
+import { api, type RouterOutputs } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -31,11 +31,16 @@ import {
 import { CreateRoleDialog } from "./CreateRoleDialog";
 import { EditRoleDialog } from "./EditRoleDialog";
 import { ManagePermissionsDialog } from "./ManagePermissionsDialog";
+import type { Role } from "~/types/api";
+
+type RoleListResponse = RouterOutputs["role"]["list"];
 
 export function RoleList() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
+
+  const normalizedSearch = search.trim();
 
   const {
     data: rolesData,
@@ -45,14 +50,18 @@ export function RoleList() {
   } = api.role.list.useQuery({
     page,
     limit,
-    search: search || undefined,
+    search: normalizedSearch === "" ? undefined : normalizedSearch,
   });
 
   const deleteRoleMutation = api.role.delete.useMutation({
     onSuccess: () => {
-      refetch();
+      void refetch();
     },
   });
+
+  const roles: Role[] = rolesData?.roles ?? [];
+  const pagination: RoleListResponse["pagination"] | undefined =
+    rolesData?.pagination;
 
   const handleDeleteRole = async (roleId: string) => {
     if (
@@ -88,7 +97,7 @@ export function RoleList() {
               Manage roles and their permissions
             </CardDescription>
           </div>
-          <CreateRoleDialog onRoleCreated={() => refetch()} />
+          <CreateRoleDialog onRoleCreated={() => void refetch()} />
         </div>
       </CardHeader>
       <CardContent>
@@ -122,11 +131,11 @@ export function RoleList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(rolesData as any)?.data?.roles?.map((role: any) => (
+                {roles.map((role) => (
                   <TableRow key={role.id}>
                     <TableCell className="font-medium">{role.name}</TableCell>
                     <TableCell>
-                      {role.description || "No description"}
+                      {role.description ?? "No description"}
                     </TableCell>
                     <TableCell>
                       <Badge variant={role.is_system ? "default" : "secondary"}>
@@ -136,11 +145,11 @@ export function RoleList() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-500">
-                          {role.permissions?.length || 0} permissions
+                          {role.permissions?.length ?? 0} permissions
                         </span>
                         <ManagePermissionsDialog
                           role={role}
-                          onPermissionsUpdated={() => refetch()}
+                          onPermissionsUpdated={() => void refetch()}
                         />
                       </div>
                     </TableCell>
@@ -157,7 +166,7 @@ export function RoleList() {
                         <DropdownMenuContent align="end">
                           <EditRoleDialog
                             role={role}
-                            onRoleUpdated={() => refetch()}
+                            onRoleUpdated={() => void refetch()}
                           />
                           {!role.is_system && (
                             <DropdownMenuItem
@@ -178,12 +187,15 @@ export function RoleList() {
         )}
 
         {/* Pagination */}
-        {rolesData && (rolesData as any).data?.pagination?.total && (rolesData as any).data.pagination.total > limit && (
+        {pagination && pagination.total > limit && (
           <div className="mt-4 flex items-center justify-between">
             <div className="text-sm text-gray-500">
-              Showing {(page - 1) * limit + 1} to{" "}
-              {Math.min(page * limit, (rolesData as any).data.pagination.total)} of {(rolesData as any).data.pagination.total}{" "}
-              roles
+              {pagination.total === 0
+                ? "No roles found"
+                : `Showing ${(page - 1) * limit + 1} to ${Math.min(
+                    page * limit,
+                    pagination.total,
+                  )} of ${pagination.total} roles`}
             </div>
             <div className="flex gap-2">
               <Button
@@ -198,7 +210,7 @@ export function RoleList() {
                 variant="outline"
                 size="sm"
                 onClick={() => setPage(page + 1)}
-                disabled={page * limit >= ((rolesData as any).data?.pagination?.total || 0)}
+                disabled={page * limit >= pagination.total}
               >
                 Next
               </Button>

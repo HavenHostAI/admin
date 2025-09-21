@@ -168,7 +168,7 @@ When working on a Linear issue, the agent **must**:
 ### API / OpenAPI
 - Spec updated: openapi/openapi.yaml (bundled: openapi/dist.yaml)
 - Lint status (Spectral/Redocly): PASS ✅
-- Types generated: `src/types/openapi.d.ts`
+- Types generated: `src/types/api.d.ts`
 - Notable changes: new/changed endpoints, request/response DTOs, errors
 
 ### Lint & Format
@@ -208,7 +208,7 @@ When working on a Linear issue, the agent **must**:
      "scripts": {
        "openapi:lint": "spectral lint openapi/openapi.yaml",
        "openapi:bundle": "redocly bundle openapi/openapi.yaml -o openapi/dist.yaml",
-       "openapi:types": "openapi-typescript openapi/dist.yaml -o src/types/openapi.d.ts",
+       "openapi:types": "openapi-typescript openapi/dist.yaml -o src/types/api.d.ts",
        "openapi:docs": "redocly build-docs openapi/dist.yaml -o docs/api"
      }
    }

@@ -1,5 +1,6 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
+import type { DefaultJWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 import { db } from "~/server/db";
@@ -32,7 +33,7 @@ declare module "next-auth" {
 }
 
 declare module "next-auth/jwt" {
-  interface JWT {
+  interface JWT extends DefaultJWT {
     id: string;
     role?: string;
   }
@@ -52,15 +53,17 @@ export const authConfig = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials) {
+          return null;
+        }
+
+        const { email, password } = credentials;
+        if (typeof email !== "string" || typeof password !== "string") {
           return null;
         }
 
         const authRepository = new DrizzleAuthRepository();
-        const user = await authRepository.authenticateUser(
-          credentials.email,
-          credentials.password,
-        );
+        const user = await authRepository.authenticateUser(email, password);
 
         if (!user?.is_active) {
           return null;
@@ -84,32 +87,39 @@ export const authConfig = {
   }),
   callbacks: {
     redirect: ({ url, baseUrl }) => {
-      // If the URL is relative, make it absolute
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // If the URL is on the same origin, allow it
-      else if (url && new URL(url).origin === baseUrl) return url;
-      // Otherwise, redirect to tenant dashboard
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+
       return `${baseUrl}/tenant`;
     },
-    session: ({ session, token }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: token.id,
-        role: token.role,
-      },
-    }),
+    session: ({ session, token }) => {
+      if (session.user) {
+        session.user.id = token.id;
+
+        if (token.role) {
+          session.user.role = token.role;
+        }
+      }
+
+      return session;
+    },
     jwt: ({ token, user }) => {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        if ("role" in user) {
+          token.role = user.role;
+        }
       }
       return token;
     },
   },
   pages: {
     signIn: "/auth/signin",
-    signUp: "/auth/signup",
   },
   session: {
     strategy: "jwt",

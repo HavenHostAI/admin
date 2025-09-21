@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PropertyList } from "@/components/property-management/PropertyList";
-import type { Mock } from "vitest";
+import type { MockedFunction } from "vitest";
 
 type TrpcReactModule = typeof import("~/trpc/react");
 type PropertyListQueryHook =
@@ -16,14 +16,8 @@ type PropertyDeleteMutationResult = ReturnType<PropertyDeleteMutationHook>;
 // Mock tRPC
 let mockRefetch: ReturnType<typeof vi.fn>;
 let mockMutateAsync: ReturnType<typeof vi.fn>;
-let listUseQueryMock: Mock<
-  Parameters<PropertyListQueryHook>,
-  PropertyListQueryResult
->;
-let deleteUseMutationMock: Mock<
-  Parameters<PropertyDeleteMutationHook>,
-  PropertyDeleteMutationResult
->;
+let listUseQueryMock: MockedFunction<PropertyListQueryHook>;
+let deleteUseMutationMock: MockedFunction<PropertyDeleteMutationHook>;
 
 const mockPropertiesData = {
   properties: [
@@ -36,8 +30,8 @@ const mockPropertiesData = {
       configuration: {},
       owner_id: "user_123",
       is_active: true,
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z",
+      created_at: new Date("2024-01-01T00:00:00Z"),
+      updated_at: new Date("2024-01-02T00:00:00Z"),
     },
     {
       id: "2",
@@ -48,8 +42,8 @@ const mockPropertiesData = {
       configuration: {},
       owner_id: "user_456",
       is_active: false,
-      created_at: "2024-01-02T00:00:00Z",
-      updated_at: "2024-01-02T00:00:00Z",
+      created_at: new Date("2024-01-03T00:00:00Z"),
+      updated_at: new Date("2024-01-04T00:00:00Z"),
     },
   ],
   total: 2,
@@ -108,11 +102,11 @@ describe("PropertyList", () => {
       isLoading: false,
       error: null,
       refetch: mockRefetch,
-    } as PropertyListQueryResult);
+    } as unknown as PropertyListQueryResult);
 
     deleteUseMutationMock.mockReturnValue({
       mutateAsync: mockMutateAsync,
-    } as PropertyDeleteMutationResult);
+    } as unknown as PropertyDeleteMutationResult);
   });
 
   it("should render properties list with correct data", () => {
@@ -170,7 +164,12 @@ describe("PropertyList", () => {
     const actionButtons = screen.getAllByLabelText(/Actions for/i);
     expect(actionButtons).toHaveLength(mockPropertiesData.properties.length);
 
-    await user.click(actionButtons[0]);
+    const [firstActionButton] = actionButtons;
+    if (!firstActionButton) {
+      throw new Error("Expected at least one action button");
+    }
+
+    await user.click(firstActionButton);
     const editMenuButton = await screen.findByRole("button", { name: "Edit" });
     await user.click(editMenuButton);
 
@@ -186,7 +185,7 @@ describe("PropertyList", () => {
       isLoading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as unknown as PropertyListQueryResult);
 
     render(<PropertyList />);
 
@@ -203,7 +202,7 @@ describe("PropertyList", () => {
       isLoading: true,
       error: null,
       refetch: mockRefetch,
-    });
+    } as unknown as PropertyListQueryResult);
 
     render(<PropertyList />);
 
@@ -214,9 +213,11 @@ describe("PropertyList", () => {
     listUseQueryMock.mockReturnValue({
       data: null,
       isLoading: false,
-      error: { message: "Failed to load properties" },
+      error: {
+        message: "Failed to load properties",
+      } as unknown as PropertyListQueryResult["error"],
       refetch: mockRefetch,
-    });
+    } as unknown as PropertyListQueryResult);
 
     render(<PropertyList />);
 
@@ -250,7 +251,7 @@ describe("PropertyList", () => {
       isLoading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as unknown as PropertyListQueryResult);
 
     render(<PropertyList />);
 

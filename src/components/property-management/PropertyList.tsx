@@ -76,6 +76,12 @@ export function PropertyList() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
+  const normalizedSearch = search.trim();
+  const normalizedTypeFilter =
+    typeFilter && typeFilter !== "all" ? typeFilter : undefined;
+  const normalizedStatusFilter =
+    statusFilter && statusFilter !== "all" ? statusFilter : undefined;
+
   const {
     data: propertiesData,
     isLoading,
@@ -84,25 +90,25 @@ export function PropertyList() {
   } = api.property.list.useQuery({
     page,
     limit,
-    search: search || undefined,
-    type:
-      typeFilter && typeFilter !== "all"
-        ? (typeFilter as
-            | "server"
-            | "domain"
-            | "ssl_certificate"
-            | "database"
-            | "storage")
-        : undefined,
-    status:
-      statusFilter && statusFilter !== "all"
-        ? (statusFilter as "active" | "inactive" | "maintenance" | "suspended")
-        : undefined,
+    search: normalizedSearch === "" ? undefined : normalizedSearch,
+    type: normalizedTypeFilter as
+      | "server"
+      | "domain"
+      | "ssl_certificate"
+      | "database"
+      | "storage"
+      | undefined,
+    status: normalizedStatusFilter as
+      | "active"
+      | "inactive"
+      | "maintenance"
+      | "suspended"
+      | undefined,
   });
 
   const deletePropertyMutation = api.property.delete.useMutation({
     onSuccess: () => {
-      refetch();
+      void refetch();
     },
   });
 
@@ -136,7 +142,7 @@ export function PropertyList() {
               Manage hosting properties, servers, domains, and resources
             </CardDescription>
           </div>
-          <CreatePropertyDialog onPropertyCreated={() => refetch()} />
+          <CreatePropertyDialog onPropertyCreated={() => void refetch()} />
         </div>
       </CardHeader>
       <CardContent>
@@ -247,7 +253,7 @@ export function PropertyList() {
                           <DropdownMenuContent align="end">
                             <EditPropertyDialog
                               property={property}
-                              onPropertyUpdated={() => refetch()}
+                              onPropertyUpdated={() => void refetch()}
                             />
                             <DropdownMenuItem
                               onClick={() => handleDeleteProperty(property.id)}

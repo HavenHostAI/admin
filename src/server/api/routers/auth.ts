@@ -6,11 +6,7 @@ import {
 } from "~/server/api/trpc";
 import { AuthService } from "../../../services/auth.service";
 import { createRepositories } from "../../../repositories";
-import type {
-  LoginRequest,
-  LoginResponse,
-  Session,
-} from "../../../types/openapi";
+import type { LoginResponse, Session } from "../../../types/api";
 
 // Factory function for creating auth service instances
 const createAuthService = () => {
@@ -18,8 +14,39 @@ const createAuthService = () => {
   return new AuthService(
     repositories.authRepository,
     repositories.userRepository,
-    repositories.roleRepository,
   );
+};
+
+type SessionUserInput = {
+  id: string;
+  role?: string | null;
+  email?: string | null;
+  name?: string | null;
+  image?: string | null;
+};
+
+const mapSessionUserToApiUser = (
+  sessionUser: SessionUserInput,
+): Session["user"] => {
+  const allowedRoles: Session["user"]["role"][] = ["admin", "editor", "viewer"];
+
+  const role = allowedRoles.includes(
+    sessionUser.role as Session["user"]["role"],
+  )
+    ? (sessionUser.role as Session["user"]["role"])
+    : "viewer";
+
+  return {
+    id: sessionUser.id,
+    email: sessionUser.email ?? "",
+    name: sessionUser.name ?? "",
+    image: sessionUser.image ?? undefined,
+    role,
+    is_active: true,
+    email_verified: undefined,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
 };
 
 // Zod schemas that match OpenAPI spec
@@ -29,55 +56,57 @@ const LoginSchema = z.object({
 });
 
 export const authRouter = createTRPCRouter({
-  login: publicProcedure
-    .input(LoginSchema)
-    .mutation(async ({ input }): Promise<LoginResponse> => {
-      const authService = createAuthService();
-      return await authService.login(input);
-    }),
-
-  logout: protectedProcedure.mutation(
-    async ({ ctx }): Promise<{ message: string }> => {
-      // Extract session token from context (this would need to be implemented)
-      const sessionToken = ctx.session?.sessionToken;
-      if (!sessionToken) {
-        throw new Error("No active session found");
-      }
-
-      const authService = createAuthService();
-      await authService.logout(sessionToken);
-      return { message: "Logged out successfully" };
-    },
-  ),
-
-  session: protectedProcedure.query(async ({ ctx }): Promise<Session> => {
-    // Extract session token from context
-    const sessionToken = ctx.session?.sessionToken;
-    if (!sessionToken) {
-      throw new Error("No active session found");
-    }
-
+  login: publicProcedure.input(LoginSchema).mutation(async ({ input }) => {
     const authService = createAuthService();
-    const session = await authService.getSession(sessionToken);
-    if (!session) {
-      throw new Error("Session not found or expired");
-    }
-
-    return session;
+    return (await authService.login(input)) satisfies LoginResponse;
   }),
 
-  refresh: protectedProcedure.mutation(
-    async ({ ctx }): Promise<{ access_token: string }> => {
-      // Extract session token from context
-      const sessionToken = ctx.session?.sessionToken;
-      if (!sessionToken) {
+  logout: protectedProcedure
+    .input(z.object({ sessionToken: z.string().optional() }).optional())
+    .mutation(async ({ input }) => {
+      const authService = createAuthService();
+      const sessionToken = input?.sessionToken;
+      if (sessionToken) {
+        await authService.logout(sessionToken);
+      }
+      return { message: "Logged out successfully" } as const;
+    }),
+
+  session: protectedProcedure
+    .input(z.object({ sessionToken: z.string().optional() }).optional())
+    .query(async ({ input, ctx }) => {
+      const authService = createAuthService();
+      const sessionToken = input?.sessionToken;
+      if (sessionToken) {
+        const session = await authService.getSession(sessionToken);
+        if (!session) {
+          throw new Error("Session not found or expired");
+        }
+
+        return session satisfies Session;
+      }
+
+      if (!ctx.session?.user) {
         throw new Error("No active session found");
       }
 
+      return {
+        user: mapSessionUserToApiUser(ctx.session.user as SessionUserInput),
+        expires: ctx.session.expires ?? new Date().toISOString(),
+      } satisfies Session;
+    }),
+
+  refresh: protectedProcedure
+    .input(z.object({ sessionToken: z.string().optional() }).optional())
+    .mutation(async ({ input }) => {
       const authService = createAuthService();
+      const sessionToken = input?.sessionToken;
+      if (!sessionToken) {
+        throw new Error("Session token is required to refresh");
+      }
+
       return await authService.refreshToken(sessionToken);
-    },
-  ),
+    }),
 
   // Role-based access control procedures
   getUserRoles: protectedProcedure.query(async ({ ctx }): Promise<string[]> => {

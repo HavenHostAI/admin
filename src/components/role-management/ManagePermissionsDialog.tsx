@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import {
@@ -15,7 +15,7 @@ import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Shield } from "lucide-react";
-import type { Role } from "~/types/openapi";
+import type { Permission, Role } from "~/types/api";
 
 interface ManagePermissionsDialogProps {
   role: Role;
@@ -27,9 +27,13 @@ export function ManagePermissionsDialog({
   onPermissionsUpdated,
 }: ManagePermissionsDialogProps) {
   const [open, setOpen] = useState(false);
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>(
-    role.permissions?.map((p: any) => p.id) || [],
-  );
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSelectedPermissions(
+      role.permissions?.map((permission: Permission) => permission.id) ?? [],
+    );
+  }, [role.permissions, open]);
 
   const { data: allPermissions } = api.permission.getAll.useQuery();
 
@@ -55,7 +59,9 @@ export function ManagePermissionsDialog({
           roleId: role.id,
           permissionId,
         });
-        setSelectedPermissions((prev) => [...prev, permissionId]);
+        setSelectedPermissions((prev) =>
+          prev.includes(permissionId) ? prev : [...prev, permissionId],
+        );
       } else {
         await removePermissionMutation.mutateAsync({
           roleId: role.id,
@@ -70,17 +76,17 @@ export function ManagePermissionsDialog({
     }
   };
 
-  const groupedPermissions =
-    allPermissions?.reduce(
+  const groupedPermissions = useMemo(() => {
+    return (allPermissions ?? []).reduce<Record<string, Permission[]>>(
       (acc, permission) => {
-        if (!acc[permission.resource]) {
-          acc[permission.resource] = [];
-        }
-        acc[permission.resource]!.push(permission);
+        const bucket = acc[permission.resource] ?? [];
+        bucket.push(permission);
+        acc[permission.resource] = bucket;
         return acc;
       },
-      {} as Record<string, any[]>,
-    ) || {};
+      {},
+    );
+  }, [allPermissions]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -104,7 +110,7 @@ export function ManagePermissionsDialog({
             <h4 className="mb-2 text-sm font-medium">Current Permissions</h4>
             <div className="flex flex-wrap gap-2">
               {role.permissions && role.permissions.length > 0 ? (
-                role.permissions.map((permission: any) => (
+                role.permissions.map((permission: Permission) => (
                   <Badge key={permission.id} variant="default">
                     {permission.resource}:{permission.action}
                   </Badge>
@@ -121,12 +127,14 @@ export function ManagePermissionsDialog({
           <div>
             <h4 className="mb-4 text-sm font-medium">Available Permissions</h4>
             <div className="space-y-4">
-              {Object.entries(groupedPermissions).map(
-                ([resource, permissions]) => (
+              {Object.keys(groupedPermissions).map((resource) => {
+                const permissions = groupedPermissions[resource] ?? [];
+
+                return (
                   <div key={resource} className="rounded-lg border p-4">
                     <h5 className="mb-3 font-medium capitalize">{resource}</h5>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {permissions.map((permission: any) => (
+                      {permissions.map((permission) => (
                         <div
                           key={permission.id}
                           className="flex items-center space-x-2"
@@ -139,7 +147,7 @@ export function ManagePermissionsDialog({
                             onCheckedChange={(checked) =>
                               handlePermissionToggle(
                                 permission.id,
-                                checked as boolean,
+                                checked === true,
                               )
                             }
                             disabled={
@@ -162,16 +170,16 @@ export function ManagePermissionsDialog({
                       ))}
                     </div>
                   </div>
-                ),
-              )}
+                );
+              })}
             </div>
           </div>
 
-          {(assignPermissionMutation.error ||
+          {(assignPermissionMutation.error ??
             removePermissionMutation.error) && (
             <Alert variant="destructive">
               <AlertDescription>
-                {assignPermissionMutation.error?.message ||
+                {assignPermissionMutation.error?.message ??
                   removePermissionMutation.error?.message}
               </AlertDescription>
             </Alert>

@@ -1,7 +1,6 @@
 import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
-import React from "react";
 
 // Cleanup after each test
 afterEach(() => {
@@ -105,3 +104,46 @@ vi.mock("~/trpc/react", () => ({
 // Mock environment variables
 process.env.NEXTAUTH_URL = "http://localhost:3000";
 process.env.AUTH_SECRET = "test-secret";
+
+type DeleteBuilder = {
+  where: (...args: unknown[]) => Promise<void>;
+};
+
+interface TestContext {
+  db: {
+    delete: (...args: unknown[]) => DeleteBuilder;
+  };
+  schema: Record<string, Record<string, { isNotNull: () => void }>>;
+  cleanup: () => Promise<void>;
+}
+
+const noopAsync = async () => undefined;
+
+export const createTestContext = (): TestContext => {
+  const deleteBuilder: DeleteBuilder = {
+    where: noopAsync,
+  };
+
+  const schema = new Proxy(
+    {},
+    {
+      get: () =>
+        new Proxy(
+          {},
+          {
+            get: () => ({
+              isNotNull: () => ({}),
+            }),
+          },
+        ),
+    },
+  ) as TestContext["schema"];
+
+  return {
+    db: {
+      delete: () => ({ ...deleteBuilder }),
+    },
+    schema,
+    cleanup: noopAsync,
+  };
+};

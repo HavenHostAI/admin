@@ -1,14 +1,8 @@
-import type { User, Session } from "~/types/openapi";
+import type { User, Session } from "~/types/api";
 
 export interface LoginRequest {
   email: string;
   password: string;
-}
-
-export interface LoginResponse {
-  user: User;
-  session: Session;
-  access_token: string;
 }
 
 export interface AuthRepository {

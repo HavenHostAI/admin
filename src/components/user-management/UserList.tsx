@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { api } from "~/trpc/react";
+import { api, type RouterOutputs } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -46,6 +46,11 @@ export function UserList() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
+  const normalizedSearch = search.trim();
+  const normalizedRoleFilter = roleFilter.trim();
+  const selectedStatus =
+    statusFilter === "" ? undefined : (statusFilter as "active" | "inactive");
+
   const {
     data: usersData,
     isLoading,
@@ -54,9 +59,9 @@ export function UserList() {
   } = api.user.list.useQuery({
     page,
     limit,
-    search: search || undefined,
-    role: roleFilter || undefined,
-    status: statusFilter as "active" | "inactive" | undefined,
+    search: normalizedSearch === "" ? undefined : normalizedSearch,
+    role: normalizedRoleFilter === "" ? undefined : normalizedRoleFilter,
+    status: selectedStatus,
   });
 
   const { data: rolesData } = api.role.list.useQuery({
@@ -66,9 +71,16 @@ export function UserList() {
 
   const deleteUserMutation = api.user.delete.useMutation({
     onSuccess: () => {
-      refetch();
+      void refetch();
     },
   });
+
+  type UserListResponse = RouterOutputs["user"]["list"];
+  type RoleListResponse = RouterOutputs["role"]["list"];
+
+  const users: UserListResponse["users"] = usersData?.users ?? [];
+  const pagination = usersData?.pagination;
+  const roles: RoleListResponse["roles"] = rolesData?.roles ?? [];
 
   const handleDeleteUser = async (userId: string) => {
     if (confirm("Are you sure you want to delete this user?")) {
@@ -100,7 +112,7 @@ export function UserList() {
               Manage users, roles, and permissions
             </CardDescription>
           </div>
-          <CreateUserDialog onUserCreated={() => refetch()} />
+          <CreateUserDialog onUserCreated={() => void refetch()} />
         </div>
       </CardHeader>
       <CardContent>
@@ -124,7 +136,7 @@ export function UserList() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All roles</SelectItem>
-                {rolesData?.roles.map((role) => (
+                {roles.map((role) => (
                   <SelectItem key={role.id} value={role.id}>
                     {role.name}
                   </SelectItem>
@@ -161,7 +173,7 @@ export function UserList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {usersData?.users.map((user) => (
+                {users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
@@ -188,11 +200,11 @@ export function UserList() {
                         <DropdownMenuContent align="end">
                           <EditUserDialog
                             user={user}
-                            onUserUpdated={() => refetch()}
+                            onUserUpdated={() => void refetch()}
                           />
                           <AssignRoleDialog
                             user={user}
-                            onRoleAssigned={() => refetch()}
+                            onRoleAssigned={() => void refetch()}
                           />
                           <DropdownMenuItem
                             onClick={() => handleDeleteUser(user.id)}
@@ -211,41 +223,36 @@ export function UserList() {
         )}
 
         {/* Pagination */}
-        {usersData &&
-          (usersData as any).data?.pagination?.total &&
-          (usersData as any).data.pagination.total > limit && (
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-gray-500">
-                Showing {(page - 1) * limit + 1} to{" "}
-                {Math.min(
-                  page * limit,
-                  (usersData as any).data.pagination.total,
-                )}{" "}
-                of {(usersData as any).data.pagination.total} users
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(page - 1)}
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(page + 1)}
-                  disabled={
-                    page * limit >=
-                    ((usersData as any).data?.pagination?.total || 0)
-                  }
-                >
-                  Next
-                </Button>
-              </div>
+        {pagination && pagination.total > limit && (
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-gray-500">
+              {pagination.total === 0
+                ? "No users found"
+                : `Showing ${(page - 1) * limit + 1} to ${Math.min(
+                    page * limit,
+                    pagination.total,
+                  )} of ${pagination.total} users`}
             </div>
-          )}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page - 1)}
+                disabled={page === 1}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page + 1)}
+                disabled={page * limit >= pagination.total}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

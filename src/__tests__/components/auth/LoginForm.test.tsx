@@ -2,7 +2,12 @@ import React from "react";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { MockedFunction } from "vitest";
 import { LoginForm } from "@/components/auth/LoginForm";
+
+type TrpcReactModule = typeof import("~/trpc/react");
+type LoginMutationHook = TrpcReactModule["api"]["auth"]["login"]["useMutation"];
+type LoginMutationResult = ReturnType<LoginMutationHook>;
 
 // Mock tRPC
 vi.mock("~/trpc/react", () => ({
@@ -15,10 +20,21 @@ vi.mock("~/trpc/react", () => ({
   },
 }));
 
+const buildMutationResult = (
+  mockMutate: ReturnType<typeof vi.fn>,
+  overrides: Partial<LoginMutationResult> = {},
+): LoginMutationResult =>
+  ({
+    mutate: mockMutate,
+    isPending: false,
+    error: null,
+    ...overrides,
+  }) as unknown as LoginMutationResult;
+
 describe("LoginForm", () => {
   const user = userEvent.setup();
   let mockMutate: ReturnType<typeof vi.fn>;
-  let mockUseMutation: ReturnType<typeof vi.mocked>;
+  let mockUseMutation: MockedFunction<LoginMutationHook>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -27,11 +43,7 @@ describe("LoginForm", () => {
     mockUseMutation = vi.mocked(api.auth.login.useMutation);
     mockMutate = vi.fn();
 
-    mockUseMutation.mockReturnValue({
-      mutate: mockMutate,
-      isPending: false,
-      error: null,
-    });
+    mockUseMutation.mockReturnValue(buildMutationResult(mockMutate));
   });
 
   it("should render login form with email and password fields", () => {
@@ -73,11 +85,9 @@ describe("LoginForm", () => {
   });
 
   it("should show loading state when pending", () => {
-    mockUseMutation.mockReturnValue({
-      mutate: mockMutate,
-      isPending: true,
-      error: null,
-    });
+    mockUseMutation.mockReturnValue(
+      buildMutationResult(mockMutate, { isPending: true }),
+    );
 
     render(<LoginForm />);
 
@@ -89,11 +99,13 @@ describe("LoginForm", () => {
 
   it("should display error message when login fails", () => {
     const errorMessage = "Invalid email or password";
-    mockUseMutation.mockReturnValue({
-      mutate: mockMutate,
-      isPending: false,
-      error: { message: errorMessage },
-    });
+    mockUseMutation.mockReturnValue(
+      buildMutationResult(mockMutate, {
+        error: {
+          message: errorMessage,
+        } as unknown as LoginMutationResult["error"],
+      }),
+    );
 
     render(<LoginForm />);
 
@@ -102,11 +114,7 @@ describe("LoginForm", () => {
 
   it("should call onSuccess callback on successful login", async () => {
     const onSuccess = vi.fn();
-    mockUseMutation.mockReturnValue({
-      mutate: mockMutate,
-      isPending: false,
-      error: null,
-    });
+    mockUseMutation.mockReturnValue(buildMutationResult(mockMutate));
 
     render(<LoginForm onSuccess={onSuccess} />);
 
@@ -119,10 +127,13 @@ describe("LoginForm", () => {
     await user.click(submitButton);
 
     // Simulate successful login by calling the onSuccess from the mutation
-    const mutationConfig = mockUseMutation.mock.calls[0][0];
+    const mutationConfig = mockUseMutation.mock.calls[0]?.[0] as {
+      onSuccess?: (...args: unknown[]) => void;
+      onError?: (...args: unknown[]) => void;
+    };
 
     await act(async () => {
-      mutationConfig.onSuccess();
+      mutationConfig?.onSuccess?.();
     });
 
     expect(onSuccess).toHaveBeenCalled();
@@ -131,27 +142,28 @@ describe("LoginForm", () => {
   it("should call onError callback on login failure", async () => {
     const onError = vi.fn();
     const errorMessage = "Login failed";
-    mockUseMutation.mockReturnValue({
-      mutate: mockMutate,
-      isPending: false,
-      error: { message: errorMessage },
-    });
+    mockUseMutation.mockReturnValue(
+      buildMutationResult(mockMutate, {
+        error: {
+          message: errorMessage,
+        } as unknown as LoginMutationResult["error"],
+      }),
+    );
 
     render(<LoginForm onError={onError} />);
 
     // Simulate error by calling the onError from the mutation
-    const mutationConfig = mockUseMutation.mock.calls[0][0];
-    mutationConfig.onError({ message: errorMessage });
+    const mutationConfig = mockUseMutation.mock.calls[0]?.[0] as {
+      onSuccess?: (...args: unknown[]) => void;
+      onError?: (...args: unknown[]) => void;
+    };
+    mutationConfig?.onError?.({ message: errorMessage });
 
     expect(onError).toHaveBeenCalledWith(errorMessage);
   });
 
   it("should clear form after successful login", async () => {
-    mockUseMutation.mockReturnValue({
-      mutate: mockMutate,
-      isPending: false,
-      error: null,
-    });
+    mockUseMutation.mockReturnValue(buildMutationResult(mockMutate));
 
     render(<LoginForm />);
 
@@ -162,10 +174,13 @@ describe("LoginForm", () => {
     await user.type(passwordInput, "password123");
 
     // Simulate successful login
-    const mutationConfig = mockUseMutation.mock.calls[0][0];
+    const mutationConfig = mockUseMutation.mock.calls[0]?.[0] as {
+      onSuccess?: (...args: unknown[]) => void;
+      onError?: (...args: unknown[]) => void;
+    };
 
     await act(async () => {
-      mutationConfig.onSuccess();
+      mutationConfig?.onSuccess?.();
     });
 
     expect(emailInput).toHaveValue("");

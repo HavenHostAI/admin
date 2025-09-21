@@ -6,7 +6,7 @@ import type {
   PropertyListOptions,
   PropertyListResult,
 } from "@/repositories/interfaces/property.repository";
-import type { User } from "~/types/openapi";
+import type { User } from "~/types/api";
 import {
   canCreateProperty,
   canUpdateProperty,

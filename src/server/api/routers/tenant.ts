@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const tenantRouter = createTRPCRouter({
-  getStats: protectedProcedure.query(async ({ ctx }) => {
+  getStats: protectedProcedure.query(async () => {
     // Mock data - in a real app, this would query the database
     return {
       totalUsers: 1247,
@@ -17,7 +17,7 @@ export const tenantRouter = createTRPCRouter({
     };
   }),
 
-  getRecentActivity: protectedProcedure.query(async ({ ctx }) => {
+  getRecentActivity: protectedProcedure.query(async () => {
     // Mock data - in a real app, this would query the database
     return [
       {
@@ -58,7 +58,7 @@ export const tenantRouter = createTRPCRouter({
     ];
   }),
 
-  getPerformanceMetrics: protectedProcedure.query(async ({ ctx }) => {
+  getPerformanceMetrics: protectedProcedure.query(async () => {
     // Mock data - in a real app, this would query the database
     return {
       responseTime: 45,
@@ -80,7 +80,7 @@ export const tenantRouter = createTRPCRouter({
         performanceWarnings: z.boolean(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       // Mock implementation - in a real app, this would update the database
       console.log("Updating tenant settings:", input);
 

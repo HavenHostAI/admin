@@ -62,7 +62,7 @@ export function SignUpForm() {
         email: formData.email,
         password: formData.password,
       });
-    } catch (error) {
+    } catch {
       // Error is handled in the mutation onError callback
     }
   };

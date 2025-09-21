@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { api } from "~/trpc/react";
-import type { LoginRequest } from "../../types/openapi";
+import type { LoginRequest } from "../../types/api";
 
 interface LoginFormProps {
   onSuccess?: () => void;

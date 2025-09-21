@@ -6,7 +6,7 @@ import type {
   RoleListFilters,
   RoleListResponse,
 } from "~/repositories/interfaces/role.repository";
-import type { Role, Permission } from "~/types/openapi";
+import type { Role, Permission } from "~/types/api";
 
 export class RoleService {
   constructor(
