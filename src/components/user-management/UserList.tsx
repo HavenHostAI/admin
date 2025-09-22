@@ -76,7 +76,10 @@ export function UserList() {
 
   const deleteUserMutation = api.user.delete.useMutation({
     onSuccess: () => {
-      void refetch();
+      refetch().catch((error) => {
+        console.error("Failed to refetch users after deletion:", error);
+        // Could also show a toast notification to the user here
+      });
     },
   });
 
@@ -117,7 +120,13 @@ export function UserList() {
               Manage users, roles, and permissions
             </CardDescription>
           </div>
-          <CreateUserDialog onUserCreated={() => void refetch()} />
+          <CreateUserDialog
+            onUserCreated={() => {
+              refetch().catch((error) => {
+                console.error("Failed to refetch users after creation:", error);
+              });
+            }}
+          />
         </div>
       </CardHeader>
       <CardContent>
@@ -205,11 +214,25 @@ export function UserList() {
                         <DropdownMenuContent align="end">
                           <EditUserDialog
                             user={user}
-                            onUserUpdated={() => void refetch()}
+                            onUserUpdated={() => {
+                              refetch().catch((error) => {
+                                console.error(
+                                  "Failed to refetch users after update:",
+                                  error,
+                                );
+                              });
+                            }}
                           />
                           <AssignRoleDialog
                             user={user}
-                            onRoleAssigned={() => void refetch()}
+                            onRoleAssigned={() => {
+                              refetch().catch((error) => {
+                                console.error(
+                                  "Failed to refetch users after role assignment:",
+                                  error,
+                                );
+                              });
+                            }}
                           />
                           <DropdownMenuItem
                             onClick={() => handleDeleteUser(user.id)}

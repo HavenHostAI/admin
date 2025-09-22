@@ -94,7 +94,10 @@ export function PropertyList() {
 
   const deletePropertyMutation = api.property.delete.useMutation({
     onSuccess: () => {
-      void refetch();
+      refetch().catch((error) => {
+        console.error("Failed to refetch properties after deletion:", error);
+        // Could also show a toast notification to the user here
+      });
     },
   });
 
@@ -128,7 +131,16 @@ export function PropertyList() {
               Manage hosting properties, servers, domains, and resources
             </CardDescription>
           </div>
-          <CreatePropertyDialog onPropertyCreated={() => void refetch()} />
+          <CreatePropertyDialog
+            onPropertyCreated={() => {
+              refetch().catch((error) => {
+                console.error(
+                  "Failed to refetch properties after creation:",
+                  error,
+                );
+              });
+            }}
+          />
         </div>
       </CardHeader>
       <CardContent>
@@ -239,7 +251,14 @@ export function PropertyList() {
                           <DropdownMenuContent align="end">
                             <EditPropertyDialog
                               property={property}
-                              onPropertyUpdated={() => void refetch()}
+                              onPropertyUpdated={() => {
+                                refetch().catch((error) => {
+                                  console.error(
+                                    "Failed to refetch properties after update:",
+                                    error,
+                                  );
+                                });
+                              }}
                             />
                             <DropdownMenuItem
                               onClick={() => handleDeleteProperty(property.id)}

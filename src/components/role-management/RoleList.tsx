@@ -55,7 +55,10 @@ export function RoleList() {
 
   const deleteRoleMutation = api.role.delete.useMutation({
     onSuccess: () => {
-      void refetch();
+      refetch().catch((error) => {
+        console.error("Failed to refetch roles after deletion:", error);
+        // Could also show a toast notification to the user here
+      });
     },
   });
 
@@ -97,7 +100,13 @@ export function RoleList() {
               Manage roles and their permissions
             </CardDescription>
           </div>
-          <CreateRoleDialog onRoleCreated={() => void refetch()} />
+          <CreateRoleDialog
+            onRoleCreated={() => {
+              refetch().catch((error) => {
+                console.error("Failed to refetch roles after creation:", error);
+              });
+            }}
+          />
         </div>
       </CardHeader>
       <CardContent>
@@ -149,7 +158,14 @@ export function RoleList() {
                         </span>
                         <ManagePermissionsDialog
                           role={role}
-                          onPermissionsUpdated={() => void refetch()}
+                          onPermissionsUpdated={() => {
+                            refetch().catch((error) => {
+                              console.error(
+                                "Failed to refetch roles after permissions update:",
+                                error,
+                              );
+                            });
+                          }}
                         />
                       </div>
                     </TableCell>
@@ -166,7 +182,14 @@ export function RoleList() {
                         <DropdownMenuContent align="end">
                           <EditRoleDialog
                             role={role}
-                            onRoleUpdated={() => void refetch()}
+                            onRoleUpdated={() => {
+                              refetch().catch((error) => {
+                                console.error(
+                                  "Failed to refetch roles after update:",
+                                  error,
+                                );
+                              });
+                            }}
                           />
                           {!role.is_system && (
                             <DropdownMenuItem

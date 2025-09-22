@@ -12,6 +12,16 @@ import {
 } from "~/server/db/schema";
 import { DrizzleAuthRepository } from "~/repositories/implementations/drizzle-auth.repository";
 
+// Helper function to check if user has a valid role
+const hasValidRole = (user: unknown): user is { role: string } => {
+  return (
+    user !== null &&
+    typeof user === "object" &&
+    "role" in user &&
+    typeof (user as { role: unknown }).role === "string"
+  );
+};
+
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -111,12 +121,7 @@ export const authConfig = {
     jwt: ({ token, user }) => {
       if (user) {
         token.id = user.id;
-        if (
-          user &&
-          typeof user === "object" &&
-          "role" in user &&
-          typeof user.role === "string"
-        ) {
+        if (hasValidRole(user)) {
           token.role = user.role;
         }
       }

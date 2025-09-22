@@ -72,7 +72,7 @@ test.describe("Property Management", () => {
 
   test("filters by search and type", async ({ page }) => {
     await page.getByPlaceholder("Search properties...").fill("Domain");
-    await page.waitForTimeout(300);
+    // Wait for the search results to update instead of using arbitrary timeout
     await expect(
       page.locator("tr").filter({ hasText: "Test Domain 1" }),
     ).toBeVisible();
@@ -82,7 +82,7 @@ test.describe("Property Management", () => {
 
     await page.getByPlaceholder("Search properties...").fill("");
     await selectComboboxOption(page, 0, "Server");
-    await page.waitForTimeout(300);
+    // Wait for the filter results to update instead of using arbitrary timeout
     await expect(
       page.locator("tr").filter({ hasText: "Test Server 1" }),
     ).toBeVisible();
@@ -127,21 +127,37 @@ test.describe("Property Management", () => {
   test("paginates when more than a page of properties exist", async ({
     page,
   }) => {
-    // Create properties in parallel for better performance
-    const propertyPromises = Array.from({ length: 12 }, (_, i) =>
-      createProperty(
-        page,
-        `Pagination Server ${i + 1}`,
-        "Server",
-        "Active",
-        undefined,
-        {
-          waitForRow: false, // Don't wait for individual rows since we're creating in parallel
-        },
-      ),
-    );
+    // Create properties in smaller batches to avoid race conditions
+    const batchSize = 4;
+    const totalProperties = 12;
 
-    await Promise.all(propertyPromises);
+    for (let batch = 0; batch < totalProperties; batch += batchSize) {
+      const batchPromises = Array.from(
+        { length: Math.min(batchSize, totalProperties - batch) },
+        (_, i) => {
+          const propertyIndex = batch + i + 1;
+          return createProperty(
+            page,
+            `Pagination Server ${propertyIndex}`,
+            "Server",
+            "Active",
+            undefined,
+            {
+              waitForRow: false, // Don't wait for individual rows since we're creating in batches
+            },
+          );
+        },
+      );
+
+      await Promise.all(batchPromises);
+
+      // Wait for the properties to be created and visible in the table
+      await expect(
+        page
+          .locator("tr")
+          .filter({ hasText: `Pagination Server ${batch + batchSize}` }),
+      ).toBeVisible();
+    }
 
     // Wait for the first page to load with the expected count
     await expect(page.getByText(/Showing 1 to 10 of/)).toBeVisible();
