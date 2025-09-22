@@ -179,7 +179,7 @@ test.describe("Property Detail Page", () => {
     await expect(page.getByTestId("property-actions-button")).toBeVisible();
 
     // Verify the layout adapts (cards should stack vertically)
-    const cards = page.locator(".card, [class*='card']");
+    const cards = page.getByTestId("property-card");
     await expect(cards).toHaveCount(2);
   });
 

@@ -13,13 +13,21 @@ interface PropertyDetailPageProps {
       }>;
 }
 
+async function resolveParams(
+  params:
+    | { id: string }
+    | Promise<{ id: string }>
+): Promise<{ id: string }> {
+  if (params && typeof (params as Promise<unknown>).then === "function") {
+    return await params;
+  }
+  return params as { id: string };
+}
+
 export default async function PropertyDetailPage({
   params,
 }: PropertyDetailPageProps) {
-  const resolvedParams =
-    params && typeof (params as Promise<unknown>).then === "function"
-      ? await params
-      : (params as { id: string });
+  const resolvedParams = await resolveParams(params);
 
   const isE2E =
     process.env.NEXT_PUBLIC_E2E === "true" || process.env.E2E === "true";

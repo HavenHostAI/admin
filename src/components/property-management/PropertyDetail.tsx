@@ -94,7 +94,12 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
     onSuccess: () => {
       refetch().catch((error) => {
         console.error("Failed to refetch property after activation:", error);
+        // TODO: Add toast notification for user feedback
       });
+    },
+    onError: (error) => {
+      console.error("Failed to activate property:", error);
+      // TODO: Add toast notification for user feedback
     },
   });
 
@@ -102,7 +107,12 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
     onSuccess: () => {
       refetch().catch((error) => {
         console.error("Failed to refetch property after deactivation:", error);
+        // TODO: Add toast notification for user feedback
       });
+    },
+    onError: (error) => {
+      console.error("Failed to deactivate property:", error);
+      // TODO: Add toast notification for user feedback
     },
   });
 
@@ -116,6 +126,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
         await deletePropertyMutation.mutateAsync({ id: property.id });
       } catch (error) {
         console.error("Failed to delete property:", error);
+        // TODO: Add toast notification for user feedback
       }
     }
   };
@@ -125,6 +136,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
       await activatePropertyMutation.mutateAsync({ id: property.id });
     } catch (error) {
       console.error("Failed to activate property:", error);
+      // TODO: Add toast notification for user feedback
     }
   };
 
@@ -134,12 +146,43 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
         await deactivatePropertyMutation.mutateAsync({ id: property.id });
       } catch (error) {
         console.error("Failed to deactivate property:", error);
+        // TODO: Add toast notification for user feedback
       }
     }
   };
 
   const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleString();
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return "Invalid date";
+    }
+    // Use a consistent format: YYYY-MM-DD HH:mm:ss
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    const year = d.getFullYear();
+    const month = pad(d.getMonth() + 1);
+    const day = pad(d.getDate());
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    const seconds = pad(d.getSeconds());
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
+
+  const formatConfigurationValue = (value: unknown): string => {
+    if (value === null || value === undefined) {
+      return "";
+    }
+    
+    switch (typeof value) {
+      case "object":
+        return JSON.stringify(value, null, 2);
+      case "string":
+        return value;
+      case "number":
+      case "boolean":
+        return value.toString();
+      default:
+        return "";
+    }
   };
 
   const renderConfiguration = () => {
@@ -162,15 +205,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
               {key}:
             </span>
             <span className="text-sm break-all text-gray-700">
-              {typeof value === "object"
-                ? JSON.stringify(value, null, 2)
-                : typeof value === "string"
-                  ? value
-                  : typeof value === "number"
-                    ? value.toString()
-                    : typeof value === "boolean"
-                      ? value.toString()
-                      : ""}
+              {formatConfigurationValue(value)}
             </span>
           </div>
         ))}
@@ -179,7 +214,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="property-detail-container">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -289,7 +324,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
       {/* Property Information */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Basic Information */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2" data-testid="property-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
@@ -330,7 +365,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
         </Card>
 
         {/* Metadata */}
-        <Card>
+        <Card data-testid="property-metadata-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />

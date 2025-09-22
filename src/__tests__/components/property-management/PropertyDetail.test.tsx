@@ -256,9 +256,9 @@ describe("PropertyDetail", () => {
   it("should format dates correctly", () => {
     render(<PropertyDetail propertyId={mockProperty.id} />);
 
-    // Check that dates are formatted (exact format may vary by locale)
+    // Check that dates are formatted in the new consistent format
     // There should be two date elements (created and updated)
-    expect(screen.getAllByText(/1\/15\/2024/)).toHaveLength(2);
+    expect(screen.getAllByText(/2024-01-15/)).toHaveLength(2);
   });
 
   it("should render correct property type icon and label", () => {
