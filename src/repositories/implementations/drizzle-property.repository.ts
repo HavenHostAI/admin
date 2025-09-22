@@ -19,20 +19,14 @@ export class DrizzlePropertyRepository implements PropertyRepository {
     if (!isValidPropertyType(dbProperty.type)) {
       const errorMessage = `[DrizzlePropertyRepository] Invalid property type '${dbProperty.type}' for property '${dbProperty.id}'.`;
       console.error(errorMessage);
-      // For critical data integrity issues, we should throw an error
-      // but for now, we'll log the error and use a fallback to maintain backward compatibility
-      // TODO: Consider throwing an error in future versions for stricter data validation
-      // throw new Error(errorMessage);
+      throw new Error(errorMessage);
     }
 
     // Validate property status and handle data integrity issues
     if (!isValidPropertyStatus(dbProperty.status)) {
       const errorMessage = `[DrizzlePropertyRepository] Invalid property status '${dbProperty.status}' for property '${dbProperty.id}'.`;
       console.error(errorMessage);
-      // For critical data integrity issues, we should throw an error
-      // but for now, we'll log the error and use a fallback to maintain backward compatibility
-      // TODO: Consider throwing an error in future versions for stricter data validation
-      // throw new Error(errorMessage);
+      throw new Error(errorMessage);
     }
 
     return {

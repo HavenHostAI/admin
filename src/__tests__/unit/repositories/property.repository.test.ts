@@ -4,10 +4,23 @@ import { DrizzlePropertyRepository } from "@/repositories/implementations/drizzl
 
 // Mock the database and schema
 vi.mock("@/server/db", () => {
-  const offsetMock = vi.fn().mockResolvedValue([{ id: "test-id" }]);
+  const mockProperty = {
+    id: "test-id",
+    name: "Test Property",
+    description: "Test Description",
+    type: "server",
+    status: "active",
+    configuration: {},
+    owner_id: null,
+    is_active: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  const offsetMock = vi.fn().mockResolvedValue([mockProperty]);
   const limitAfterOrderMock = vi.fn().mockReturnValue({ offset: offsetMock });
   const orderByMock = vi.fn().mockReturnValue({ limit: limitAfterOrderMock });
-  const limitMock = vi.fn().mockResolvedValue([{ id: "test-id" }]);
+  const limitMock = vi.fn().mockResolvedValue([mockProperty]);
 
   const selectMock = vi.fn((selection?: Record<string, unknown>) => {
     if (selection && "count" in selection) {
@@ -32,14 +45,14 @@ vi.mock("@/server/db", () => {
     db: {
       insert: vi.fn().mockReturnValue({
         values: vi.fn().mockReturnValue({
-          returning: vi.fn().mockResolvedValue([{ id: "test-id" }]),
+          returning: vi.fn().mockResolvedValue([mockProperty]),
         }),
       }),
       select: selectMock,
       update: vi.fn().mockReturnValue({
         set: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
-            returning: vi.fn().mockResolvedValue([{ id: "test-id" }]),
+            returning: vi.fn().mockResolvedValue([mockProperty]),
           }),
         }),
       }),

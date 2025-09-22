@@ -18,7 +18,7 @@ const hasValidRole = (user: unknown): user is { role: string } => {
     user !== null &&
     typeof user === "object" &&
     "role" in user &&
-    typeof (user as { role: unknown }).role === "string"
+    typeof (user as Record<string, unknown>).role === "string"
   );
 };
 

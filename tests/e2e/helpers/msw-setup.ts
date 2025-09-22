@@ -288,7 +288,8 @@ const createInitialState = (): MockState => ({
 
 const toRecord = (value: unknown): Record<string, unknown> => {
   if (value && typeof value === "object" && !Array.isArray(value)) {
-    return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
+    // Use structuredClone for deep cloning, preserving non-serializable properties
+    return structuredClone(value) as Record<string, unknown>;
   }
   return {};
 };
