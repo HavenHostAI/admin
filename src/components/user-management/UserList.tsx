@@ -39,9 +39,10 @@ import { CreateUserDialog } from "./CreateUserDialog";
 import { EditUserDialog } from "./EditUserDialog";
 import { AssignRoleDialog } from "./AssignRoleDialog";
 
+const ALL_FILTER = "all" as const;
+
 export function UserList() {
   const [search, setSearch] = useState("");
-  const ALL_FILTER = "all";
   const [roleFilter, setRoleFilter] = useState<string>(ALL_FILTER);
   const [statusFilter, setStatusFilter] = useState<string>(ALL_FILTER);
   const [page, setPage] = useState(1);

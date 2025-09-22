@@ -127,19 +127,23 @@ test.describe("Property Management", () => {
   test("paginates when more than a page of properties exist", async ({
     page,
   }) => {
-    for (let i = 1; i <= 12; i++) {
-      await createProperty(
+    // Create properties in parallel for better performance
+    const propertyPromises = Array.from({ length: 12 }, (_, i) =>
+      createProperty(
         page,
-        `Pagination Server ${i}`,
+        `Pagination Server ${i + 1}`,
         "Server",
         "Active",
         undefined,
         {
-          waitForRow: i <= 5,
+          waitForRow: false, // Don't wait for individual rows since we're creating in parallel
         },
-      );
-    }
+      ),
+    );
 
+    await Promise.all(propertyPromises);
+
+    // Wait for the first page to load with the expected count
     await expect(page.getByText(/Showing 1 to 10 of/)).toBeVisible();
     await page.getByRole("button", { name: "Next", exact: true }).click();
     await expect(page.getByText(/Showing 11 to/)).toBeVisible();

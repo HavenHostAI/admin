@@ -1,0 +1,44 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "Create your account" [level=2] [ref=e5]
+      - paragraph [ref=e6]:
+        - text: Or
+        - link "sign in to your existing account" [ref=e7] [cursor=pointer]:
+          - /url: /auth/signin
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]: Create Account
+        - generic [ref=e11]: Enter your information to create a new account.
+      - generic [ref=e13]:
+        - alert [ref=e14]:
+          - generic [ref=e15]: Unable to transform response from server
+        - generic [ref=e16]:
+          - generic [ref=e17]: Full Name
+          - textbox "Full Name" [ref=e18]: Test User
+        - generic [ref=e19]:
+          - generic [ref=e20]: Email
+          - textbox "Email" [ref=e21]: playwright-1758508623763@example.com
+        - generic [ref=e22]:
+          - generic [ref=e23]: Password
+          - textbox "Password" [ref=e24]: password123
+        - generic [ref=e25]:
+          - generic [ref=e26]: Confirm Password
+          - textbox "Confirm Password" [ref=e27]: password123
+        - button "Create Account" [active] [ref=e28]
+  - generic [ref=e33] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e34] [cursor=pointer]:
+      - img [ref=e35] [cursor=pointer]
+    - generic [ref=e39] [cursor=pointer]:
+      - button "Open issues overlay" [ref=e40] [cursor=pointer]:
+        - generic [ref=e41] [cursor=pointer]:
+          - generic [ref=e42] [cursor=pointer]: "0"
+          - generic [ref=e43] [cursor=pointer]: "1"
+        - generic [ref=e44] [cursor=pointer]: Issue
+      - button "Collapse issues badge" [ref=e45] [cursor=pointer]:
+        - img [ref=e46] [cursor=pointer]
+  - alert [ref=e48]
+```

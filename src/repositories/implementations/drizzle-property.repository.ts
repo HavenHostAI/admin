@@ -1,6 +1,7 @@
 import { eq, desc, count, and, or, like } from "drizzle-orm";
 import { db } from "@/server/db";
 import { properties } from "@/server/db/schema";
+import { isValidPropertyType, isValidPropertyStatus } from "@/lib/constants";
 import type {
   PropertyRepository,
   Property,
@@ -18,8 +19,10 @@ export class DrizzlePropertyRepository implements PropertyRepository {
       id: dbProperty.id,
       name: dbProperty.name,
       description: dbProperty.description ?? undefined,
-      type: dbProperty.type as Property["type"],
-      status: dbProperty.status as Property["status"],
+      type: isValidPropertyType(dbProperty.type) ? dbProperty.type : "server",
+      status: isValidPropertyStatus(dbProperty.status)
+        ? dbProperty.status
+        : "active",
       configuration:
         (dbProperty.configuration as Record<string, unknown> | null) ?? {},
       owner_id: dbProperty.owner_id ?? undefined,

@@ -1,0 +1,67 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: Property Management
+        - generic [ref=e8]: Manage hosting properties, servers, domains, and resources
+      - button "Create Property" [ref=e9]:
+        - img
+        - text: Create Property
+    - generic [ref=e10]:
+      - generic [ref=e12]:
+        - generic [ref=e14]:
+          - img [ref=e15]
+          - textbox "Search properties..." [active] [ref=e18]: Domain
+        - combobox [ref=e19]:
+          - generic: Filter by type
+          - img [ref=e20]
+        - combobox [ref=e22]:
+          - generic: Filter by status
+          - img [ref=e23]
+      - table [ref=e27]:
+        - rowgroup [ref=e28]:
+          - row "Name Type Status Description Created Actions" [ref=e29]:
+            - cell "Name" [ref=e30]
+            - cell "Type" [ref=e31]
+            - cell "Status" [ref=e32]
+            - cell "Description" [ref=e33]
+            - cell "Created" [ref=e34]
+            - cell "Actions" [ref=e35]
+        - rowgroup [ref=e36]:
+          - row "Test Server 1 Server active A test server for E2E testing 9/21/2025 Actions for Test Server 1" [ref=e37]:
+            - cell "Test Server 1" [ref=e38]:
+              - generic [ref=e39]:
+                - img [ref=e40]
+                - text: Test Server 1
+            - cell "Server" [ref=e45]:
+              - generic [ref=e46]: Server
+            - cell "active" [ref=e47]:
+              - generic [ref=e48]: active
+            - cell "A test server for E2E testing" [ref=e49]:
+              - generic [ref=e50]: A test server for E2E testing
+            - cell "9/21/2025" [ref=e51]
+            - cell "Actions for Test Server 1" [ref=e52]:
+              - button "Actions for Test Server 1" [ref=e53]:
+                - img
+          - row "Test Domain 1 Domain active A test domain for E2E testing 9/21/2025 Actions for Test Domain 1" [ref=e54]:
+            - cell "Test Domain 1" [ref=e55]:
+              - generic [ref=e56]:
+                - img [ref=e57]
+                - text: Test Domain 1
+            - cell "Domain" [ref=e61]:
+              - generic [ref=e62]: Domain
+            - cell "active" [ref=e63]:
+              - generic [ref=e64]: active
+            - cell "A test domain for E2E testing" [ref=e65]:
+              - generic [ref=e66]: A test domain for E2E testing
+            - cell "9/21/2025" [ref=e67]
+            - cell "Actions for Test Domain 1" [ref=e68]:
+              - button "Actions for Test Domain 1" [ref=e69]:
+                - img
+  - button "Open Next.js Dev Tools" [ref=e75] [cursor=pointer]:
+    - img [ref=e76] [cursor=pointer]
+  - alert [ref=e80]
+```

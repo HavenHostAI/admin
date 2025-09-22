@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { PropertyService } from "@/services/property.service";
 import { createRepositories } from "@/repositories";
+import { validateUserRole } from "@/lib/constants";
 import type { Session } from "next-auth";
 import type { User as ServiceUser } from "~/types/api";
 
@@ -54,10 +55,7 @@ const PropertyListSchema = z.object({
 const mapSessionUserToServiceUser = (
   sessionUser: Session["user"],
 ): ServiceUser => {
-  const allowedRoles: ServiceUser["role"][] = ["admin", "editor", "viewer"];
-  const role = allowedRoles.includes(sessionUser.role as ServiceUser["role"])
-    ? (sessionUser.role as ServiceUser["role"])
-    : "viewer";
+  const role = validateUserRole(sessionUser.role);
 
   return {
     id: sessionUser.id,

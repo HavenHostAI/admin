@@ -1,0 +1,103 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - generic:
+    - generic:
+      - heading [level=1]: User & Role Management
+      - paragraph: Manage users, roles, and permissions for your application
+    - generic:
+      - tablist:
+        - tab: Users
+        - tab [selected]: Roles
+      - tabpanel:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic: Role Management
+                - generic: Manage roles and their permissions
+              - button [expanded]:
+                - img
+                - text: Add Role
+          - generic:
+            - generic:
+              - generic:
+                - img
+                - textbox
+            - generic:
+              - generic:
+                - table:
+                  - rowgroup:
+                    - row:
+                      - cell: Name
+                      - cell: Description
+                      - cell: Type
+                      - cell: Permissions
+                      - cell: Created
+                      - cell: Actions
+                  - rowgroup:
+                    - row:
+                      - cell: admin
+                      - cell: Administrator role
+                      - cell:
+                        - generic: System
+                      - cell:
+                        - generic:
+                          - generic: 3 permissions
+                          - button:
+                            - img
+                            - text: Permissions
+                      - cell: 9/21/2025
+                      - cell:
+                        - button:
+                          - img
+                    - row:
+                      - cell: manager
+                      - cell: Manager role
+                      - cell:
+                        - generic: Custom
+                      - cell:
+                        - generic:
+                          - generic: 2 permissions
+                          - button:
+                            - img
+                            - text: Permissions
+                      - cell: 9/21/2025
+                      - cell:
+                        - button:
+                          - img
+  - generic [ref=e5] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e6] [cursor=pointer]:
+      - img [ref=e7] [cursor=pointer]
+    - generic [ref=e12] [cursor=pointer]:
+      - button "Open issues overlay" [ref=e13] [cursor=pointer]:
+        - generic [ref=e14] [cursor=pointer]:
+          - generic [ref=e15] [cursor=pointer]: "1"
+          - generic [ref=e16] [cursor=pointer]: "2"
+        - generic [ref=e17] [cursor=pointer]:
+          - text: Issue
+          - generic [ref=e18] [cursor=pointer]: s
+      - button "Collapse issues badge" [ref=e19] [cursor=pointer]:
+        - img [ref=e20] [cursor=pointer]
+  - alert
+  - dialog "Create New Role" [active] [ref=e23]:
+    - generic [ref=e24]:
+      - heading "Create New Role" [level=2] [ref=e25]
+      - paragraph [ref=e26]: Create a new role with custom permissions. You can assign permissions after creating the role.
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - generic [ref=e29]: Role Name
+        - textbox "Role Name" [ref=e30]: Paginated Role 0
+      - generic [ref=e31]:
+        - generic [ref=e32]: Description
+        - textbox "Description" [ref=e33]
+      - alert [ref=e34]:
+        - generic [ref=e35]: Unable to transform response from server
+      - generic [ref=e36]:
+        - button "Cancel" [ref=e37]
+        - button "Create Role" [ref=e38]
+    - button "Close" [ref=e39]:
+      - img [ref=e40]
+      - generic [ref=e43]: Close
+```

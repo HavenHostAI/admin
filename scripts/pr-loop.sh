@@ -18,7 +18,7 @@ last_sha=$(jq -r '.last_sha' "$STATE_FILE")
 
 run_checks() {
   pnpm lint
-  pnpm format --check || (echo "Prettier check failed — run pnpm format" && exit 1)
+  pnpm format:check || (echo "Prettier check failed — run pnpm format" && exit 1)
   if pnpm -s openapi:lint >/dev/null 2>&1; then pnpm openapi:lint; fi
   pnpm test
   if pnpm -s e2e >/dev/null 2>&1; then pnpm e2e; fi

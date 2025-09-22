@@ -45,6 +45,12 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { CreatePropertyDialog } from "./CreatePropertyDialog";
 import { EditPropertyDialog } from "./EditPropertyDialog";
+import {
+  PROPERTY_TYPE_LABELS,
+  STATUS_COLORS,
+  type PROPERTY_TYPES,
+  type PROPERTY_STATUSES,
+} from "@/lib/constants";
 
 const propertyTypeIcons = {
   server: Server,
@@ -53,21 +59,6 @@ const propertyTypeIcons = {
   database: Database,
   storage: HardDrive,
 };
-
-const propertyTypeLabels = {
-  server: "Server",
-  domain: "Domain",
-  ssl_certificate: "SSL Certificate",
-  database: "Database",
-  storage: "Storage",
-};
-
-const statusColors = {
-  active: "default",
-  inactive: "secondary",
-  maintenance: "destructive",
-  suspended: "outline",
-} as const;
 
 export function PropertyList() {
   const [search, setSearch] = useState("");
@@ -91,18 +82,9 @@ export function PropertyList() {
     page,
     limit,
     search: normalizedSearch === "" ? undefined : normalizedSearch,
-    type: normalizedTypeFilter as
-      | "server"
-      | "domain"
-      | "ssl_certificate"
-      | "database"
-      | "storage"
-      | undefined,
+    type: normalizedTypeFilter as (typeof PROPERTY_TYPES)[number] | undefined,
     status: normalizedStatusFilter as
-      | "active"
-      | "inactive"
-      | "maintenance"
-      | "suspended"
+      | (typeof PROPERTY_STATUSES)[number]
       | undefined,
   });
 
@@ -166,7 +148,7 @@ export function PropertyList() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All types</SelectItem>
-                {Object.entries(propertyTypeLabels).map(([value, label]) => (
+                {Object.entries(PROPERTY_TYPE_LABELS).map(([value, label]) => (
                   <SelectItem key={value} value={value}>
                     {label}
                   </SelectItem>
@@ -217,11 +199,11 @@ export function PropertyList() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {propertyTypeLabels[property.type]}
+                          {PROPERTY_TYPE_LABELS[property.type]}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={statusColors[property.status]}>
+                        <Badge variant={STATUS_COLORS[property.status]}>
                           {property.status}
                         </Badge>
                       </TableCell>

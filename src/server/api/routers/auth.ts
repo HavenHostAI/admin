@@ -6,6 +6,7 @@ import {
 } from "~/server/api/trpc";
 import { AuthService } from "../../../services/auth.service";
 import { createRepositories } from "../../../repositories";
+import { validateUserRole } from "@/lib/constants";
 import type { LoginResponse, Session } from "../../../types/api";
 
 // Factory function for creating auth service instances
@@ -28,13 +29,7 @@ type SessionUserInput = {
 const mapSessionUserToApiUser = (
   sessionUser: SessionUserInput,
 ): Session["user"] => {
-  const allowedRoles: Session["user"]["role"][] = ["admin", "editor", "viewer"];
-
-  const role = allowedRoles.includes(
-    sessionUser.role as Session["user"]["role"],
-  )
-    ? (sessionUser.role as Session["user"]["role"])
-    : "viewer";
+  const role = validateUserRole(sessionUser.role);
 
   return {
     id: sessionUser.id,

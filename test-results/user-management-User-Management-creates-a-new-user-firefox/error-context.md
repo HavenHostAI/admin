@@ -1,0 +1,114 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - generic:
+    - generic:
+      - heading [level=1]: User & Role Management
+      - paragraph: Manage users, roles, and permissions for your application
+    - generic:
+      - tablist:
+        - tab [selected]: Users
+        - tab: Roles
+      - tabpanel:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic: User Management
+                - generic: Manage users, roles, and permissions
+              - button [expanded]:
+                - img
+                - text: Add User
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                    - textbox
+                - combobox:
+                  - generic: All roles
+                  - img
+                - combobox:
+                  - generic: All statuses
+                  - img
+            - generic:
+              - generic:
+                - table:
+                  - rowgroup:
+                    - row:
+                      - cell: Name
+                      - cell: Email
+                      - cell: Status
+                      - cell: Roles
+                      - cell: Created
+                      - cell: Actions
+                  - rowgroup:
+                    - row:
+                      - cell: Admin User
+                      - cell: admin@example.com
+                      - cell:
+                        - generic: active
+                      - cell:
+                        - generic:
+                          - generic: admin
+                      - cell: 9/21/2025
+                      - cell:
+                        - button:
+                          - img
+                    - row:
+                      - cell: Test User
+                      - cell: test@example.com
+                      - cell:
+                        - generic: active
+                      - cell:
+                        - generic:
+                          - generic: viewer
+                      - cell: 9/21/2025
+                      - cell:
+                        - button:
+                          - img
+  - generic [ref=e5] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e6] [cursor=pointer]:
+      - img [ref=e7] [cursor=pointer]
+    - generic [ref=e11] [cursor=pointer]:
+      - button "Open issues overlay" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13] [cursor=pointer]:
+          - generic [ref=e14] [cursor=pointer]: "2"
+          - generic [ref=e15] [cursor=pointer]: "3"
+        - generic [ref=e16] [cursor=pointer]:
+          - text: Issue
+          - generic [ref=e17] [cursor=pointer]: s
+      - button "Collapse issues badge" [ref=e18] [cursor=pointer]:
+        - img [ref=e19] [cursor=pointer]
+  - alert
+  - dialog "Create New User" [ref=e22]:
+    - generic [ref=e23]:
+      - heading "Create New User" [level=2] [ref=e24]
+      - paragraph [ref=e25]: Add a new user to the system. They will be able to log in with the provided credentials.
+    - generic [ref=e26]:
+      - generic [ref=e27]:
+        - generic [ref=e28]: Name
+        - textbox "Name" [ref=e29]: Playwright User
+      - generic [ref=e30]:
+        - generic [ref=e31]: Email
+        - textbox "Email" [ref=e32]: playwright-1758508649301@example.com
+      - generic [ref=e33]:
+        - generic [ref=e34]: Password
+        - textbox "Password" [ref=e35]: password123
+      - generic [ref=e36]:
+        - generic [ref=e37]: Status
+        - combobox [ref=e38]:
+          - generic: Active
+          - img [ref=e39]
+        - combobox [ref=e41]
+      - alert [ref=e42]:
+        - generic [ref=e43]: Unable to transform response from server
+      - generic [ref=e44]:
+        - button "Cancel" [ref=e45]
+        - button "Create User" [active] [ref=e46]
+    - button "Close" [ref=e47]:
+      - img [ref=e48]
+      - generic [ref=e51]: Close
+```
