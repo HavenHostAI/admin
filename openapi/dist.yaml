@@ -712,6 +712,74 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /properties/{propertyId}/activate:
+    post:
+      summary: Activate property
+      description: |
+        Activate a property that was previously deactivated.
+        Only allows activating properties owned by the authenticated user.
+        Requires Manager+ role permissions.
+      tags:
+        - Property Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PropertyIdParam'
+      responses:
+        '200':
+          description: Property activated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Property is already active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /properties/{propertyId}/deactivate:
+    post:
+      summary: Deactivate property
+      description: |
+        Deactivate a property (soft delete).
+        Only allows deactivating properties owned by the authenticated user.
+        Requires Manager+ role permissions.
+      tags:
+        - Property Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PropertyIdParam'
+      responses:
+        '200':
+          description: Property deactivated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Property is already inactive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   schemas:
     LoginRequest:

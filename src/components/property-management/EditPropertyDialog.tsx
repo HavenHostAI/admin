@@ -58,11 +58,13 @@ const isPropertyStatus = (value: string): value is Property["status"] =>
 interface EditPropertyDialogProps {
   property: Property;
   onPropertyUpdated?: () => void;
+  onClose?: () => void;
 }
 
 export function EditPropertyDialog({
   property,
   onPropertyUpdated,
+  onClose,
 }: EditPropertyDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<PropertyFormState>({
@@ -82,6 +84,7 @@ export function EditPropertyDialog({
     onSuccess: () => {
       setOpen(false);
       onPropertyUpdated?.();
+      onClose?.();
     },
   });
 
@@ -232,7 +235,10 @@ export function EditPropertyDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                onClose?.();
+              }}
             >
               Cancel
             </Button>

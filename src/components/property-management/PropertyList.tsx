@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -208,10 +209,13 @@ export function PropertyList() {
                   return (
                     <TableRow key={property.id}>
                       <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
+                        <Link
+                          href={`/properties/${property.id}`}
+                          className="flex items-center gap-2 transition-colors hover:text-blue-600"
+                        >
                           <TypeIcon className="h-4 w-4" />
                           {property.name}
-                        </div>
+                        </Link>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
