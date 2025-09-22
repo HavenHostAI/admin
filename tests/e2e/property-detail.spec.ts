@@ -96,7 +96,9 @@ test.describe("Property Detail Page", () => {
     await actionsButton.click();
 
     // Verify dropdown menu appears with expected options
-    await expect(page.getByRole("menuitem", { name: "Edit Property" })).toBeVisible();
+    await expect(
+      page.getByRole("menuitem", { name: "Edit Property" }),
+    ).toBeVisible();
     await expect(page.getByRole("menuitem", { name: "Delete" })).toBeVisible();
     await expect(
       page.getByRole("menuitem", { name: /Activate|Deactivate/ }),
@@ -113,7 +115,9 @@ test.describe("Property Detail Page", () => {
     await page.getByRole("menuitem", { name: "Edit Property" }).click();
 
     // Verify edit dialog opens
-    await expect(page.getByRole("dialog", { name: "Edit Property" })).toBeVisible();
+    await expect(
+      page.getByRole("dialog", { name: "Edit Property" }),
+    ).toBeVisible();
     await expect(page.locator("#name")).toBeVisible();
   });
 

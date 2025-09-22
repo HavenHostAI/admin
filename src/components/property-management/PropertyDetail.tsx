@@ -37,7 +37,6 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { EditPropertyDialog } from "./EditPropertyDialog";
 import { PROPERTY_TYPE_LABELS, STATUS_COLORS } from "@/lib/constants";
-import type { Property } from "@/repositories/interfaces/property.repository";
 
 const propertyTypeIcons = {
   server: Server,
@@ -48,12 +47,41 @@ const propertyTypeIcons = {
 };
 
 interface PropertyDetailProps {
-  property: Property;
+  propertyId: string;
 }
 
-export function PropertyDetail({ property }: PropertyDetailProps) {
+export function PropertyDetail({ propertyId }: PropertyDetailProps) {
   const router = useRouter();
   const [showEditDialog, setShowEditDialog] = useState(false);
+
+  const {
+    data: property,
+    isLoading,
+    error,
+    refetch,
+  } = api.property.getById.useQuery({ id: propertyId });
+
+  if (isLoading) {
+    return <div className="py-8 text-center">Loading property details...</div>;
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>
+          Failed to load property: {error.message}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!property) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>Property not found.</AlertDescription>
+      </Alert>
+    );
+  }
 
   const TypeIcon = propertyTypeIcons[property.type];
 
@@ -65,15 +93,17 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
 
   const activatePropertyMutation = api.property.activate.useMutation({
     onSuccess: () => {
-      // Refresh the page to show updated status
-      window.location.reload();
+      refetch().catch((error) => {
+        console.error("Failed to refetch property after activation:", error);
+      });
     },
   });
 
   const deactivatePropertyMutation = api.property.deactivate.useMutation({
     onSuccess: () => {
-      // Refresh the page to show updated status
-      window.location.reload();
+      refetch().catch((error) => {
+        console.error("Failed to refetch property after deactivation:", error);
+      });
     },
   });
 
@@ -378,8 +408,9 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
         onOpenChange={setShowEditDialog}
         onPropertyUpdated={() => {
           setShowEditDialog(false);
-          // Refresh the page to show updated data
-          window.location.reload();
+          refetch().catch((error) => {
+            console.error("Failed to refetch property after update:", error);
+          });
         }}
       />
     </div>

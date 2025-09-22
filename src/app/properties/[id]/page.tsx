@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { PropertyDetailContainer } from "~/components/property-management/PropertyDetailContainer";
+import { PropertyDetail } from "~/components/property-management/PropertyDetail";
 import { HydrateClient } from "~/trpc/server";
 import { auth } from "~/server/auth";
 
@@ -35,7 +35,7 @@ export default async function PropertyDetailPage({
   return (
     <div className="container mx-auto py-6">
       <HydrateClient>
-        <PropertyDetailContainer propertyId={resolvedParams.id} />
+        <PropertyDetail propertyId={resolvedParams.id} />
       </HydrateClient>
     </div>
   );

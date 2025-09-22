@@ -10,11 +10,10 @@ interface SignInPageProps {
       }>;
 }
 
-export default async function SignInPage({
-  searchParams,
-}: SignInPageProps) {
+export default async function SignInPage({ searchParams }: SignInPageProps) {
   const resolvedSearchParams =
-    searchParams && typeof (searchParams as Promise<unknown>).then === "function"
+    searchParams &&
+    typeof (searchParams as Promise<unknown>).then === "function"
       ? await searchParams
       : (searchParams as { message?: string } | undefined);
 

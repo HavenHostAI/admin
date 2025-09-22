@@ -33,6 +33,9 @@ vi.mock("~/trpc/react", () => ({
       deactivate: {
         useMutation: vi.fn(),
       },
+      update: {
+        useMutation: vi.fn(),
+      },
     },
   },
 }));
@@ -81,7 +84,7 @@ const mockPropertyWithoutConfig: Property = {
 describe("PropertyDetail", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Set up the mock to return the expected structure
+    // Set up the default mock to return the expected structure
     (api.property.getById.useQuery as any).mockReturnValue({
       data: mockProperty,
       isLoading: false,
@@ -100,12 +103,16 @@ describe("PropertyDetail", () => {
       mutateAsync: mockMutateAsync,
       error: null,
     });
+    (api.property.update.useMutation as any).mockReturnValue({
+      mutateAsync: mockMutateAsync,
+      error: null,
+    });
 
     vi.spyOn(global, "confirm").mockReturnValue(true);
   });
 
   it("should render property information correctly", () => {
-    render(<PropertyDetail property={mockProperty} />);
+    render(<PropertyDetail propertyId={mockProperty.id} />);
 
     expect(screen.getByText("Test Server")).toBeInTheDocument();
     expect(screen.getByText("Server • ID: prop-123")).toBeInTheDocument();
@@ -118,19 +125,35 @@ describe("PropertyDetail", () => {
   });
 
   it("should render property without description", () => {
-    render(<PropertyDetail property={mockPropertyWithoutConfig} />);
+    // Mock the query to return property without description
+    (api.property.getById.useQuery as any).mockReturnValue({
+      data: mockPropertyWithoutConfig,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PropertyDetail propertyId={mockPropertyWithoutConfig.id} />);
 
     expect(screen.getByText("No description provided")).toBeInTheDocument();
   });
 
   it("should not render owner section when owner_id is not available", () => {
-    render(<PropertyDetail property={mockPropertyWithoutConfig} />);
+    // Mock the query to return property without owner
+    (api.property.getById.useQuery as any).mockReturnValue({
+      data: mockPropertyWithoutConfig,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PropertyDetail propertyId={mockPropertyWithoutConfig.id} />);
 
     expect(screen.queryByText("Owner")).not.toBeInTheDocument();
   });
 
   it("should navigate back when back button is clicked", () => {
-    render(<PropertyDetail property={mockProperty} />);
+    render(<PropertyDetail propertyId={mockProperty.id} />);
 
     const backButton = screen.getByText("Back");
     fireEvent.click(backButton);
@@ -139,21 +162,29 @@ describe("PropertyDetail", () => {
   });
 
   it("should render actions button", () => {
-    render(<PropertyDetail property={mockProperty} />);
+    render(<PropertyDetail propertyId={mockProperty.id} />);
 
     const actionsButton = screen.getByText("Actions");
     expect(actionsButton).toBeInTheDocument();
   });
 
   it("should render actions button for active properties", () => {
-    render(<PropertyDetail property={mockProperty} />);
+    render(<PropertyDetail propertyId={mockProperty.id} />);
 
     const actionsButton = screen.getByText("Actions");
     expect(actionsButton).toBeInTheDocument();
   });
 
   it("should render actions button for inactive properties", () => {
-    render(<PropertyDetail property={mockPropertyWithoutConfig} />);
+    // Mock the query to return inactive property
+    (api.property.getById.useQuery as any).mockReturnValue({
+      data: mockPropertyWithoutConfig,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PropertyDetail propertyId={mockPropertyWithoutConfig.id} />);
 
     const actionsButton = screen.getByText("Actions");
     expect(actionsButton).toBeInTheDocument();
@@ -163,7 +194,7 @@ describe("PropertyDetail", () => {
     global.confirm = vi.fn(() => true);
     mockMutateAsync.mockResolvedValue({ success: true });
 
-    render(<PropertyDetail property={mockProperty} />);
+    render(<PropertyDetail propertyId={mockProperty.id} />);
 
     // Test the delete handler directly
     const component = screen.getByText("Test Server").closest("div");
@@ -174,7 +205,15 @@ describe("PropertyDetail", () => {
   });
 
   it("should render inactive property correctly", () => {
-    render(<PropertyDetail property={mockPropertyWithoutConfig} />);
+    // Mock the query to return inactive property
+    (api.property.getById.useQuery as any).mockReturnValue({
+      data: mockPropertyWithoutConfig,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PropertyDetail propertyId={mockPropertyWithoutConfig.id} />);
 
     expect(screen.getByText("Test Domain")).toBeInTheDocument();
     expect(screen.getByText("Domain • ID: prop-456")).toBeInTheDocument();
@@ -182,7 +221,7 @@ describe("PropertyDetail", () => {
   });
 
   it("should render configuration data correctly", () => {
-    render(<PropertyDetail property={mockProperty} />);
+    render(<PropertyDetail propertyId={mockProperty.id} />);
 
     expect(screen.getByText("cpu:")).toBeInTheDocument();
     expect(screen.getByText("4 cores")).toBeInTheDocument();
@@ -193,7 +232,15 @@ describe("PropertyDetail", () => {
   });
 
   it("should render no configuration message when configuration is empty", () => {
-    render(<PropertyDetail property={mockPropertyWithoutConfig} />);
+    // Mock the query to return property without configuration
+    (api.property.getById.useQuery as any).mockReturnValue({
+      data: mockPropertyWithoutConfig,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PropertyDetail propertyId={mockPropertyWithoutConfig.id} />);
 
     expect(
       screen.getByText("No configuration data available"),
@@ -201,13 +248,13 @@ describe("PropertyDetail", () => {
   });
 
   it("should render owner information when available", () => {
-    render(<PropertyDetail property={mockProperty} />);
+    render(<PropertyDetail propertyId={mockProperty.id} />);
 
     expect(screen.getByText("user-123")).toBeInTheDocument();
   });
 
   it("should format dates correctly", () => {
-    render(<PropertyDetail property={mockProperty} />);
+    render(<PropertyDetail propertyId={mockProperty.id} />);
 
     // Check that dates are formatted (exact format may vary by locale)
     // There should be two date elements (created and updated)
@@ -215,7 +262,7 @@ describe("PropertyDetail", () => {
   });
 
   it("should render correct property type icon and label", () => {
-    render(<PropertyDetail property={mockProperty} />);
+    render(<PropertyDetail propertyId={mockProperty.id} />);
 
     // Server icon should be present (we can't easily test the icon component,
     // but we can verify the type label is correct)
@@ -231,7 +278,15 @@ describe("PropertyDetail", () => {
       },
     };
 
-    render(<PropertyDetail property={propertyWithJsonConfig} />);
+    // Mock the query to return property with JSON configuration
+    (api.property.getById.useQuery as any).mockReturnValue({
+      data: propertyWithJsonConfig,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PropertyDetail propertyId={propertyWithJsonConfig.id} />);
 
     expect(screen.getByText("settings:")).toBeInTheDocument();
     expect(screen.getByText(/port.*8080/)).toBeInTheDocument();
