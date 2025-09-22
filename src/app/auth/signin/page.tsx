@@ -1,6 +1,13 @@
 import { SignInForm } from "~/components/auth/SignInForm";
 
-export default function SignInPage() {
+interface SignInPageProps {
+  searchParams?: {
+    message?: string;
+  };
+}
+
+export default function SignInPage({ searchParams }: SignInPageProps) {
+  const successMessage = searchParams?.message;
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
@@ -18,7 +25,7 @@ export default function SignInPage() {
             </a>
           </p>
         </div>
-        <SignInForm />
+        <SignInForm successMessage={successMessage} />
       </div>
     </div>
   );

@@ -41,15 +41,19 @@ import { AssignRoleDialog } from "./AssignRoleDialog";
 
 export function UserList() {
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const ALL_FILTER = "all";
+  const [roleFilter, setRoleFilter] = useState<string>(ALL_FILTER);
+  const [statusFilter, setStatusFilter] = useState<string>(ALL_FILTER);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
   const normalizedSearch = search.trim();
-  const normalizedRoleFilter = roleFilter.trim();
+  const normalizedRoleFilter =
+    roleFilter === ALL_FILTER ? undefined : roleFilter.trim();
   const selectedStatus =
-    statusFilter === "" ? undefined : (statusFilter as "active" | "inactive");
+    statusFilter === ALL_FILTER
+      ? undefined
+      : (statusFilter as "active" | "inactive");
 
   const {
     data: usersData,
@@ -60,7 +64,7 @@ export function UserList() {
     page,
     limit,
     search: normalizedSearch === "" ? undefined : normalizedSearch,
-    role: normalizedRoleFilter === "" ? undefined : normalizedRoleFilter,
+    role: normalizedRoleFilter,
     status: selectedStatus,
   });
 
@@ -135,7 +139,7 @@ export function UserList() {
                 <SelectValue placeholder="Filter by role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All roles</SelectItem>
+                <SelectItem value={ALL_FILTER}>All roles</SelectItem>
                 {roles.map((role) => (
                   <SelectItem key={role.id} value={role.id}>
                     {role.name}
@@ -148,7 +152,7 @@ export function UserList() {
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value={ALL_FILTER}>All statuses</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>

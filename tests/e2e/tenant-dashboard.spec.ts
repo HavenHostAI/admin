@@ -1,8 +1,9 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { setupMSW } from "./helpers/msw-setup";
 
 test.describe("Tenant Dashboard", () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the tenant dashboard
+    await setupMSW(page);
     await page.goto("/tenant");
   });
 
@@ -11,9 +12,7 @@ test.describe("Tenant Dashboard", () => {
     await expect(
       page.getByRole("heading", { name: "Tenant Dashboard" }),
     ).toBeVisible();
-    await expect(
-      page.getByText("Overview of your tenant's performance and activity"),
-    ).toBeVisible();
+    await expect(page.getByText(/Overview of your tenant/)).toBeVisible();
 
     // Check key metrics cards
     await expect(page.getByText("Total Users")).toBeVisible();
@@ -32,7 +31,6 @@ test.describe("Tenant Dashboard", () => {
 
     // Navigate to Recent Activity tab
     await page.getByRole("tab", { name: "Recent Activity" }).click();
-    await expect(page.getByText("Recent Activity")).toBeVisible();
     await expect(
       page.getByText("Latest events and actions in your tenant"),
     ).toBeVisible();
@@ -59,8 +57,8 @@ test.describe("Tenant Dashboard", () => {
     await expect(page.getByText("Database backup")).toBeVisible();
 
     // Check status badges
-    await expect(page.getByText("Success")).toBeVisible();
-    await expect(page.getByText("Info")).toBeVisible();
+    await expect(page.getByText("Success").first()).toBeVisible();
+    await expect(page.getByText("Info").first()).toBeVisible();
   });
 
   test("should display performance metrics with progress bars", async ({

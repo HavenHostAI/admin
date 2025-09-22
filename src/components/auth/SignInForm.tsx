@@ -15,7 +15,11 @@ import {
 } from "~/components/ui/card";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 
-export function SignInForm() {
+interface SignInFormProps {
+  successMessage?: string;
+}
+
+export function SignInForm({ successMessage }: SignInFormProps = {}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -36,13 +40,13 @@ export function SignInForm() {
 
       if (result?.error) {
         setError("Invalid email or password");
+        setIsLoading(false);
       } else {
         router.push("/tenant");
         router.refresh();
       }
     } catch {
       setError("An error occurred. Please try again.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -57,6 +61,12 @@ export function SignInForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {successMessage && !error && (
+            <Alert>
+              <AlertDescription>{successMessage}</AlertDescription>
+            </Alert>
+          )}
+
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
