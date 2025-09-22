@@ -135,7 +135,13 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
             <span className="text-sm break-all text-gray-700">
               {typeof value === "object"
                 ? JSON.stringify(value, null, 2)
-                : String(value)}
+                : typeof value === "string"
+                  ? value
+                  : typeof value === "number"
+                    ? value.toString()
+                    : typeof value === "boolean"
+                      ? value.toString()
+                      : ""}
             </span>
           </div>
         ))}
@@ -169,12 +175,20 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge variant={STATUS_COLORS[property.status]} className="text-sm">
+          <Badge
+            variant={STATUS_COLORS[property.status]}
+            className="text-sm"
+            data-testid="property-status"
+          >
             {property.status}
           </Badge>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="property-actions-button"
+              >
                 <Settings className="mr-2 h-4 w-4" />
                 Actions
               </Button>
@@ -263,7 +277,7 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
                 Description
               </h3>
               <p className="text-sm text-gray-900">
-                {property.description || (
+                {property.description ?? (
                   <span className="text-gray-500 italic">
                     No description provided
                   </span>
@@ -276,7 +290,10 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
               <h3 className="mb-2 text-sm font-medium text-gray-700">
                 Configuration
               </h3>
-              <div className="rounded-md bg-gray-50 p-4">
+              <div
+                className="rounded-md bg-gray-50 p-4"
+                data-testid="property-configuration"
+              >
                 {renderConfiguration()}
               </div>
             </div>
@@ -296,10 +313,16 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
             <div>
               <h3 className="mb-1 text-sm font-medium text-gray-700">Status</h3>
               <div className="flex items-center gap-2">
-                <Badge variant={STATUS_COLORS[property.status]}>
+                <Badge
+                  variant={STATUS_COLORS[property.status]}
+                  data-testid="property-status-label"
+                >
                   {property.status}
                 </Badge>
-                <Badge variant={property.is_active ? "default" : "secondary"}>
+                <Badge
+                  variant={property.is_active ? "default" : "secondary"}
+                  data-testid="property-active-state"
+                >
                   {property.is_active ? "Active" : "Inactive"}
                 </Badge>
               </div>
@@ -309,7 +332,7 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
               <h3 className="mb-1 text-sm font-medium text-gray-700">Type</h3>
               <div className="flex items-center gap-2">
                 <TypeIcon className="h-4 w-4" />
-                <span className="text-sm">
+                <span className="text-sm" data-testid="property-type-label">
                   {PROPERTY_TYPE_LABELS[property.type]}
                 </span>
               </div>
@@ -349,17 +372,16 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
       </div>
 
       {/* Edit Dialog */}
-      {showEditDialog && (
-        <EditPropertyDialog
-          property={property}
-          onPropertyUpdated={() => {
-            setShowEditDialog(false);
-            // Refresh the page to show updated data
-            window.location.reload();
-          }}
-          onClose={() => setShowEditDialog(false)}
-        />
-      )}
+      <EditPropertyDialog
+        property={property}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onPropertyUpdated={() => {
+          setShowEditDialog(false);
+          // Refresh the page to show updated data
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }

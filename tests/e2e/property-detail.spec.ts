@@ -1,87 +1,81 @@
 import { test, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { setupMSW } from "./helpers/msw-setup";
+
+const goToFirstPropertyDetail = async (page: Page) => {
+  const firstRow = page.locator("table tbody tr").first();
+  await expect(firstRow).toBeVisible();
+
+  const firstPropertyLink = firstRow.locator("a").first();
+  const propertyName = (await firstPropertyLink.textContent())?.trim() ?? "";
+
+  await firstPropertyLink.click();
+
+  await expect(page).toHaveURL(/\/properties\/[^/]+$/);
+  if (propertyName) {
+    await expect(
+      page.getByRole("heading", { name: propertyName, level: 1 }),
+    ).toBeVisible();
+  } else {
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  }
+
+  return propertyName;
+};
 
 test.describe("Property Detail Page", () => {
   test.beforeEach(async ({ page }) => {
+    await setupMSW(page);
     // Navigate to properties page and ensure we're logged in
     await page.goto("/properties");
 
     // Wait for the page to load
-    await expect(page.locator("h1, [data-testid='page-title']")).toBeVisible();
+    await expect(page.getByText("Property Management")).toBeVisible();
   });
 
   test("should navigate to property detail page when clicking property name", async ({
     page,
   }) => {
-    // Wait for properties to load
-    await expect(page.locator("table tbody tr")).toHaveCount({ min: 1 });
+    const propertyName = await goToFirstPropertyDetail(page);
 
-    // Get the first property name link
-    const firstPropertyLink = page.locator(
-      "table tbody tr:first-child td:first-child a",
-    );
-    await expect(firstPropertyLink).toBeVisible();
-
-    // Get the property name to verify we're on the right page
-    const propertyName = await firstPropertyLink.textContent();
-    expect(propertyName).toBeTruthy();
-
-    // Click the property name link
-    await firstPropertyLink.click();
-
-    // Verify we're on the property detail page
-    await expect(page).toHaveURL(/\/properties\/[^\/]+$/);
-
-    // Verify the property name is displayed in the header
-    await expect(page.locator("h1")).toContainText(propertyName!.trim());
+    if (propertyName) {
+      await expect(
+        page.getByRole("heading", { name: propertyName, level: 1 }),
+      ).toBeVisible();
+    }
   });
 
   test("should display property information correctly", async ({ page }) => {
-    // Navigate to first property detail page
-    await page.locator("table tbody tr:first-child td:first-child a").click();
-
-    // Wait for the page to load
-    await expect(page.locator("h1")).toBeVisible();
+    await goToFirstPropertyDetail(page);
 
     // Verify basic property information is displayed
-    await expect(page.locator("h1")).toBeVisible();
-    await expect(page.locator("text=Server • ID:")).toBeVisible();
-    await expect(
-      page.locator("[data-testid='property-status'], .badge").first(),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByText(/Server • ID:/)).toBeVisible();
+    await expect(page.getByTestId("property-status")).toBeVisible();
 
     // Verify metadata section
-    await expect(page.locator("text=Metadata")).toBeVisible();
-    await expect(page.locator("text=Created")).toBeVisible();
-    await expect(page.locator("text=Last Updated")).toBeVisible();
+    await expect(page.getByText("Metadata")).toBeVisible();
+    await expect(page.getByText("Created")).toBeVisible();
+    await expect(page.getByText("Last Updated")).toBeVisible();
   });
 
   test("should display property configuration", async ({ page }) => {
-    // Navigate to first property detail page
-    await page.locator("table tbody tr:first-child td:first-child a").click();
-
-    // Wait for the page to load
-    await expect(page.locator("h1")).toBeVisible();
+    await goToFirstPropertyDetail(page);
 
     // Verify configuration section exists
-    await expect(page.locator("text=Configuration")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Configuration", level: 3 }),
+    ).toBeVisible();
 
     // Configuration should either show data or "No configuration data available"
-    const configSection = page
-      .locator("text=Configuration")
-      .locator("..")
-      .locator("..");
-    await expect(configSection).toBeVisible();
+    await expect(page.getByTestId("property-configuration")).toBeVisible();
   });
 
   test("should show back button and navigate back", async ({ page }) => {
-    // Navigate to first property detail page
-    await page.locator("table tbody tr:first-child td:first-child a").click();
-
-    // Wait for the page to load
-    await expect(page.locator("h1")).toBeVisible();
+    await goToFirstPropertyDetail(page);
 
     // Verify back button exists
-    const backButton = page.locator("text=Back");
+    const backButton = page.getByRole("button", { name: /^Back$/ });
     await expect(backButton).toBeVisible();
 
     // Click back button
@@ -95,87 +89,64 @@ test.describe("Property Detail Page", () => {
   test("should show actions dropdown with available options", async ({
     page,
   }) => {
-    // Navigate to first property detail page
-    await page.locator("table tbody tr:first-child td:first-child a").click();
-
-    // Wait for the page to load
-    await expect(page.locator("h1")).toBeVisible();
+    await goToFirstPropertyDetail(page);
 
     // Click actions button
-    const actionsButton = page.locator("text=Actions");
-    await expect(actionsButton).toBeVisible();
+    const actionsButton = page.getByTestId("property-actions-button");
     await actionsButton.click();
 
     // Verify dropdown menu appears with expected options
-    await expect(page.locator("text=Edit Property")).toBeVisible();
-    await expect(page.locator("text=Delete")).toBeVisible();
-
-    // Should show either Activate or Deactivate based on property status
-    const activateOrDeactivate = page
-      .locator("text=Activate, text=Deactivate")
-      .first();
-    await expect(activateOrDeactivate).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: "Edit Property" })).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: "Delete" })).toBeVisible();
+    await expect(
+      page.getByRole("menuitem", { name: /Activate|Deactivate/ }),
+    ).toBeVisible();
   });
 
   test("should open edit dialog when edit is clicked", async ({ page }) => {
-    // Navigate to first property detail page
-    await page.locator("table tbody tr:first-child td:first-child a").click();
-
-    // Wait for the page to load
-    await expect(page.locator("h1")).toBeVisible();
+    await goToFirstPropertyDetail(page);
 
     // Open actions dropdown
-    await page.locator("text=Actions").click();
+    await page.getByTestId("property-actions-button").click();
 
     // Click edit
-    await page.locator("text=Edit Property").click();
+    await page.getByRole("menuitem", { name: "Edit Property" }).click();
 
     // Verify edit dialog opens
-    await expect(page.locator("text=Edit Property").first()).toBeVisible();
-    await expect(page.locator("input[name='name']")).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Edit Property" })).toBeVisible();
+    await expect(page.locator("#name")).toBeVisible();
   });
 
   test("should handle delete confirmation", async ({ page }) => {
-    // Navigate to first property detail page
-    await page.locator("table tbody tr:first-child td:first-child a").click();
-
-    // Wait for the page to load
-    await expect(page.locator("h1")).toBeVisible();
+    await goToFirstPropertyDetail(page);
 
     // Open actions dropdown
-    await page.locator("text=Actions").click();
+    await page.getByTestId("property-actions-button").click();
 
     // Click delete
-    await page.locator("text=Delete").click();
-
-    // Verify confirmation dialog appears
-    await expect(page.locator("text=Are you sure")).toBeVisible();
+    let dialogMessage = "";
+    page.once("dialog", (dialog) => {
+      dialogMessage = dialog.message();
+      dialog.dismiss().catch(() => undefined);
+    });
+    await page.getByRole("menuitem", { name: "Delete" }).click();
+    expect(dialogMessage).toMatch(/delete/iu);
   });
 
   test("should show correct status badges", async ({ page }) => {
-    // Navigate to first property detail page
-    await page.locator("table tbody tr:first-child td:first-child a").click();
-
-    // Wait for the page to load
-    await expect(page.locator("h1")).toBeVisible();
+    await goToFirstPropertyDetail(page);
 
     // Verify status badges are displayed
-    const statusBadges = page.locator(".badge");
-    await expect(statusBadges).toHaveCount({ min: 2 }); // Status and Active/Inactive badges
-
-    // At least one badge should be visible
-    await expect(statusBadges.first()).toBeVisible();
+    await expect(page.getByTestId("property-status-label")).toBeVisible();
+    await expect(page.getByTestId("property-active-state")).toBeVisible();
   });
 
   test("should display property type with correct icon", async ({ page }) => {
-    // Navigate to first property detail page
-    await page.locator("table tbody tr:first-child td:first-child a").click();
-
-    // Wait for the page to load
-    await expect(page.locator("h1")).toBeVisible();
+    await goToFirstPropertyDetail(page);
 
     // Verify property type is displayed
-    await expect(page.locator("text=Server")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Type" })).toBeVisible();
+    await expect(page.getByTestId("property-type-label")).toHaveText("Server");
 
     // Verify type icon is present (SVG icon)
     const typeIcon = page.locator("svg").first();
@@ -186,11 +157,9 @@ test.describe("Property Detail Page", () => {
     // Navigate to a non-existent property ID
     await page.goto("/properties/non-existent-id");
 
-    // Should show 404 page or redirect
-    // The exact behavior depends on your 404 handling
-    await expect(
-      page.locator("text=404, text=Not Found, text=Property not found"),
-    ).toBeVisible();
+    // Should show an inline error state
+    await expect(page.getByTestId("property-error")).toBeVisible();
+    await expect(page.getByText("Property not found")).toBeVisible();
   });
 
   test("should be responsive on mobile devices", async ({ page }) => {
@@ -198,33 +167,25 @@ test.describe("Property Detail Page", () => {
     await page.setViewportSize({ width: 375, height: 667 });
 
     // Navigate to first property detail page
-    await page.locator("table tbody tr:first-child td:first-child a").click();
-
-    // Wait for the page to load
-    await expect(page.locator("h1")).toBeVisible();
+    await goToFirstPropertyDetail(page);
 
     // Verify key elements are still visible on mobile
-    await expect(page.locator("h1")).toBeVisible();
-    await expect(page.locator("text=Back")).toBeVisible();
-    await expect(page.locator("text=Actions")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Back$/ })).toBeVisible();
+    await expect(page.getByTestId("property-actions-button")).toBeVisible();
 
     // Verify the layout adapts (cards should stack vertically)
     const cards = page.locator(".card, [class*='card']");
-    await expect(cards).toHaveCount({ min: 2 });
+    await expect(cards).toHaveCount(2);
   });
 
   test("should maintain state when navigating between properties", async ({
     page,
   }) => {
-    // Navigate to first property detail page
-    await page.locator("table tbody tr:first-child td:first-child a").click();
-
-    // Wait for the page to load and get the property name
-    await expect(page.locator("h1")).toBeVisible();
-    const firstPropertyName = await page.locator("h1").textContent();
+    const firstPropertyName = await goToFirstPropertyDetail(page);
 
     // Go back to properties list
-    await page.locator("text=Back").click();
+    await page.getByRole("button", { name: /^Back$/ }).click();
     await expect(page).toHaveURL("/properties");
 
     // Navigate to second property if available
@@ -235,8 +196,11 @@ test.describe("Property Detail Page", () => {
       await secondPropertyLink.click();
 
       // Verify we're on a different property page
-      await expect(page.locator("h1")).toBeVisible();
-      const secondPropertyName = await page.locator("h1").textContent();
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      const secondPropertyName = await page
+        .getByRole("heading", { level: 1 })
+        .first()
+        .textContent();
       expect(secondPropertyName).not.toBe(firstPropertyName);
     }
   });

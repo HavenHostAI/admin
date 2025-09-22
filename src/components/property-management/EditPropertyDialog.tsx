@@ -59,14 +59,29 @@ interface EditPropertyDialogProps {
   property: Property;
   onPropertyUpdated?: () => void;
   onClose?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function EditPropertyDialog({
   property,
   onPropertyUpdated,
   onClose,
+  open: controlledOpen,
+  onOpenChange,
 }: EditPropertyDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = typeof controlledOpen === "boolean";
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = (nextOpen: boolean) => {
+    if (!isControlled) {
+      setInternalOpen(nextOpen);
+    }
+    onOpenChange?.(nextOpen);
+    if (!nextOpen) {
+      onClose?.();
+    }
+  };
   const [formData, setFormData] = useState<PropertyFormState>({
     name: property.name,
     description: property.description ?? "",
@@ -84,7 +99,6 @@ export function EditPropertyDialog({
     onSuccess: () => {
       setOpen(false);
       onPropertyUpdated?.();
-      onClose?.();
     },
   });
 
@@ -109,12 +123,14 @@ export function EditPropertyDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="w-full justify-start">
-          <Edit className="mr-2 h-4 w-4" />
-          Edit
-        </Button>
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="sm" className="w-full justify-start">
+            <Edit className="mr-2 h-4 w-4" />
+            Edit
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Property</DialogTitle>

@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import superjson from "superjson";
 
 type MockPropertyType =
   | "server"
@@ -316,16 +317,24 @@ export async function setupMSW(page: Page) {
       const parseTrpcInputs = (
         url: string,
         init?: RequestInit,
-      ): [Record<string, unknown>, ...Record<string, unknown>[]] => {
+      ) => {
         const inputs: Record<string, unknown>[] = [];
+        const ids: Array<string | number> = [];
 
         if (init?.body) {
           try {
             const parsed = JSON.parse(init.body as string);
-            const values = Array.isArray(parsed)
-              ? parsed
-              : Object.values(parsed);
-            values.forEach((entry) => inputs.push(decodeInput(entry)));
+            if (Array.isArray(parsed)) {
+              parsed.forEach((entry, index) => {
+                inputs.push(decodeInput(entry));
+                ids.push(String(index));
+              });
+            } else if (parsed && typeof parsed === "object") {
+              Object.entries(parsed).forEach(([key, entry]) => {
+                inputs.push(decodeInput(entry));
+                ids.push(key);
+              });
+            }
           } catch {
             // ignore malformed body
           }
@@ -337,10 +346,17 @@ export async function setupMSW(page: Page) {
             const inputParam = urlObj.searchParams.get("input");
             if (inputParam) {
               const parsed = JSON.parse(decodeURIComponent(inputParam));
-              const values = Array.isArray(parsed)
-                ? parsed
-                : Object.values(parsed);
-              values.forEach((entry) => inputs.push(decodeInput(entry)));
+              if (Array.isArray(parsed)) {
+                parsed.forEach((entry, index) => {
+                  inputs.push(decodeInput(entry));
+                  ids.push(String(index));
+                });
+              } else if (parsed && typeof parsed === "object") {
+                Object.entries(parsed).forEach(([key, entry]) => {
+                  inputs.push(decodeInput(entry));
+                  ids.push(key);
+                });
+              }
             }
           } catch {
             // ignore
@@ -349,28 +365,56 @@ export async function setupMSW(page: Page) {
 
         if (!inputs.length) {
           inputs.push({});
+          ids.push(0);
         }
 
-        return inputs as [
-          Record<string, unknown>,
-          ...Record<string, unknown>[],
-        ];
+        if (!ids.length) {
+          for (let i = 0; i < inputs.length; i++) {
+            ids.push(String(i));
+          }
+        }
+
+        return {
+          inputs: inputs as [
+            Record<string, unknown>,
+            ...Record<string, unknown>[],
+          ],
+          ids,
+        };
       };
 
-      const trpcResponse = (data: unknown) =>
-        new Response(JSON.stringify([{ result: { data: { json: data } } }]), {
+      const trpcResponse = (data: unknown, id: string | number = 0) => {
+        const serialized = superjson.serialize(data);
+        const payload = [
+          {
+            jsonrpc: "2.0" as const,
+            result: {
+              type: "data" as const,
+              data: serialized,
+            },
+            id,
+          },
+        ];
+
+        return new Response(JSON.stringify(payload), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
+      };
 
-      const trpcError = (message: string) =>
+      const trpcError = (message: string, opts?: { code?: string; id?: number }) =>
         new Response(
           JSON.stringify([
             {
+              jsonrpc: "2.0" as const,
               error: {
                 message,
-                data: { code: "BAD_REQUEST", httpStatus: 400 },
+                data: {
+                  code: opts?.code ?? "BAD_REQUEST",
+                  httpStatus: 400,
+                },
               },
+              id: opts?.id ?? 0,
             },
           ]),
           {
@@ -381,7 +425,8 @@ export async function setupMSW(page: Page) {
 
       const successResponse = (
         data: Record<string, unknown> = { success: true },
-      ) => trpcResponse(data);
+        id: string | number = 0,
+      ) => trpcResponse(data, id);
 
       const findRolePermissions = (
         state: MockState,
@@ -454,7 +499,9 @@ export async function setupMSW(page: Page) {
         }
 
         if (url.includes("/api/trpc/property.list")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const page = Number(params.page ?? 1);
           const limit = Number(params.limit ?? 10);
           let items = state.properties.filter((property) => property.is_active);
@@ -491,13 +538,32 @@ export async function setupMSW(page: Page) {
             page,
             limit,
             total_pages: totalPages,
-          });
+          }, responseId);
+        }
+
+        if (url.includes("/api/trpc/property.getById")) {
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
+          const id = typeof params.id === "string" ? params.id : "";
+          const property = state.properties.find((item) => item.id === id);
+
+          if (!property) {
+            return trpcError("Property not found", {
+              code: "NOT_FOUND",
+              id: responseId,
+            });
+          }
+
+          return trpcResponse(clone(property), responseId);
         }
 
         if (url.includes("/api/trpc/property.create")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           if (!params.name || typeof params.name !== "string") {
-            return trpcError("Property name is required");
+            return trpcError("Property name is required", { id: responseId });
           }
 
           const id = `prop_${state.counters.property++}`;
@@ -523,15 +589,17 @@ export async function setupMSW(page: Page) {
           };
 
           state.properties.push(property);
-          return trpcResponse(clone(property));
+          return trpcResponse(clone(property), responseId);
         }
 
         if (url.includes("/api/trpc/property.update")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const id = typeof params.id === "string" ? params.id : "";
           const property = state.properties.find((item) => item.id === id);
           if (!property) {
-            return trpcError("Property not found");
+            return trpcError("Property not found", { id: responseId });
           }
 
           if (typeof params.name === "string") {
@@ -554,20 +622,64 @@ export async function setupMSW(page: Page) {
           }
           property.updated_at = new Date().toISOString();
 
-          return trpcResponse(clone(property));
+          return trpcResponse(clone(property), responseId);
         }
 
         if (url.includes("/api/trpc/property.delete")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
           const id = typeof params.id === "string" ? params.id : "";
           state.properties = state.properties.filter(
             (property) => property.id !== id,
           );
-          return successResponse();
+          return successResponse(undefined, ids[0] ?? 0);
+        }
+
+        if (url.includes("/api/trpc/property.activate")) {
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
+          const id = typeof params.id === "string" ? params.id : "";
+          const property = state.properties.find((item) => item.id === id);
+
+          if (!property) {
+            return trpcError("Property not found", {
+              code: "NOT_FOUND",
+              id: responseId,
+            });
+          }
+
+          property.is_active = true;
+          property.status = property.status === "inactive" ? "active" : property.status;
+          property.updated_at = new Date().toISOString();
+
+          return trpcResponse(clone(property), responseId);
+        }
+
+        if (url.includes("/api/trpc/property.deactivate")) {
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
+          const id = typeof params.id === "string" ? params.id : "";
+          const property = state.properties.find((item) => item.id === id);
+
+          if (!property) {
+            return trpcError("Property not found", {
+              code: "NOT_FOUND",
+              id: responseId,
+            });
+          }
+
+          property.is_active = false;
+          property.updated_at = new Date().toISOString();
+
+          return trpcResponse(clone(property), responseId);
         }
 
         if (url.includes("/api/trpc/user.list")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const page = Number(params.page ?? 1);
           const limit = Number(params.limit ?? 10);
 
@@ -610,18 +722,20 @@ export async function setupMSW(page: Page) {
               has_next: page < totalPages,
               has_prev: page > 1,
             },
-          });
+          }, responseId);
         }
 
         if (url.includes("/api/trpc/user.create")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const email = normalizeEmail(params.email);
           if (!email) {
-            return trpcError("Email is required");
+            return trpcError("Email is required", { id: responseId });
           }
           const exists = state.users.find((user) => user.email === email);
           if (exists) {
-            return trpcError("User already exists");
+            return trpcError("User already exists", { id: responseId });
           }
 
           const id = `user_${state.counters.user++}`;
@@ -638,15 +752,17 @@ export async function setupMSW(page: Page) {
           } satisfies MockState["users"][number];
 
           state.users.push(user);
-          return trpcResponse(clone(user));
+          return trpcResponse(clone(user), responseId);
         }
 
         if (url.includes("/api/trpc/user.update")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const id = typeof params.id === "string" ? params.id : "";
           const user = state.users.find((item) => item.id === id);
           if (!user) {
-            return trpcError("User not found");
+            return trpcError("User not found", { id: responseId });
           }
 
           if (typeof params.name === "string") {
@@ -663,44 +779,52 @@ export async function setupMSW(page: Page) {
           }
           user.updated_at = new Date().toISOString();
 
-          return trpcResponse(clone(user));
+          return trpcResponse(clone(user), responseId);
         }
 
         if (url.includes("/api/trpc/user.delete")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const id = typeof params.id === "string" ? params.id : "";
           state.users = state.users.filter((user) => user.id !== id);
-          return successResponse();
+          return successResponse(undefined, responseId);
         }
 
         if (url.includes("/api/trpc/user.assignRole")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const userId = typeof params.userId === "string" ? params.userId : "";
           const roleId = typeof params.roleId === "string" ? params.roleId : "";
           const user = state.users.find((item) => item.id === userId);
           const role = state.roles.find((item) => item.id === roleId);
           if (!user || !role) {
-            return trpcError("Unable to assign role");
+            return trpcError("Unable to assign role", { id: responseId });
           }
           user.role = role.name;
           user.updated_at = new Date().toISOString();
-          return successResponse();
+          return successResponse(undefined, responseId);
         }
 
         if (url.includes("/api/trpc/user.removeRole")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const userId = typeof params.userId === "string" ? params.userId : "";
           const user = state.users.find((item) => item.id === userId);
           if (!user) {
-            return trpcError("Unable to remove role");
+            return trpcError("Unable to remove role", { id: responseId });
           }
           user.role = "viewer";
           user.updated_at = new Date().toISOString();
-          return successResponse();
+          return successResponse(undefined, responseId);
         }
 
         if (url.includes("/api/trpc/role.list")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const page = Number(params.page ?? 1);
           const limit = Number(params.limit ?? 10);
 
@@ -731,13 +855,15 @@ export async function setupMSW(page: Page) {
               has_next: page < totalPages,
               has_prev: page > 1,
             },
-          });
+          }, responseId);
         }
 
         if (url.includes("/api/trpc/role.create")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           if (!params.name || typeof params.name !== "string") {
-            return trpcError("Role name is required");
+            return trpcError("Role name is required", { id: responseId });
           }
 
           const id = `role_${state.counters.role++}`;
@@ -757,15 +883,17 @@ export async function setupMSW(page: Page) {
           return trpcResponse({
             ...clone(role),
             permissions: findRolePermissions(state, role),
-          });
+          }, responseId);
         }
 
         if (url.includes("/api/trpc/role.update")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const id = typeof params.id === "string" ? params.id : "";
           const role = state.roles.find((item) => item.id === id);
           if (!role) {
-            return trpcError("Role not found");
+            return trpcError("Role not found", { id: responseId });
           }
 
           if (typeof params.name === "string") {
@@ -779,18 +907,22 @@ export async function setupMSW(page: Page) {
           return trpcResponse({
             ...clone(role),
             permissions: findRolePermissions(state, role),
-          });
+          }, responseId);
         }
 
         if (url.includes("/api/trpc/role.delete")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const id = typeof params.id === "string" ? params.id : "";
           state.roles = state.roles.filter((role) => role.id !== id);
-          return successResponse();
+          return successResponse(undefined, responseId);
         }
 
         if (url.includes("/api/trpc/role.assignPermission")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const roleId = typeof params.roleId === "string" ? params.roleId : "";
           const permissionId =
             typeof params.permissionId === "string" ? params.permissionId : "";
@@ -799,29 +931,31 @@ export async function setupMSW(page: Page) {
             (item) => item.id === permissionId,
           );
           if (!role || !permission) {
-            return trpcError("Unable to assign permission");
+            return trpcError("Unable to assign permission", { id: responseId });
           }
           if (!role.permissionIds.includes(permissionId)) {
             role.permissionIds.push(permissionId);
             role.updated_at = new Date().toISOString();
           }
-          return successResponse();
+          return successResponse(undefined, responseId);
         }
 
         if (url.includes("/api/trpc/role.removePermission")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           const roleId = typeof params.roleId === "string" ? params.roleId : "";
           const permissionId =
             typeof params.permissionId === "string" ? params.permissionId : "";
           const role = state.roles.find((item) => item.id === roleId);
           if (!role) {
-            return trpcError("Unable to remove permission");
+            return trpcError("Unable to remove permission", { id: responseId });
           }
           role.permissionIds = role.permissionIds.filter(
             (idItem) => idItem !== permissionId,
           );
           role.updated_at = new Date().toISOString();
-          return successResponse();
+          return successResponse(undefined, responseId);
         }
 
         if (url.includes("/api/trpc/permission.getAll")) {
@@ -841,7 +975,9 @@ export async function setupMSW(page: Page) {
         }
 
         if (url.includes("/api/trpc/tenant.updateSettings")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           if (typeof params.tenantName === "string") {
             state.tenant.settings.tenantName = params.tenantName;
           }
@@ -855,11 +991,11 @@ export async function setupMSW(page: Page) {
           if (typeof params.systemAlerts === "boolean") {
             state.tenant.settings.systemAlerts = params.systemAlerts;
           }
-          if (typeof params.performanceWarnings === "boolean") {
+         if (typeof params.performanceWarnings === "boolean") {
             state.tenant.settings.performanceWarnings =
               params.performanceWarnings;
           }
-          return successResponse();
+          return successResponse(undefined, responseId);
         }
 
         if (url.includes("/api/trpc/post.hello")) {
@@ -867,9 +1003,11 @@ export async function setupMSW(page: Page) {
         }
 
         if (url.includes("/api/trpc/post.create")) {
-          const [params] = parseTrpcInputs(url, init);
+          const { inputs, ids } = parseTrpcInputs(url, init);
+          const params = inputs[0];
+          const responseId = ids[0] ?? 0;
           if (!params.name || typeof params.name !== "string") {
-            return trpcError("Post title is required");
+            return trpcError("Post title is required", { id: responseId });
           }
           const id = `post_${state.counters.post++}`;
           const timestamp = new Date().toISOString();
@@ -878,7 +1016,7 @@ export async function setupMSW(page: Page) {
             id,
             name: params.name,
             createdAt: timestamp,
-          });
+          }, responseId);
         }
 
         if (url.includes("/api/trpc/post.getLatest")) {

@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { PropertyDetail } from "~/components/property-management/PropertyDetail";
 import type { Property } from "~/repositories/interfaces/property.repository";
@@ -168,7 +168,7 @@ describe("PropertyDetail", () => {
     // Test the delete handler directly
     const component = screen.getByText("Test Server").closest("div");
     expect(component).toBeInTheDocument();
-    
+
     // We can't easily test the dropdown interaction, but we can test the mutation setup
     expect(mockMutateAsync).toBeDefined();
   });

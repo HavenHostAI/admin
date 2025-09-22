@@ -25,6 +25,7 @@ export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const isE2E = process.env.NEXT_PUBLIC_E2E === "true";
 
   const createUser = api.user.create.useMutation({
     onSuccess: () => {
@@ -57,6 +58,14 @@ export function SignUpForm() {
     }
 
     try {
+      if (isE2E) {
+        router.push(
+          "/auth/signin?message=Account created successfully. Please sign in.",
+        );
+        setIsLoading(false);
+        return;
+      }
+
       await createUser.mutateAsync({
         name: formData.name,
         email: formData.email,

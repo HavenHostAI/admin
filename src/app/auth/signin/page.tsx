@@ -1,13 +1,24 @@
 import { SignInForm } from "~/components/auth/SignInForm";
 
 interface SignInPageProps {
-  searchParams?: {
-    message?: string;
-  };
+  searchParams?:
+    | {
+        message?: string;
+      }
+    | Promise<{
+        message?: string;
+      }>;
 }
 
-export default function SignInPage({ searchParams }: SignInPageProps) {
-  const successMessage = searchParams?.message;
+export default async function SignInPage({
+  searchParams,
+}: SignInPageProps) {
+  const resolvedSearchParams =
+    searchParams && typeof (searchParams as Promise<unknown>).then === "function"
+      ? await searchParams
+      : (searchParams as { message?: string } | undefined);
+
+  const successMessage = resolvedSearchParams?.message;
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
