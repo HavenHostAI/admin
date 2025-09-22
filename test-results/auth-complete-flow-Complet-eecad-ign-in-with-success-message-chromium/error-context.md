@@ -21,7 +21,7 @@
           - textbox "Full Name" [ref=e18]: Test User
         - generic [ref=e19]:
           - generic [ref=e20]: Email
-          - textbox "Email" [ref=e21]: playwright-1758508604437@example.com
+          - textbox "Email" [ref=e21]: playwright-1758509864295@example.com
         - generic [ref=e22]:
           - generic [ref=e23]: Password
           - textbox "Password" [ref=e24]: password123

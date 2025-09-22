@@ -15,6 +15,20 @@ type DbProperty = typeof properties.$inferSelect;
 
 export class DrizzlePropertyRepository implements PropertyRepository {
   private mapDbPropertyToProperty(dbProperty: DbProperty): Property {
+    // Validate property type and log warnings for data integrity issues
+    if (!isValidPropertyType(dbProperty.type)) {
+      console.warn(
+        `[DrizzlePropertyRepository] Invalid property type '${dbProperty.type}' for property '${dbProperty.id}'. Defaulting to 'server'.`,
+      );
+    }
+
+    // Validate property status and log warnings for data integrity issues
+    if (!isValidPropertyStatus(dbProperty.status)) {
+      console.warn(
+        `[DrizzlePropertyRepository] Invalid property status '${dbProperty.status}' for property '${dbProperty.id}'. Defaulting to 'active'.`,
+      );
+    }
+
     return {
       id: dbProperty.id,
       name: dbProperty.name,

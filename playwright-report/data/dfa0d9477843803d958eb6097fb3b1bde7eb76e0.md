@@ -1,7 +1,7 @@
 # Page snapshot
 
 ```yaml
-- generic:
+- generic [active]:
   - generic:
     - generic:
       - heading [level=1]: User & Role Management
@@ -93,7 +93,7 @@
         - textbox "Name" [ref=e29]: Playwright User
       - generic [ref=e30]:
         - generic [ref=e31]: Email
-        - textbox "Email" [ref=e32]: playwright-1758508649301@example.com
+        - textbox "Email" [ref=e32]: playwright-1758509913840@example.com
       - generic [ref=e33]:
         - generic [ref=e34]: Password
         - textbox "Password" [ref=e35]: password123
@@ -107,7 +107,7 @@
         - generic [ref=e43]: Unable to transform response from server
       - generic [ref=e44]:
         - button "Cancel" [ref=e45]
-        - button "Create User" [active] [ref=e46]
+        - button "Create User" [ref=e46]
     - button "Close" [ref=e47]:
       - img [ref=e48]
       - generic [ref=e51]: Close

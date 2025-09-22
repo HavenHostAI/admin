@@ -20,10 +20,10 @@
                 - img
                 - textbox
             - combobox:
-              - generic: Filter by type
+              - generic: Server
               - img
             - combobox:
-              - generic: Filter by status
+              - generic: Active
               - img
         - generic:
           - generic:
@@ -88,7 +88,7 @@
     - generic [ref=e27]:
       - generic [ref=e28]:
         - generic [ref=e29]: Name *
-        - textbox "Name *" [ref=e30]: Pagination Server 1
+        - textbox "Name *" [ref=e30]: Pagination Server 10
       - generic [ref=e31]:
         - generic [ref=e32]: Type *
         - combobox "Type *" [ref=e33]:

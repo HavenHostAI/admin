@@ -48,8 +48,8 @@ import { EditPropertyDialog } from "./EditPropertyDialog";
 import {
   PROPERTY_TYPE_LABELS,
   STATUS_COLORS,
-  type PROPERTY_TYPES,
-  type PROPERTY_STATUSES,
+  isValidPropertyType,
+  isValidPropertyStatus,
 } from "@/lib/constants";
 
 const propertyTypeIcons = {
@@ -82,10 +82,14 @@ export function PropertyList() {
     page,
     limit,
     search: normalizedSearch === "" ? undefined : normalizedSearch,
-    type: normalizedTypeFilter as (typeof PROPERTY_TYPES)[number] | undefined,
-    status: normalizedStatusFilter as
-      | (typeof PROPERTY_STATUSES)[number]
-      | undefined,
+    type:
+      normalizedTypeFilter && isValidPropertyType(normalizedTypeFilter)
+        ? normalizedTypeFilter
+        : undefined,
+    status:
+      normalizedStatusFilter && isValidPropertyStatus(normalizedStatusFilter)
+        ? normalizedStatusFilter
+        : undefined,
   });
 
   const deletePropertyMutation = api.property.delete.useMutation({

@@ -1,7 +1,7 @@
 # Page snapshot
 
 ```yaml
-- generic:
+- generic [active]:
   - generic:
     - generic:
       - heading [level=1]: User & Role Management
@@ -96,7 +96,7 @@
         - generic [ref=e34]: Unable to transform response from server
       - generic [ref=e35]:
         - button "Cancel" [ref=e36]
-        - button "Create Role" [active] [ref=e37]
+        - button "Create Role" [ref=e37]
     - button "Close" [ref=e38]:
       - img [ref=e39]
       - generic [ref=e42]: Close

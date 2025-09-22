@@ -93,7 +93,7 @@
         - textbox "Name" [ref=e28]: Playwright User
       - generic [ref=e29]:
         - generic [ref=e30]: Email
-        - textbox "Email" [ref=e31]: playwright-1758508622229@example.com
+        - textbox "Email" [ref=e31]: playwright-1758509882536@example.com
       - generic [ref=e32]:
         - generic [ref=e33]: Password
         - textbox "Password" [ref=e34]: password123

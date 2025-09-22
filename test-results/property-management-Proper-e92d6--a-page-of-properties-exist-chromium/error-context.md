@@ -1,7 +1,7 @@
 # Page snapshot
 
 ```yaml
-- generic [active]:
+- generic:
   - generic:
     - generic:
       - generic:
@@ -67,50 +67,49 @@
                   - cell:
                     - button:
                       - img
-  - generic [ref=e5] [cursor=pointer]:
-    - button "Open Next.js Dev Tools" [ref=e6] [cursor=pointer]:
-      - img [ref=e7] [cursor=pointer]
-    - generic [ref=e10] [cursor=pointer]:
-      - button "Open issues overlay" [ref=e11] [cursor=pointer]:
-        - generic [ref=e12] [cursor=pointer]:
-          - generic [ref=e13] [cursor=pointer]: "0"
-          - generic [ref=e14] [cursor=pointer]: "1"
-        - generic [ref=e15] [cursor=pointer]: Issue
-      - button "Collapse issues badge" [ref=e16] [cursor=pointer]:
-        - img [ref=e17] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e6] [cursor=pointer]:
+    - img [ref=e7] [cursor=pointer]
   - alert
-  - dialog "Create New Property" [ref=e20]:
-    - generic [ref=e21]:
-      - heading "Create New Property" [level=2] [ref=e22]
-      - paragraph [ref=e23]: Add a new hosting property to the system.
-    - alert [ref=e24]:
-      - generic [ref=e25]: Unable to transform response from server
-    - generic [ref=e26]:
-      - generic [ref=e27]:
-        - generic [ref=e28]: Name *
-        - textbox "Name *" [ref=e29]: Pagination Server 1
-      - generic [ref=e30]:
-        - generic [ref=e31]: Type *
-        - combobox "Type *" [ref=e32]:
+  - dialog:
+    - generic:
+      - heading [level=2]: Create New Property
+      - paragraph: Add a new hosting property to the system.
+    - generic:
+      - generic:
+        - generic: Name *
+        - textbox: Pagination Server 1Pagination Server 2Pagination Server 3
+      - generic:
+        - generic: Type *
+        - combobox:
           - generic: Server
-          - img [ref=e33]
-        - combobox [ref=e35]
-      - generic [ref=e36]:
-        - generic [ref=e37]: Status
-        - combobox "Status" [ref=e38]:
+          - img
+        - combobox
+      - generic:
+        - generic: Status
+        - combobox [expanded]:
           - generic: Active
-          - img [ref=e39]
-        - combobox [ref=e41]
-      - generic [ref=e42]:
-        - generic [ref=e43]: Description
-        - textbox "Description" [ref=e44]
-      - generic [ref=e45]:
-        - generic [ref=e46]: Owner ID
-        - textbox "Owner ID" [ref=e47]
-      - generic [ref=e48]:
-        - button "Cancel" [ref=e49]
-        - button "Create Property" [ref=e50]
-    - button "Close" [ref=e51]:
-      - img [ref=e52]
-      - generic [ref=e55]: Close
+          - img
+        - combobox
+      - generic:
+        - generic: Description
+        - textbox
+      - generic:
+        - generic: Owner ID
+        - textbox
+      - generic:
+        - button: Cancel
+        - button: Create Property
+    - button:
+      - img
+      - generic: Close
+  - listbox [ref=e11]:
+    - option "Active" [active] [selected] [ref=e12]:
+      - img [ref=e15]
+      - generic [ref=e17]: Active
+    - option "Inactive" [ref=e18]:
+      - generic [ref=e20]: Inactive
+    - option "Maintenance" [ref=e21]:
+      - generic [ref=e23]: Maintenance
+    - option "Suspended" [ref=e24]:
+      - generic [ref=e26]: Suspended
 ```

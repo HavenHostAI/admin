@@ -1,7 +1,7 @@
 # Page snapshot
 
 ```yaml
-- generic:
+- generic [active]:
   - generic:
     - generic:
       - generic:
@@ -109,7 +109,7 @@
         - textbox "Owner ID" [ref=e48]
       - generic [ref=e49]:
         - button "Cancel" [ref=e50]
-        - button "Create Property" [active] [ref=e51]
+        - button "Create Property" [ref=e51]
     - button "Close" [ref=e52]:
       - img [ref=e53]
       - generic [ref=e56]: Close

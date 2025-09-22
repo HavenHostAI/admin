@@ -55,7 +55,12 @@ export const ALLOWED_ROLES = ["admin", "editor", "viewer"] as const;
 export const validateUserRole = (
   role: unknown,
 ): (typeof ALLOWED_ROLES)[number] => {
-  return ALLOWED_ROLES.includes(role as (typeof ALLOWED_ROLES)[number])
-    ? (role as (typeof ALLOWED_ROLES)[number])
-    : "viewer";
+  if (ALLOWED_ROLES.includes(role as (typeof ALLOWED_ROLES)[number])) {
+    return role as (typeof ALLOWED_ROLES)[number];
+  } else {
+    console.warn(
+      `[validateUserRole] Invalid role provided: '${String(role)}'. Defaulting to 'viewer'.`,
+    );
+    return "viewer";
+  }
 };

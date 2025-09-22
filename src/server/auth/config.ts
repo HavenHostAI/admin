@@ -111,7 +111,12 @@ export const authConfig = {
     jwt: ({ token, user }) => {
       if (user) {
         token.id = user.id;
-        if ("role" in user) {
+        if (
+          user &&
+          typeof user === "object" &&
+          "role" in user &&
+          typeof user.role === "string"
+        ) {
           token.role = user.role;
         }
       }
