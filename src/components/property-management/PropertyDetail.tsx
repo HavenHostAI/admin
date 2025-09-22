@@ -65,22 +65,18 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
     return <div className="py-8 text-center">Loading property details...</div>;
   }
 
+  const renderError = (message: string, testId?: string) => (
+    <Alert variant="destructive" data-testid={testId}>
+      <AlertDescription>{message}</AlertDescription>
+    </Alert>
+  );
+
   if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>
-          Failed to load property: {error.message}
-        </AlertDescription>
-      </Alert>
-    );
+    return renderError(`Failed to load property: ${error.message}`, "property-load-error");
   }
 
   if (!property) {
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>Property not found.</AlertDescription>
-      </Alert>
-    );
+    return renderError("Property not found.", "property-not-found");
   }
 
   const TypeIcon = propertyTypeIcons[property.type];

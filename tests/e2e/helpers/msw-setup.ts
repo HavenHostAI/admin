@@ -300,12 +300,17 @@ export async function setupMSW(page: Page) {
   await page.addInitScript(
     ({ seed }) => {
       // Inject superjson into the page context
+      type SuperJsonSerialized<T> = {
+        json: T;
+        meta: Record<string, unknown>;
+      };
+
       (window as any).superjson = {
-        serialize: (data: unknown) => ({
+        serialize: <T>(data: T): SuperJsonSerialized<T> => ({
           json: data,
-          meta: {}
+          meta: {},
         }),
-        deserialize: (data: any) => data.json
+        deserialize: <T>(data: SuperJsonSerialized<T>): T => data.json,
       };
 
       const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
@@ -322,11 +327,11 @@ export async function setupMSW(page: Page) {
         return toRecord(value);
       };
 
-      const parseTrpcInputs = (url: string, init?: RequestInit): {
-        inputs: [
-          Record<string, unknown>,
-          ...Record<string, unknown>[]
-        ];
+      const parseTrpcInputs = (
+        url: string,
+        init?: RequestInit,
+      ): {
+        inputs: [Record<string, unknown>, ...Record<string, unknown>[]];
         ids: Array<string | number>;
       } => {
         const inputs: Record<string, unknown>[] = [];
