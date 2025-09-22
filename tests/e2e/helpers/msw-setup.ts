@@ -312,12 +312,44 @@ export async function setupMSW(page: Page) {
         };
       }
 
+      // Minimal SuperJSON-like implementation for Dates and undefined
+      function superjsonSerialize<T>(data: T): SuperJsonSerialized<T> {
+        const meta: Record<string, unknown> = {};
+        function replacer(key: string, value: any) {
+          if (typeof value === "undefined") {
+            meta[key] = { type: "undefined" };
+            return null; // JSON does not support undefined, so use null
+          }
+          if (value instanceof Date) {
+            meta[key] = { type: "Date" };
+            return value.toISOString();
+          }
+          return value;
+        }
+        // We need to walk the object to collect meta for all keys
+        const json = JSON.parse(JSON.stringify(data, replacer));
+        return { json, meta };
+      }
+      function superjsonDeserialize<T>(data: SuperJsonSerialized<T>): T {
+        const { json, meta } = data;
+        function reviver(key: string, value: any) {
+          if (meta && meta[key] && typeof meta[key] === "object") {
+            const metaItem = meta[key] as { type?: string };
+            if (metaItem.type === "undefined") {
+              return undefined;
+            }
+            if (metaItem.type === "Date") {
+              return new Date(value);
+            }
+          }
+          return value;
+        }
+        // Walk the object to restore types
+        return JSON.parse(JSON.stringify(json), reviver);
+      }
       (window as unknown as WindowWithSuperjson).superjson = {
-        serialize: <T>(data: T): SuperJsonSerialized<T> => ({
-          json: data,
-          meta: {},
-        }),
-        deserialize: <T>(data: SuperJsonSerialized<T>): T => data.json,
+        serialize: superjsonSerialize,
+        deserialize: superjsonDeserialize,
       };
 
       const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
@@ -407,7 +439,7 @@ export async function setupMSW(page: Page) {
       };
 
       const trpcResponse = (data: unknown, id: string | number = 0) => {
-        const serialized = (window as any).superjson.serialize(data);
+        const serialized = (window as unknown as WindowWithSuperjson).superjson.serialize(data);
         const payload = [
           {
             jsonrpc: "2.0" as const,

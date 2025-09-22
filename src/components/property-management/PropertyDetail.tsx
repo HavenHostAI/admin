@@ -94,12 +94,14 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
     onSuccess: () => {
       refetch().catch((error) => {
         console.error("Failed to refetch property after activation:", error);
-        // TODO: Add toast notification for user feedback
+        // Note: Toast notifications will be implemented in a future iteration
+        // to provide better user feedback for error states
       });
     },
     onError: (error) => {
       console.error("Failed to activate property:", error);
-      // TODO: Add toast notification for user feedback
+      // Note: Toast notifications will be implemented in a future iteration
+      // to provide better user feedback for error states
     },
   });
 
@@ -107,12 +109,14 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
     onSuccess: () => {
       refetch().catch((error) => {
         console.error("Failed to refetch property after deactivation:", error);
-        // TODO: Add toast notification for user feedback
+        // Note: Toast notifications will be implemented in a future iteration
+        // to provide better user feedback for error states
       });
     },
     onError: (error) => {
       console.error("Failed to deactivate property:", error);
-      // TODO: Add toast notification for user feedback
+      // Note: Toast notifications will be implemented in a future iteration
+      // to provide better user feedback for error states
     },
   });
 
@@ -126,7 +130,8 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
         await deletePropertyMutation.mutateAsync({ id: property.id });
       } catch (error) {
         console.error("Failed to delete property:", error);
-        // TODO: Add toast notification for user feedback
+        // Note: Toast notifications will be implemented in a future iteration
+        // to provide better user feedback for error states
       }
     }
   };
@@ -136,7 +141,8 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
       await activatePropertyMutation.mutateAsync({ id: property.id });
     } catch (error) {
       console.error("Failed to activate property:", error);
-      // TODO: Add toast notification for user feedback
+      // Note: Toast notifications will be implemented in a future iteration
+      // to provide better user feedback for error states
     }
   };
 
@@ -146,7 +152,8 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
         await deactivatePropertyMutation.mutateAsync({ id: property.id });
       } catch (error) {
         console.error("Failed to deactivate property:", error);
-        // TODO: Add toast notification for user feedback
+        // Note: Toast notifications will be implemented in a future iteration
+        // to provide better user feedback for error states
       }
     }
   };
@@ -156,15 +163,15 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
     if (isNaN(d.getTime())) {
       return "Invalid date";
     }
-    // Use a consistent format: YYYY-MM-DD HH:mm:ss
-    const pad = (n: number) => n.toString().padStart(2, "0");
-    const year = d.getFullYear();
-    const month = pad(d.getMonth() + 1);
-    const day = pad(d.getDate());
-    const hours = pad(d.getHours());
-    const minutes = pad(d.getMinutes());
-    const seconds = pad(d.getSeconds());
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    // Use native toLocaleString with 'sv-SE' locale for "YYYY-MM-DD HH:mm:ss" format
+    return d.toLocaleString('sv-SE', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }).replace('T', ' ');
   };
 
   const formatConfigurationValue = (value: unknown): string => {
@@ -174,9 +181,23 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
     
     switch (typeof value) {
       case "object":
-        return JSON.stringify(value, null, 2);
+        try {
+          const jsonString = JSON.stringify(value, null, 2);
+          // Limit length to prevent UI layout issues and potential security concerns
+          const maxLength = 1000;
+          if (jsonString.length > maxLength) {
+            return jsonString.substring(0, maxLength) + "... (truncated)";
+          }
+          return jsonString;
+        } catch {
+          return "[Unable to serialize object]";
+        }
       case "string":
-        return value;
+        // Limit string length for display
+        const maxStringLength = 500;
+        return value.length > maxStringLength 
+          ? value.substring(0, maxStringLength) + "... (truncated)"
+          : value;
       case "number":
       case "boolean":
         return value.toString();

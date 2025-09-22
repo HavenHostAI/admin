@@ -14,9 +14,7 @@ interface PropertyDetailPageProps {
 }
 
 async function resolveParams(
-  params:
-    | { id: string }
-    | Promise<{ id: string }>
+  params: { id: string } | Promise<{ id: string }>,
 ): Promise<{ id: string }> {
   if (params && typeof (params as Promise<unknown>).then === "function") {
     return await params;
