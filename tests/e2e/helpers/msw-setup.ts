@@ -305,7 +305,14 @@ export async function setupMSW(page: Page) {
         meta: Record<string, unknown>;
       };
 
-      (window as any).superjson = {
+      interface WindowWithSuperjson extends Window {
+        superjson: {
+          serialize: <T>(data: T) => SuperJsonSerialized<T>;
+          deserialize: <T>(data: SuperJsonSerialized<T>) => T;
+        };
+      }
+
+      (window as unknown as WindowWithSuperjson).superjson = {
         serialize: <T>(data: T): SuperJsonSerialized<T> => ({
           json: data,
           meta: {},
@@ -654,7 +661,7 @@ export async function setupMSW(page: Page) {
           state.properties = state.properties.filter(
             (property) => property.id !== id,
           );
-          return successResponse(undefined, ids[0] ?? 0);
+          return successResponse({ success: true }, ids[0] ?? 0);
         }
 
         if (url.includes("/api/trpc/property.activate")) {

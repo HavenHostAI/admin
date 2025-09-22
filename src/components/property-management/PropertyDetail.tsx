@@ -72,11 +72,14 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
   );
 
   if (error) {
-    return renderError(`Failed to load property: ${error.message}`, "property-load-error");
+    return renderError(
+      `Failed to load property: ${error.message}`,
+      "property-error",
+    );
   }
 
   if (!property) {
-    return renderError("Property not found.", "property-not-found");
+    return renderError("Property not found", "property-not-found");
   }
 
   const TypeIcon = propertyTypeIcons[property.type];
