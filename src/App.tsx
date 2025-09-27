@@ -1,43 +1,50 @@
 import { Resource } from "ra-core";
 import { Admin } from "@/components/admin";
 import dataProvider from "@/lib/convexDataProvider";
+import { authProvider } from "@/lib/authProvider";
 import {
-  PostCreate,
-  PostEdit,
-  PostList,
-  PostShow,
-} from "@/resources/posts";
+  CompanyCreate,
+  CompanyEdit,
+  CompanyList,
+  CompanyShow,
+} from "@/resources/companies";
 import {
-  CommentCreate,
-  CommentEdit,
-  CommentList,
-  CommentShow,
-} from "@/resources/comments";
+  PropertyCreate,
+  PropertyEdit,
+  PropertyList,
+  PropertyShow,
+} from "@/resources/properties";
 import {
   UserCreate,
   UserEdit,
   UserList,
   UserShow,
 } from "@/resources/users";
+import {
+  NumberCreate,
+  NumberEdit,
+  NumberList,
+  NumberShow,
+} from "@/resources/numbers";
 
 function App() {
   return (
-    <Admin dataProvider={dataProvider}>
+    <Admin dataProvider={dataProvider} authProvider={authProvider}>
       <Resource
-        name="posts"
-        list={PostList}
-        create={PostCreate}
-        edit={PostEdit}
-        show={PostShow}
-        recordRepresentation="title"
+        name="companies"
+        list={CompanyList}
+        create={CompanyCreate}
+        edit={CompanyEdit}
+        show={CompanyShow}
+        recordRepresentation="name"
       />
       <Resource
-        name="comments"
-        list={CommentList}
-        create={CommentCreate}
-        edit={CommentEdit}
-        show={CommentShow}
-        recordRepresentation={(record) => record.author}
+        name="properties"
+        list={PropertyList}
+        create={PropertyCreate}
+        edit={PropertyEdit}
+        show={PropertyShow}
+        recordRepresentation="name"
       />
       <Resource
         name="users"
@@ -45,7 +52,15 @@ function App() {
         create={UserCreate}
         edit={UserEdit}
         show={UserShow}
-        recordRepresentation="name"
+        recordRepresentation="email"
+      />
+      <Resource
+        name="numbers"
+        list={NumberList}
+        create={NumberCreate}
+        edit={NumberEdit}
+        show={NumberShow}
+        recordRepresentation="e164"
       />
     </Admin>
   );

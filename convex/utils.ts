@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Id, TableNames } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 
 type ListArgs = {
   pagination?: { page?: number; perPage?: number };
@@ -47,12 +48,33 @@ export const getDocumentOrThrow = async (
   table: TableNames,
   id: string,
 ) => {
-  const convexId = normalizeOrThrow(ctx, table, id);
-  const doc = await ctx.db.get(convexId);
-  if (!doc) {
-    throw new Error(`No ${table} record found for id ${id}`);
+  const normalized = ctx.db.normalizeId(table, id);
+  if (normalized) {
+    const doc = await ctx.db.get(normalized);
+    if (doc) return doc;
   }
-  return doc;
+
+  const docs = await ctx.db.query(table).collect();
+  const match = docs.find((doc) => {
+    const candidate = (doc as Record<string, unknown>).id;
+    return typeof candidate === "string" && candidate === id;
+  });
+
+  if (match) {
+    return match;
+  }
+
+  if (table === "users") {
+    const authUsers = (await ctx.runQuery(internal.authStore.getAll, {
+      table: "users",
+    })) as Array<Record<string, any>>;
+    const found = authUsers.find((doc) => doc.id === id);
+    if (found) {
+      return found;
+    }
+  }
+
+  throw new Error(`No ${table} record found for id ${id}`);
 };
 
 export const getManyDocuments = async (

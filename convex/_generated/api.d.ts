@@ -13,9 +13,12 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type * as comments from "../comments.js";
-import type * as posts from "../posts.js";
-import type * as users from "../users.js";
+import type * as _lib_authAdapter from "../_lib/authAdapter.js";
+import type * as admin from "../admin.js";
+import type * as auth from "../auth.js";
+import type * as authStore from "../authStore.js";
+import type * as company from "../company.js";
+import type * as companyStore from "../companyStore.js";
 import type * as utils from "../utils.js";
 
 /**
@@ -27,9 +30,12 @@ import type * as utils from "../utils.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  comments: typeof comments;
-  posts: typeof posts;
-  users: typeof users;
+  "_lib/authAdapter": typeof _lib_authAdapter;
+  admin: typeof admin;
+  auth: typeof auth;
+  authStore: typeof authStore;
+  company: typeof company;
+  companyStore: typeof companyStore;
   utils: typeof utils;
 }>;
 export declare const api: FilterApi<

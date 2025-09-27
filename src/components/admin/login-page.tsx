@@ -1,43 +1,77 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Form, required, useLogin, useNotify } from "ra-core";
 import type { SubmitHandler, FieldValues } from "react-hook-form";
+import { useLocation } from "react-router";
 import { Button } from "@/components/ui/button";
 import { TextInput } from "@/components/admin/text-input";
 import { Notification } from "@/components/admin/notification";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "../../../convex/_generated/api";
 
 export const LoginPage = (props: { redirectTo?: string }) => {
   const { redirectTo } = props;
+  const location = useLocation();
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const invitationToken = searchParams.get("invitation") ?? undefined;
+  const invitationEmail = searchParams.get("email") ?? undefined;
+
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(Boolean(invitationToken));
   const login = useLogin();
   const notify = useNotify();
+  const convexClient = useMemo(() => {
+    if (!import.meta.env.VITE_CONVEX_URL) {
+      throw new Error("VITE_CONVEX_URL is not defined");
+    }
+    return new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL);
+  }, []);
 
-  const handleSubmit: SubmitHandler<FieldValues> = (values) => {
+  useEffect(() => {
+    if (invitationToken) {
+      setIsSignUp(true);
+    }
+  }, [invitationToken]);
+
+  const handleSubmit: SubmitHandler<FieldValues> = async (values) => {
     setLoading(true);
-    login(values, redirectTo)
-      .then(() => {
-        setLoading(false);
-      })
-      .catch((error) => {
-        setLoading(false);
-        notify(
-          typeof error === "string"
-            ? error
-            : typeof error === "undefined" || !error.message
-            ? "ra.auth.sign_in_error"
-            : error.message,
-          {
-            type: "error",
-            messageArgs: {
-              _:
-                typeof error === "string"
-                  ? error
-                  : error && error.message
-                  ? error.message
-                  : undefined,
-            },
-          }
-        );
+    const email = (values.email as string).trim().toLowerCase();
+    const password = values.password as string;
+    const name = values.name as string | undefined;
+    const companyName = values.companyName as string | undefined;
+
+    if (isSignUp && !invitationToken && !companyName) {
+      notify("Please provide your company name", { type: "warning" });
+      setLoading(false);
+      return;
+    }
+    try {
+      if (isSignUp) {
+        await convexClient.action(api.auth.signUp, {
+          email,
+          password,
+          name: name ?? email,
+          companyName: !invitationToken ? companyName : undefined,
+          invitationToken,
+        });
+      }
+      await login({ email, password }, redirectTo);
+    } catch (error) {
+      const fallback = isSignUp ? "auth.sign_up_error" : "ra.auth.sign_in_error";
+      let message = fallback;
+      if (typeof error === "string") {
+        message = error;
+      } else if (error && typeof (error as { body?: { message?: string } }).body?.message === "string") {
+        message = (error as { body?: { message?: string } }).body!.message as string;
+      } else if (error instanceof Error && error.message) {
+        message = error.message;
+      }
+      notify(message, {
+        type: "error",
+        messageArgs: { _: message },
       });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,18 +108,51 @@ export const LoginPage = (props: { redirectTo?: string }) => {
         <div className="lg:p-8">
           <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
             <div className="flex flex-col space-y-2 text-center">
-              <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                {isSignUp ? "Create an account" : "Sign in"}
+              </h1>
               <p className="text-sm leading-none text-muted-foreground">
-                Try janedoe@acme.com / password
+                {isSignUp
+                  ? invitationToken
+                    ? "Finish creating your HavenHost account to join your company."
+                    : "Fill in your details to create your HavenHost admin account."
+                  : "Enter your email address and password to continue."}
               </p>
             </div>
-            <Form className="space-y-8" onSubmit={handleSubmit}>
+            <Form
+              className="space-y-8"
+              onSubmit={handleSubmit}
+              defaultValues={{
+                email: invitationEmail,
+              }}
+            >
+              {isSignUp ? (
+                <TextInput
+                  label="Name"
+                  source="name"
+                  validate={required()}
+                  placeholder="Jane Doe"
+                />
+              ) : null}
               <TextInput
                 label="Email"
                 source="email"
                 type="email"
                 validate={required()}
+                helperText={
+                  invitationToken
+                    ? "Use the same email address that received the invitation."
+                    : undefined
+                }
               />
+              {isSignUp && !invitationToken ? (
+                <TextInput
+                  label="Company Name"
+                  source="companyName"
+                  validate={required()}
+                  placeholder="Acme Co"
+                />
+              ) : null}
               <TextInput
                 label="Password"
                 source="password"
@@ -97,9 +164,27 @@ export const LoginPage = (props: { redirectTo?: string }) => {
                 className="cursor-pointer"
                 disabled={loading}
               >
-                Sign in
+                {loading
+                  ? isSignUp
+                    ? "Creating account..."
+                    : "Signing in..."
+                  : isSignUp
+                    ? "Create account"
+                    : "Sign in"}
               </Button>
             </Form>
+            <p className="text-sm text-muted-foreground text-center">
+              {isSignUp ? "Already have an account?" : "Need an account?"}
+              <Button
+                type="button"
+                variant="link"
+                className="px-2"
+                onClick={() => setIsSignUp((prev) => !prev)}
+                disabled={loading || Boolean(invitationToken)}
+              >
+                {isSignUp ? "Sign in" : "Create one"}
+              </Button>
+            </p>
           </div>
         </div>
       </div>

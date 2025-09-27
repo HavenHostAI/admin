@@ -14,6 +14,7 @@ import {
   type GetManyResult,
   type GetOneParams,
   type GetOneResult,
+  type Identifier,
   type UpdateManyParams,
   type UpdateManyResult,
   type UpdateParams,
@@ -21,45 +22,29 @@ import {
 } from "ra-core";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
-import type { Id } from "../../convex/_generated/dataModel";
+import type { TableNames } from "../../convex/_generated/dataModel";
 
-const resourceOperations = {
-  posts: {
-    list: api.posts.list,
-    get: api.posts.get,
-    getMany: api.posts.getMany,
-    getManyReference: api.posts.getManyReference,
-    create: api.posts.create,
-    update: api.posts.update,
-    updateMany: api.posts.updateMany,
-    deleteOne: api.posts.del,
-    deleteMany: api.posts.deleteMany,
-  },
-  comments: {
-    list: api.comments.list,
-    get: api.comments.get,
-    getMany: api.comments.getMany,
-    getManyReference: api.comments.getManyReference,
-    create: api.comments.create,
-    update: api.comments.update,
-    updateMany: api.comments.updateMany,
-    deleteOne: api.comments.del,
-    deleteMany: api.comments.deleteMany,
-  },
-  users: {
-    list: api.users.list,
-    get: api.users.get,
-    getMany: api.users.getMany,
-    getManyReference: api.users.getManyReference,
-    create: api.users.create,
-    update: api.users.update,
-    updateMany: api.users.updateMany,
-    deleteOne: api.users.del,
-    deleteMany: api.users.deleteMany,
-  },
-} as const;
+const TABLES = [
+  "companies",
+  "users",
+  "properties",
+  "propertyConfigs",
+  "numbers",
+  "faqs",
+  "localRecs",
+  "integrations",
+  "interactions",
+  "escalations",
+  "notifications",
+  "billingUsage",
+  "auditLogs",
+  "companyInvitations",
+  "authSessions",
+  "authAccounts",
+  "authVerifications",
+] as const satisfies readonly TableNames[];
 
-type ResourceName = keyof typeof resourceOperations;
+type ResourceName = (typeof TABLES)[number];
 
 let client: ConvexHttpClient | null = null;
 
@@ -78,13 +63,17 @@ const getClient = () => {
 };
 
 const assertResourceName = (resource: string): ResourceName => {
-  if (resource in resourceOperations) {
+  if ((TABLES as ReadonlyArray<string>).includes(resource)) {
     return resource as ResourceName;
   }
-  throw new Error(`Unknown resource "${resource}" for Convex data provider.`);
+
+  throw new Error(
+    `Unknown resource "${resource}". Expected one of: ${TABLES.join(", ")}`,
+  );
 };
 
-const toIdentifier = (id: Id<any> | string): string => String(id);
+const toIdentifier = (id: string | Identifier): Identifier =>
+  typeof id === "string" ? id : String(id);
 
 const mapDoc = (doc: any) => {
   if (!doc) {
@@ -100,18 +89,21 @@ const mapDoc = (doc: any) => {
 
 const mapDocs = (docs: any[]) => docs.map(mapDoc);
 
+const sanitizeData = (data: Record<string, unknown>) => {
+  const { id: _id, _id: __internalId, ...rest } = data;
+  return rest;
+};
+
 const dataProvider: DataProvider = {
   async getList(resource: string, params: GetListParams): Promise<GetListResult> {
-    const resourceKey = assertResourceName(resource);
+    const table = assertResourceName(resource);
     const convex = getClient();
-    const response = await convex.query(
-      resourceOperations[resourceKey].list,
-      {
-        pagination: params.pagination,
-        sort: params.sort,
-        filter: params.filter,
-      },
-    );
+    const response = await convex.query(api.admin.list, {
+      table,
+      pagination: params.pagination,
+      sort: params.sort,
+      filter: params.filter,
+    });
 
     return {
       data: mapDocs(response.data),
@@ -120,9 +112,10 @@ const dataProvider: DataProvider = {
   },
 
   async getOne(resource: string, params: GetOneParams): Promise<GetOneResult> {
-    const resourceKey = assertResourceName(resource);
+    const table = assertResourceName(resource);
     const convex = getClient();
-    const response = await convex.query(resourceOperations[resourceKey].get, {
+    const response = await convex.query(api.admin.get, {
+      table,
       id: String(params.id),
     });
 
@@ -130,14 +123,12 @@ const dataProvider: DataProvider = {
   },
 
   async getMany(resource: string, params: GetManyParams): Promise<GetManyResult> {
-    const resourceKey = assertResourceName(resource);
+    const table = assertResourceName(resource);
     const convex = getClient();
-    const response = await convex.query(
-      resourceOperations[resourceKey].getMany,
-      {
-        ids: params.ids.map(String),
-      },
-    );
+    const response = await convex.query(api.admin.getMany, {
+      table,
+      ids: params.ids.map((id) => String(id)),
+    });
 
     return { data: mapDocs(response) };
   },
@@ -146,18 +137,16 @@ const dataProvider: DataProvider = {
     resource: string,
     params: GetManyReferenceParams,
   ): Promise<GetManyReferenceResult> {
-    const resourceKey = assertResourceName(resource);
+    const table = assertResourceName(resource);
     const convex = getClient();
-    const response = await convex.query(
-      resourceOperations[resourceKey].getManyReference,
-      {
-        target: params.target,
-        id: String(params.id),
-        pagination: params.pagination,
-        sort: params.sort,
-        filter: params.filter,
-      },
-    );
+    const response = await convex.query(api.admin.getManyReference, {
+      table,
+      target: params.target,
+      id: String(params.id),
+      pagination: params.pagination,
+      sort: params.sort,
+      filter: params.filter,
+    });
 
     return {
       data: mapDocs(response.data),
@@ -166,28 +155,26 @@ const dataProvider: DataProvider = {
   },
 
   async create(resource: string, params: CreateParams): Promise<CreateResult> {
-    const resourceKey = assertResourceName(resource);
+    const table = assertResourceName(resource);
     const convex = getClient();
-    const response = await convex.mutation(
-      resourceOperations[resourceKey].create,
-      {
-        data: params.data as any,
-      },
-    );
+    const response = await convex.mutation(api.admin.create, {
+      table,
+      data: sanitizeData(params.data as Record<string, unknown>),
+      meta: params.meta,
+    });
 
     return { data: mapDoc(response) };
   },
 
   async update(resource: string, params: UpdateParams): Promise<UpdateResult> {
-    const resourceKey = assertResourceName(resource);
+    const table = assertResourceName(resource);
     const convex = getClient();
-    const response = await convex.mutation(
-      resourceOperations[resourceKey].update,
-      {
-        id: String(params.id),
-        data: params.data as any,
-      },
-    );
+    const response = await convex.mutation(api.admin.update, {
+      table,
+      id: String(params.id),
+      data: sanitizeData(params.data as Record<string, unknown>),
+      meta: params.meta,
+    });
 
     return { data: mapDoc(response) };
   },
@@ -196,28 +183,27 @@ const dataProvider: DataProvider = {
     resource: string,
     params: UpdateManyParams,
   ): Promise<UpdateManyResult> {
-    const resourceKey = assertResourceName(resource);
+    const table = assertResourceName(resource);
     const convex = getClient();
-    const response = await convex.mutation(
-      resourceOperations[resourceKey].updateMany,
-      {
-        ids: params.ids.map(String),
-        data: params.data as any,
-      },
-    );
+    const response = await convex.mutation(api.admin.updateMany, {
+      table,
+      ids: params.ids.map((id) => String(id)),
+      data: sanitizeData(params.data as Record<string, unknown>),
+      meta: params.meta,
+    });
 
     return { data: response.map(toIdentifier) };
   },
 
   async delete(resource: string, params: DeleteParams): Promise<DeleteResult> {
-    const resourceKey = assertResourceName(resource);
+    const table = assertResourceName(resource);
     const convex = getClient();
-    const response = await convex.mutation(
-      resourceOperations[resourceKey].deleteOne,
-      {
-        id: String(params.id),
-      },
-    );
+    const response = await convex.mutation(api.admin.del, {
+      table,
+      id: String(params.id),
+      meta: params.meta,
+      previousData: params.previousData,
+    });
 
     return { data: mapDoc(response) };
   },
@@ -226,14 +212,13 @@ const dataProvider: DataProvider = {
     resource: string,
     params: DeleteManyParams,
   ): Promise<DeleteManyResult> {
-    const resourceKey = assertResourceName(resource);
+    const table = assertResourceName(resource);
     const convex = getClient();
-    const response = await convex.mutation(
-      resourceOperations[resourceKey].deleteMany,
-      {
-        ids: params.ids.map(String),
-      },
-    );
+    const response = await convex.mutation(api.admin.deleteMany, {
+      table,
+      ids: params.ids.map((id) => String(id)),
+      meta: params.meta,
+    });
 
     return { data: response.map(toIdentifier) };
   },
