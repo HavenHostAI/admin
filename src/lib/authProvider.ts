@@ -6,11 +6,32 @@ const TOKEN_KEY = "better-auth:token";
 const USER_KEY = "better-auth:user";
 
 const convexUrl = import.meta.env.VITE_CONVEX_URL;
-if (!convexUrl) {
-  throw new Error("VITE_CONVEX_URL must be defined for Better Auth");
-}
 
-const client = new ConvexHttpClient(convexUrl);
+const missingConvexUrlError = () => {
+  const error = new Error(
+    "VITE_CONVEX_URL must be defined to enable authentication in the admin UI.",
+  );
+
+  if (import.meta.env.DEV) {
+    console.error(error.message);
+  }
+
+  return error;
+};
+
+let client: ConvexHttpClient | null = null;
+
+const getClient = () => {
+  if (!convexUrl) {
+    throw missingConvexUrlError();
+  }
+
+  if (!client) {
+    client = new ConvexHttpClient(convexUrl);
+  }
+
+  return client;
+};
 
 const persistUser = (user: unknown) => {
   try {
@@ -33,7 +54,12 @@ const loadUser = () => {
 
 export const authProvider: AuthProvider = {
   async login({ email, password }) {
-    const result = await client.action(api.auth.signIn, {
+    if (!convexUrl) {
+      return Promise.reject(missingConvexUrlError());
+    }
+
+    const convex = getClient();
+    const result = await convex.action(api.auth.signIn, {
       email,
       password,
     });
@@ -45,7 +71,10 @@ export const authProvider: AuthProvider = {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       try {
-        await client.action(api.auth.signOut, { token });
+        if (convexUrl) {
+          const convex = getClient();
+          await convex.action(api.auth.signOut, { token });
+        }
       } catch (error) {
         console.warn("Failed to revoke session", error);
       }
@@ -55,11 +84,16 @@ export const authProvider: AuthProvider = {
   },
 
   async checkAuth() {
+    if (!convexUrl) {
+      return Promise.reject(missingConvexUrlError());
+    }
+
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
       throw new Error("Not authenticated");
     }
-    const session = await client.action(api.auth.validateSession, { token });
+    const convex = getClient();
+    const session = await convex.action(api.auth.validateSession, { token });
     if (!session) {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
