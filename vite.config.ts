@@ -3,8 +3,9 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+const configuredBase = process.env.BASE_PATH;
 const repository = process.env.GITHUB_REPOSITORY ?? "";
-const base = repository ? `/${repository.split("/").pop()}/` : "/";
+const base = configuredBase ?? (repository ? `/${repository.split("/").pop()}/` : "/");
 
 // https://vite.dev/config/
 export default defineConfig({
