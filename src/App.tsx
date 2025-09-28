@@ -1,4 +1,5 @@
-import { Resource } from "ra-core";
+import { Resource, CustomRoutes } from "ra-core";
+import { Route } from "react-router";
 import { Admin } from "@/components/admin";
 import dataProvider from "@/lib/convexDataProvider";
 import { authProvider } from "@/lib/authProvider";
@@ -26,6 +27,7 @@ import {
   NumberList,
   NumberShow,
 } from "@/resources/numbers";
+import { SignupPage } from "@/components/admin/login-page";
 
 function App() {
   return (
@@ -62,6 +64,9 @@ function App() {
         show={NumberShow}
         recordRepresentation="e164"
       />
+      <CustomRoutes noLayout>
+        <Route path="/signup" element={<SignupPage allowModeSwitch={false} />} />
+      </CustomRoutes>
     </Admin>
   );
 }

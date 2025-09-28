@@ -1,22 +1,35 @@
 import { useEffect, useMemo, useState } from "react";
 import { Form, required, useLogin, useNotify } from "ra-core";
 import type { SubmitHandler, FieldValues } from "react-hook-form";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { TextInput } from "@/components/admin/text-input";
 import { Notification } from "@/components/admin/notification";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../convex/_generated/api";
 
-export const LoginPage = (props: { redirectTo?: string }) => {
-  const { redirectTo } = props;
+type LoginMode = "login" | "signup";
+
+type LoginPageProps = {
+  redirectTo?: string;
+  defaultMode?: LoginMode;
+  allowModeSwitch?: boolean;
+};
+
+const LoginPageComponent = ({
+  redirectTo,
+  defaultMode = "login",
+  allowModeSwitch = true,
+}: LoginPageProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const invitationToken = searchParams.get("invitation") ?? undefined;
   const invitationEmail = searchParams.get("email") ?? undefined;
 
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(Boolean(invitationToken));
+  const [mode, setMode] = useState<LoginMode>(invitationToken ? "signup" : defaultMode);
+  const isSignUp = mode === "signup";
   const login = useLogin();
   const notify = useNotify();
   const convexClient = useMemo(() => {
@@ -28,9 +41,11 @@ export const LoginPage = (props: { redirectTo?: string }) => {
 
   useEffect(() => {
     if (invitationToken) {
-      setIsSignUp(true);
+      setMode("signup");
+    } else {
+      setMode(defaultMode);
     }
-  }, [invitationToken]);
+  }, [invitationToken, defaultMode]);
 
   const handleSubmit: SubmitHandler<FieldValues> = async (values) => {
     setLoading(true);
@@ -175,15 +190,17 @@ export const LoginPage = (props: { redirectTo?: string }) => {
             </Form>
             <p className="text-sm text-muted-foreground text-center">
               {isSignUp ? "Already have an account?" : "Need an account?"}
-              <Button
-                type="button"
-                variant="link"
-                className="px-2"
-                onClick={() => setIsSignUp((prev) => !prev)}
-                disabled={loading || Boolean(invitationToken)}
-              >
-                {isSignUp ? "Sign in" : "Create one"}
-              </Button>
+              {allowModeSwitch ? (
+                <Button
+                  type="button"
+                  variant="link"
+                  className="px-2"
+                  onClick={() => navigate(isSignUp ? "/login" : "/signup")}
+                  disabled={loading || Boolean(invitationToken)}
+                >
+                  {isSignUp ? "Sign in" : "Create one"}
+                </Button>
+              ) : null}
             </p>
           </div>
         </div>
@@ -192,3 +209,24 @@ export const LoginPage = (props: { redirectTo?: string }) => {
     </div>
   );
 };
+
+type RoutedLoginPageProps = {
+  redirectTo?: string;
+  allowModeSwitch?: boolean;
+};
+
+export const LoginPage = ({ redirectTo, allowModeSwitch }: RoutedLoginPageProps) => (
+  <LoginPageComponent
+    redirectTo={redirectTo}
+    defaultMode="login"
+    allowModeSwitch={allowModeSwitch ?? true}
+  />
+);
+
+export const SignupPage = ({ redirectTo, allowModeSwitch }: RoutedLoginPageProps) => (
+  <LoginPageComponent
+    redirectTo={redirectTo}
+    defaultMode="signup"
+    allowModeSwitch={allowModeSwitch ?? false}
+  />
+);
