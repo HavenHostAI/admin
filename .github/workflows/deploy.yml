@@ -37,6 +37,7 @@ jobs:
       - name: Build project
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          VITE_CONVEX_URL: https://knowing-bass-400.convex.cloud
         run: npm run build
 
       - name: Upload build artifact
