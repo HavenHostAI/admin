@@ -16,4 +16,22 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./tests/setup-globals.ts"],
+    include: [
+      "src/**/*.{test,spec}.{js,ts,jsx,tsx}",
+      "tests/**/*.{test,spec}.{js,ts,jsx,tsx}",
+    ],
+    exclude: ["tests/e2e/**/*"],
+    server: {
+      deps: {
+        inline: ["msw"],
+      },
+    },
+    coverage: {
+      reporter: ["text", "lcov"],
+    },
+  },
 });
