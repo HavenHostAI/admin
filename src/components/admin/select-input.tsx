@@ -76,7 +76,7 @@ export const SelectInput = (props: SelectInputProps) => {
   useEffect(() => {
     if (emptyValue == null) {
       throw new Error(
-        `emptyValue being set to null or undefined is not supported. Use parse to turn the empty string into null.`,
+        `emptyValue being set to null or undefined is not supported. Use parse to turn the empty string into null.`
       );
     }
   }, [emptyValue]);
@@ -99,13 +99,13 @@ export const SelectInput = (props: SelectInputProps) => {
 
   if (source === undefined) {
     throw new Error(
-      `If you're not wrapping the SelectInput inside a ReferenceInput, you must provide the source prop`,
+      `If you're not wrapping the SelectInput inside a ReferenceInput, you must provide the source prop`
     );
   }
 
   if (!isPending && !fetchError && allChoices === undefined) {
     throw new Error(
-      `If you're not wrapping the SelectInput inside a ReferenceInput, you must provide the choices prop`,
+      `If you're not wrapping the SelectInput inside a ReferenceInput, you must provide the choices prop`
     );
   }
 
@@ -145,8 +145,8 @@ export const SelectInput = (props: SelectInputProps) => {
   }, [emptyText, translate]);
 
   const renderMenuItemOption = useCallback(
-    (choice: any) => getChoiceText(choice),
-    [getChoiceText],
+    (choice: unknown) => getChoiceText(choice),
+    [getChoiceText]
   );
 
   const handleChange = useCallback(
@@ -156,12 +156,12 @@ export const SelectInput = (props: SelectInputProps) => {
       } else {
         // Find the choice by value and pass it to field.onChange
         const choice = allChoices?.find(
-          (choice) => getChoiceValue(choice) === value,
+          (choice) => getChoiceValue(choice) === value
         );
         field.onChange(choice ? getChoiceValue(choice) : value);
       }
     },
-    [field, getChoiceValue, emptyValue, allChoices],
+    [field, getChoiceValue, emptyValue, allChoices]
   );
 
   const {
@@ -275,7 +275,7 @@ export const SelectInput = (props: SelectInputProps) => {
                     {renderMenuItemOption(
                       !!createItem && choice?.id === createItem.id
                         ? createItem
-                        : choice,
+                        : choice
                     )}
                   </SelectItem>
                 );
@@ -295,6 +295,6 @@ export type SelectInputProps = ChoicesProps &
   Partial<InputProps> &
   Omit<SupportCreateSuggestionOptions, "handleChange"> & {
     emptyText?: string | ReactElement;
-    emptyValue?: any;
+    emptyValue?: unknown;
     onChange?: (value: string) => void;
   } & Omit<ComponentProps<typeof FormField>, "id" | "name" | "children">;

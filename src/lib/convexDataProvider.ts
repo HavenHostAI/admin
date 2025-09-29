@@ -53,7 +53,7 @@ const getClient = () => {
     const convexUrl = import.meta.env.VITE_CONVEX_URL;
     if (!convexUrl) {
       throw new Error(
-        "VITE_CONVEX_URL is required to initialise the Convex data provider.",
+        "VITE_CONVEX_URL is required to initialise the Convex data provider."
       );
     }
     client = new ConvexHttpClient(convexUrl);
@@ -68,26 +68,26 @@ const assertResourceName = (resource: string): ResourceName => {
   }
 
   throw new Error(
-    `Unknown resource "${resource}". Expected one of: ${TABLES.join(", ")}`,
+    `Unknown resource "${resource}". Expected one of: ${TABLES.join(", ")}`
   );
 };
 
 const toIdentifier = (id: string | Identifier): Identifier =>
   typeof id === "string" ? id : String(id);
 
-const mapDoc = (doc: any) => {
+const mapDoc = (doc: Record<string, unknown>) => {
   if (!doc) {
     throw new Error("Convex returned an empty document.");
   }
 
   const { _id, ...rest } = doc;
   return {
-    id: toIdentifier(_id),
+    id: toIdentifier(_id as string),
     ...rest,
   };
 };
 
-const mapDocs = (docs: any[]) => docs.map(mapDoc);
+const mapDocs = (docs: Record<string, unknown>[]) => docs.map(mapDoc);
 
 const sanitizeData = (data: Record<string, unknown>) => {
   const { id: _id, _id: __internalId, ...rest } = data;
@@ -95,7 +95,10 @@ const sanitizeData = (data: Record<string, unknown>) => {
 };
 
 const dataProvider: DataProvider = {
-  async getList(resource: string, params: GetListParams): Promise<GetListResult> {
+  async getList(
+    resource: string,
+    params: GetListParams
+  ): Promise<GetListResult> {
     const table = assertResourceName(resource);
     const convex = getClient();
     const response = await convex.query(api.admin.list, {
@@ -122,7 +125,10 @@ const dataProvider: DataProvider = {
     return { data: mapDoc(response) };
   },
 
-  async getMany(resource: string, params: GetManyParams): Promise<GetManyResult> {
+  async getMany(
+    resource: string,
+    params: GetManyParams
+  ): Promise<GetManyResult> {
     const table = assertResourceName(resource);
     const convex = getClient();
     const response = await convex.query(api.admin.getMany, {
@@ -135,7 +141,7 @@ const dataProvider: DataProvider = {
 
   async getManyReference(
     resource: string,
-    params: GetManyReferenceParams,
+    params: GetManyReferenceParams
   ): Promise<GetManyReferenceResult> {
     const table = assertResourceName(resource);
     const convex = getClient();
@@ -181,7 +187,7 @@ const dataProvider: DataProvider = {
 
   async updateMany(
     resource: string,
-    params: UpdateManyParams,
+    params: UpdateManyParams
   ): Promise<UpdateManyResult> {
     const table = assertResourceName(resource);
     const convex = getClient();
@@ -210,7 +216,7 @@ const dataProvider: DataProvider = {
 
   async deleteMany(
     resource: string,
-    params: DeleteManyParams,
+    params: DeleteManyParams
   ): Promise<DeleteManyResult> {
     const table = assertResourceName(resource);
     const convex = getClient();

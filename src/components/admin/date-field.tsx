@@ -29,9 +29,9 @@ import { FieldProps } from "@/lib/field.type";
  * <span>mercredi 7 novembre 2012</span>
  */
 const DateFieldImpl = <
-  RecordType extends Record<string, any> = Record<string, any>,
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
 >(
-  inProps: DateFieldProps<RecordType>,
+  inProps: DateFieldProps<RecordType>
 ) => {
   const {
     empty,
@@ -49,7 +49,7 @@ const DateFieldImpl = <
 
   if (!showTime && !showDate) {
     throw new Error(
-      "<DateField> cannot have showTime and showDate false at the same time",
+      "<DateField> cannot have showTime and showDate false at the same time"
     );
   }
 
@@ -100,7 +100,7 @@ DateFieldImpl.displayName = "DateFieldImpl";
 export const DateField = genericMemo(DateFieldImpl);
 
 export interface DateFieldProps<
-  RecordType extends Record<string, any> = Record<string, any>,
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
 > extends FieldProps<RecordType>,
     HTMLAttributes<HTMLSpanElement> {
   locales?: Intl.LocalesArgument;

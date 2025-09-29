@@ -1,5 +1,5 @@
-import { expect, test, type Page, type Route } from '@playwright/test';
-import { jsonToConvex } from 'convex/values';
+import { expect, test, type Page, type Route } from "@playwright/test";
+import { jsonToConvex } from "convex/values";
 
 type AuthUser = {
   id: string;
@@ -10,7 +10,7 @@ type AuthUser = {
   status: string;
 };
 
-type ConvexCall = Record<string, any>;
+type ConvexCall = Record<string, unknown>;
 
 type ConvexMocks = {
   signUpCalls: ConvexCall[];
@@ -20,40 +20,40 @@ type ConvexMocks = {
 };
 
 const baseUser: AuthUser = {
-  id: 'user_1',
-  email: 'test.user@example.com',
-  name: 'Test User',
-  role: 'owner',
-  companyId: 'company_1',
-  status: 'active',
+  id: "user_1",
+  email: "test.user@example.com",
+  name: "Test User",
+  role: "owner",
+  companyId: "company_1",
+  status: "active",
 };
 
 const convexSuccessResponse = (value: unknown) => ({
   status: 200,
-  contentType: 'application/json',
+  contentType: "application/json",
   body: JSON.stringify({
-    status: 'success',
+    status: "success",
     value,
     logLines: [],
   }),
 });
 
 const decodeConvexRequest = (route: Route) => {
-  const bodyText = route.request().postData() ?? '{}';
+  const bodyText = route.request().postData() ?? "{}";
   const body = JSON.parse(bodyText) as {
     path?: string;
     args?: unknown[];
   };
   const [encodedArgs] = body.args ?? [];
   const decodedArgs = encodedArgs
-    ? (jsonToConvex(encodedArgs as any) as Record<string, any>)
+    ? (jsonToConvex(encodedArgs as unknown) as Record<string, unknown>)
     : {};
   return { path: body.path, args: decodedArgs };
 };
 
 const setupConvexMocks = async (
   page: Page,
-  options: { user?: Partial<AuthUser> } = {},
+  options: { user?: Partial<AuthUser> } = {}
 ): Promise<ConvexMocks> => {
   const signUpCalls: ConvexCall[] = [];
   const signInCalls: ConvexCall[] = [];
@@ -65,54 +65,54 @@ const setupConvexMocks = async (
   const respond = (route: Route, value: unknown) =>
     route.fulfill(convexSuccessResponse(value));
 
-  await page.route('**/api/query_ts', (route) =>
+  await page.route("**/api/query_ts", (route) =>
     route.fulfill({
       status: 200,
-      contentType: 'application/json',
+      contentType: "application/json",
       body: JSON.stringify({ ts: Date.now().toString() }),
-    }),
+    })
   );
 
   const handleQuery = (route: Route) => {
     const { path } = decodeConvexRequest(route);
-    if (path?.startsWith('admin:')) {
+    if (path?.startsWith("admin:")) {
       return respond(route, { data: [], total: 0 });
     }
     return respond(route, null);
   };
 
-  await page.route('**/api/query', handleQuery);
-  await page.route('**/api/query_at_ts', handleQuery);
+  await page.route("**/api/query", handleQuery);
+  await page.route("**/api/query_at_ts", handleQuery);
 
-  await page.route('**/api/mutation', (route) => respond(route, {}));
+  await page.route("**/api/mutation", (route) => respond(route, {}));
 
-  await page.route('**/api/action', (route) => {
+  await page.route("**/api/action", (route) => {
     const { path, args } = decodeConvexRequest(route);
 
-    if (path === 'auth:signUp') {
+    if (path === "auth:signUp") {
       signUpCalls.push(args);
       currentUser = {
         ...currentUser,
-        id: 'user_signup',
+        id: "user_signup",
         email: args.email,
         name: args.name ?? currentUser.name,
-        role: 'owner',
+        role: "owner",
       };
-      activeToken = 'test-signup-token';
+      activeToken = "test-signup-token";
       return respond(route, { token: activeToken, user: currentUser });
     }
 
-    if (path === 'auth:signIn') {
+    if (path === "auth:signIn") {
       signInCalls.push(args);
       currentUser = {
         ...currentUser,
         email: args.email,
       };
-      activeToken = 'test-session-token';
+      activeToken = "test-session-token";
       return respond(route, { token: activeToken, user: currentUser });
     }
 
-    if (path === 'auth:validateSession') {
+    if (path === "auth:validateSession") {
       validateSessionCalls.push(args);
       if (!activeToken) {
         return respond(route, null);
@@ -124,7 +124,9 @@ const setupConvexMocks = async (
           userId: currentUser.id,
           createdAt: now.toISOString(),
           updatedAt: now.toISOString(),
-          expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+          expiresAt: new Date(
+            now.getTime() + 24 * 60 * 60 * 1000
+          ).toISOString(),
         },
         user: currentUser,
       });
@@ -141,77 +143,81 @@ const setupConvexMocks = async (
   };
 };
 
-test.describe('Authentication flows', () => {
-  test('allows a new owner to sign up and sign in', async ({ page }) => {
+test.describe("Authentication flows", () => {
+  test("allows a new owner to sign up and sign in", async ({ page }) => {
     const mocks = await setupConvexMocks(page);
 
-    await page.goto('/login');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/login");
+    await page.waitForLoadState("networkidle");
 
-    const openSignUp = page.getByRole('button', { name: /create one/i });
+    const openSignUp = page.getByRole("button", { name: /create one/i });
     await expect(openSignUp).toBeVisible();
     await openSignUp.click();
     await expect(
-      page.getByRole('heading', { level: 1, name: /create an account/i }),
+      page.getByRole("heading", { level: 1, name: /create an account/i })
     ).toBeVisible();
 
-    const nameField = page.getByPlaceholder('Jane Doe');
+    const nameField = page.getByPlaceholder("Jane Doe");
     await expect(nameField).toBeVisible();
-    await nameField.fill('New Owner');
-    await page.getByLabel('Email').fill('New.Owner@Example.com');
-    await page.getByLabel('Company Name').fill('HavenHost');
-    await page.getByLabel('Password').fill('Sup3rSecret!');
-    await page.getByRole('button', { name: 'Create account' }).click();
+    await nameField.fill("New Owner");
+    await page.getByLabel("Email").fill("New.Owner@Example.com");
+    await page.getByLabel("Company Name").fill("HavenHost");
+    await page.getByLabel("Password").fill("Sup3rSecret!");
+    await page.getByRole("button", { name: "Create account" }).click();
 
     await expect(
-      page.getByRole('heading', { level: 2, name: /companies/i }),
+      page.getByRole("heading", { level: 2, name: /companies/i })
     ).toBeVisible();
 
-    await expect.poll(() =>
-      page.evaluate(() => window.localStorage.getItem('better-auth:token')),
-    ).toBe('test-session-token');
+    await expect
+      .poll(() =>
+        page.evaluate(() => window.localStorage.getItem("better-auth:token"))
+      )
+      .toBe("test-session-token");
 
     expect(mocks.signUpCalls).toHaveLength(1);
     expect(mocks.signUpCalls[0]).toMatchObject({
-      email: 'new.owner@example.com',
-      name: 'New Owner',
-      companyName: 'HavenHost',
-      password: 'Sup3rSecret!',
+      email: "new.owner@example.com",
+      name: "New Owner",
+      companyName: "HavenHost",
+      password: "Sup3rSecret!",
     });
 
     expect(mocks.signInCalls).toHaveLength(1);
     expect(mocks.signInCalls[0]).toMatchObject({
-      email: 'new.owner@example.com',
-      password: 'Sup3rSecret!',
+      email: "new.owner@example.com",
+      password: "Sup3rSecret!",
     });
 
     expect(mocks.validateSessionCalls.length).toBeGreaterThan(0);
   });
 
-  test('allows an existing user to sign in', async ({ page }) => {
+  test("allows an existing user to sign in", async ({ page }) => {
     const mocks = await setupConvexMocks(page, {
-      user: { id: 'user_existing', name: 'Existing Owner' },
+      user: { id: "user_existing", name: "Existing Owner" },
     });
 
-    await page.goto('/login');
+    await page.goto("/login");
 
-    await page.getByLabel('Email').fill('OWNER@example.com  ');
-    await page.getByLabel('Password').fill('owner-password!');
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.getByLabel("Email").fill("OWNER@example.com  ");
+    await page.getByLabel("Password").fill("owner-password!");
+    await page.getByRole("button", { name: "Sign in" }).click();
 
     await expect(
-      page.getByRole('heading', { level: 2, name: /companies/i }),
+      page.getByRole("heading", { level: 2, name: /companies/i })
     ).toBeVisible();
 
-    await expect.poll(() =>
-      page.evaluate(() => window.localStorage.getItem('better-auth:token')),
-    ).toBe('test-session-token');
+    await expect
+      .poll(() =>
+        page.evaluate(() => window.localStorage.getItem("better-auth:token"))
+      )
+      .toBe("test-session-token");
 
     expect(mocks.signUpCalls).toHaveLength(0);
     expect(mocks.signInCalls).toHaveLength(1);
     expect(mocks.signInCalls[0]).toMatchObject({
-      email: 'owner@example.com',
-      password: 'owner-password!',
+      email: "owner@example.com",
+      password: "owner-password!",
     });
 
     expect(mocks.validateSessionCalls.length).toBeGreaterThan(0);

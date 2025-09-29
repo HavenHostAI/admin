@@ -48,8 +48,8 @@ export const ExportButton = (props: ExportButtonProps) => {
               data,
               fetchRelatedRecords(dataProvider),
               dataProvider,
-              resource,
-            ),
+              resource
+            )
         )
         .catch((error) => {
           console.error(error);
@@ -70,7 +70,7 @@ export const ExportButton = (props: ExportButtonProps) => {
       resource,
       sort,
       meta,
-    ],
+    ]
   );
 
   return (
@@ -96,5 +96,5 @@ export interface ExportButtonProps {
   maxResults?: number;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   resource?: string;
-  meta?: any;
+  meta?: Record<string, unknown>;
 }

@@ -1,4 +1,4 @@
-'use node';
+"use node";
 import type { Adapter, Where } from "better-auth";
 import type { ActionCtx } from "../_generated/server";
 import { internal } from "../_generated/api";
@@ -35,9 +35,9 @@ const DATE_FIELDS: Record<string, Set<string>> = {
   invitations: new Set(["createdAt", "expiresAt"]),
 };
 
-type StoredDoc = Record<string, any> & { _id: any };
+type StoredDoc = Record<string, unknown> & { _id: string };
 
-const generateRandomId = () => {
+const generateRandomId = (): string => {
   if (typeof globalThis.crypto?.randomUUID === "function") {
     return globalThis.crypto.randomUUID().replace(/-/g, "");
   }
@@ -47,9 +47,12 @@ const generateRandomId = () => {
 const ensureAdapterId = (value: unknown) =>
   typeof value === "string" && value.length > 0 ? value : generateRandomId();
 
-export const convertToStorage = (model: string, data: Record<string, any>) => {
+export const convertToStorage = (
+  model: string,
+  data: Record<string, unknown>
+): Record<string, unknown> => {
   const dateFields = DATE_FIELDS[model] ?? new Set<string>();
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(data)) {
     if (value === undefined) continue;
     if (key === "id") {
@@ -77,9 +80,12 @@ export const convertToStorage = (model: string, data: Record<string, any>) => {
   return result;
 };
 
-export const convertFromStorage = (model: string, doc: Record<string, any>) => {
+export const convertFromStorage = (
+  model: string,
+  doc: Record<string, unknown>
+): Record<string, unknown> => {
   const dateFields = DATE_FIELDS[model] ?? new Set<string>();
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(doc)) {
     if (key === "_id") continue;
     if (dateFields.has(key) && typeof value === "number") {
@@ -100,23 +106,46 @@ const normalizeWhereValue = (value: Where["value"]) => {
 };
 
 const compare = (
-  fieldValue: any,
+  fieldValue: unknown,
   operator: NonNullable<Where["operator"]> | "eq",
-  compareValue: any,
+  compareValue: unknown
 ) => {
   switch (operator) {
     case "eq":
       return fieldValue === compareValue;
     case "ne":
-      return fieldValue !== compareValue;
+      return (
+        fieldValue !== undefined &&
+        compareValue !== undefined &&
+        fieldValue !== compareValue
+      );
     case "lt":
-      return fieldValue < compareValue;
+      return typeof fieldValue === "number" && typeof compareValue === "number"
+        ? fieldValue < compareValue
+        : typeof fieldValue === "string" && typeof compareValue === "string"
+          ? fieldValue < compareValue
+          : false;
     case "lte":
-      return fieldValue <= compareValue;
+      return typeof fieldValue === "number" && typeof compareValue === "number"
+        ? fieldValue <= compareValue
+        : typeof fieldValue === "string" && typeof compareValue === "string"
+          ? fieldValue <= compareValue
+          : false;
     case "gt":
-      return fieldValue > compareValue;
+      return typeof fieldValue === "number" && typeof compareValue === "number"
+        ? fieldValue > compareValue
+        : typeof fieldValue === "string" && typeof compareValue === "string"
+          ? fieldValue > compareValue
+          : false;
     case "gte":
-      return fieldValue >= compareValue;
+      return (
+        (typeof fieldValue === "number" &&
+          typeof compareValue === "number" &&
+          fieldValue >= compareValue) ||
+        (typeof fieldValue === "string" &&
+          typeof compareValue === "string" &&
+          fieldValue >= compareValue)
+      );
     case "in":
       return Array.isArray(compareValue)
         ? compareValue.includes(fieldValue)
@@ -144,8 +173,8 @@ const compare = (
 
 const matchesWhere = (
   model: string,
-  doc: Record<string, any>,
-  where: Where[] = [],
+  doc: Record<string, unknown>,
+  where: Where[] = []
 ) => {
   if (!where?.length) return true;
   const normalizedDoc = convertFromStorage(model, doc);
@@ -158,7 +187,7 @@ const matchesWhere = (
     const candidate = compare(
       value instanceof Date ? value.valueOf() : value,
       op,
-      targetValue instanceof Date ? targetValue.valueOf() : targetValue,
+      targetValue instanceof Date ? targetValue.valueOf() : targetValue
     );
     if (connector === "AND") {
       accumulator = accumulator && candidate;
@@ -173,14 +202,14 @@ const matchesWhere = (
 const sortDocuments = (
   model: string,
   docs: StoredDoc[],
-  sortBy?: { field: string; direction: "asc" | "desc" },
+  sortBy?: { field: string; direction: "asc" | "desc" }
 ) => {
   if (!sortBy) return docs;
   const { field, direction } = sortBy;
   const factor = direction === "asc" ? 1 : -1;
   return [...docs].sort((a, b) => {
-  const docA = convertFromStorage(model, a);
-  const docB = convertFromStorage(model, b);
+    const docA = convertFromStorage(model, a);
+    const docB = convertFromStorage(model, b);
     const aValue = docA[field];
     const bValue = docB[field];
     if (aValue == null && bValue == null) return 0;
@@ -199,24 +228,31 @@ const filterDocs = (model: string, docs: StoredDoc[], where?: Where[]) => {
   return docs.filter((doc) => matchesWhere(model, doc, where));
 };
 
-const applyUpdate = (doc: StoredDoc, update: Record<string, any>) => ({
+const applyUpdate = (
+  doc: StoredDoc,
+  update: Partial<StoredDoc>
+): StoredDoc => ({
   ...doc,
   ...update,
 });
 
 export const createConvexAdapter = (ctx: ActionCtx): Adapter => {
-  const modelToTable = (model: string) => model as keyof typeof DATE_FIELDS | string;
+  const modelToTable = (model: string) =>
+    model as keyof typeof DATE_FIELDS | string;
 
   const fetchAllDocs = async (table: string) =>
     (await ctx.runQuery(internal.authStore.getAll, { table })) as StoredDoc[];
 
-  const insertDoc = async (table: string, doc: Record<string, any>) =>
-    (await ctx.runMutation(internal.authStore.insert, { table, doc })) as StoredDoc;
+  const insertDoc = async (table: string, doc: Record<string, unknown>) =>
+    (await ctx.runMutation(internal.authStore.insert, {
+      table,
+      doc,
+    })) as StoredDoc;
 
   const patchDoc = async (
     table: string,
     docId: string,
-    patch: Record<string, any>,
+    patch: Record<string, unknown>
   ) =>
     (await ctx.runMutation(internal.authStore.patch, {
       table,
@@ -233,17 +269,23 @@ export const createConvexAdapter = (ctx: ActionCtx): Adapter => {
 
   const adapter = {
     id: "convex",
-    async create({ model, data }) {
+    async create({
+      model,
+      data,
+    }: {
+      model: string;
+      data: Record<string, unknown>;
+    }) {
       const table = modelToTable(model);
-      const storage = convertToStorage(table, data as Record<string, any>);
-      const inserted = await insertDoc(table, storage);
-      return convertFromStorage(table, inserted) as any;
+      const storage = convertToStorage(table, data);
+      const inserted: StoredDoc = await insertDoc(table, storage);
+      return convertFromStorage(table, inserted);
     },
-    async findOne({ model, where }) {
+    async findOne({ model, where }: { model: string; where?: Where[] }) {
       const table = modelToTable(model);
       const docs = await fetchAllDocs(table);
       const match = filterDocs(table, docs, where)[0];
-      return (match ? convertFromStorage(table, match) : null) as any;
+      return match ? convertFromStorage(table, match) : null;
     },
     async findMany({ model, where, limit, sortBy, offset }) {
       const table = modelToTable(model);
@@ -252,7 +294,10 @@ export const createConvexAdapter = (ctx: ActionCtx): Adapter => {
       docs = sortDocuments(table, docs, sortBy);
       if (offset) docs = docs.slice(offset);
       if (limit != null) docs = docs.slice(0, limit);
-      return docs.map((doc) => convertFromStorage(table, doc)) as any;
+      return docs.map((doc) => convertFromStorage(table, doc)) as Record<
+        string,
+        unknown
+      >[];
     },
     async count({ model, where }) {
       const table = modelToTable(model);
@@ -264,9 +309,12 @@ export const createConvexAdapter = (ctx: ActionCtx): Adapter => {
       const docs = await fetchAllDocs(table);
       const matches = filterDocs(table, docs, where);
       if (!matches.length) return null;
-      const storageUpdate = convertToStorage(table, update as Record<string, any>);
-      delete storageUpdate.id;
-      let updatedDoc: Record<string, any> | null = null;
+      const storageUpdate = convertToStorage(
+        table,
+        update as Record<string, unknown>
+      );
+      delete (storageUpdate as Record<string, unknown>).id;
+      let updatedDoc: Record<string, unknown> | null = null;
       for (const doc of matches) {
         const merged = applyUpdate(doc, storageUpdate);
         await patchDoc(table, doc._id, storageUpdate);
@@ -274,15 +322,20 @@ export const createConvexAdapter = (ctx: ActionCtx): Adapter => {
           updatedDoc = merged;
         }
       }
-      return updatedDoc ? (convertFromStorage(table, updatedDoc) as any) : null;
+      return updatedDoc
+        ? (convertFromStorage(table, updatedDoc) as Record<string, unknown>)
+        : null;
     },
     async updateMany({ model, where, update }) {
       const table = modelToTable(model);
       const docs = await fetchAllDocs(table);
       const matches = filterDocs(table, docs, where);
       if (!matches.length) return 0;
-      const storageUpdate = convertToStorage(table, update as Record<string, any>);
-      delete storageUpdate.id;
+      const storageUpdate = convertToStorage(
+        table,
+        update as Record<string, unknown>
+      );
+      delete (storageUpdate as Record<string, unknown>).id;
       for (const doc of matches) {
         await patchDoc(table, doc._id, storageUpdate);
       }

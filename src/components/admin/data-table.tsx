@@ -257,7 +257,7 @@ const DataTableRow = ({
   );
 };
 
-const isPromise = (value: any): value is Promise<any> =>
+const isPromise = (value: unknown): value is Promise<unknown> =>
   value && typeof value.then === "function";
 
 const DataTableEmpty = () => {
@@ -278,7 +278,7 @@ export interface DataTableProps<RecordType extends RaRecord = RaRecord>
 }
 
 export function DataTableColumn<
-  RecordType extends RaRecord<Identifier> = RaRecord<Identifier>
+  RecordType extends RaRecord<Identifier> = RaRecord<Identifier>,
 >(props: DataTableColumnProps<RecordType>) {
   const renderContext = useDataTableRenderContext();
   switch (renderContext) {
@@ -310,7 +310,7 @@ const reorderChildren = (children: ReactNode, columnRanks: number[]) =>
   }, []);
 
 function DataTableHeadCell<
-  RecordType extends RaRecord<Identifier> = RaRecord<Identifier>
+  RecordType extends RaRecord<Identifier> = RaRecord<Identifier>,
 >(props: DataTableColumnProps<RecordType>) {
   const {
     disableSort,
@@ -334,7 +334,7 @@ function DataTableHeadCell<
   const nextSortOrder =
     sort && sort.field === source
       ? oppositeOrder[sort.order]
-      : sortByOrder ?? "ASC";
+      : (sortByOrder ?? "ASC");
   const fieldLabel = translateLabel({
     label: typeof label === "string" ? label : undefined,
     resource,
@@ -404,7 +404,7 @@ const oppositeOrder: Record<SortPayload["order"], SortPayload["order"]> = {
 };
 
 function DataTableCell<
-  RecordType extends RaRecord<Identifier> = RaRecord<Identifier>
+  RecordType extends RaRecord<Identifier> = RaRecord<Identifier>,
 >(props: DataTableColumnProps<RecordType>) {
   const {
     children,
@@ -440,14 +440,14 @@ function DataTableCell<
         (render
           ? record && render(record)
           : field
-          ? createElement(field, { source })
-          : get(record, source!))}
+            ? createElement(field, { source })
+            : get(record, source!))}
     </TableCell>
   );
 }
 
 export interface DataTableColumnProps<
-  RecordType extends RaRecord<Identifier> = RaRecord<Identifier>
+  RecordType extends RaRecord<Identifier> = RaRecord<Identifier>,
 > {
   className?: string;
   cellClassName?: string;
@@ -463,7 +463,7 @@ export interface DataTableColumnProps<
 }
 
 export function DataTableNumberColumn<
-  RecordType extends RaRecord<Identifier> = RaRecord<Identifier>
+  RecordType extends RaRecord<Identifier> = RaRecord<Identifier>,
 >(props: DataTableNumberColumnProps<RecordType>) {
   const {
     source,
@@ -488,7 +488,7 @@ export function DataTableNumberColumn<
 }
 
 export interface DataTableNumberColumnProps<
-  RecordType extends RaRecord<Identifier> = RaRecord<Identifier>
+  RecordType extends RaRecord<Identifier> = RaRecord<Identifier>,
 > extends DataTableColumnProps<RecordType> {
   source: NoInfer<HintedString<ExtractRecordPaths<RecordType>>>;
   locales?: string | string[];

@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 
 export interface BulkDeleteButtonProps<
-  RecordType extends RaRecord = any,
+  RecordType extends RaRecord = RaRecord,
   MutationOptionsError = unknown,
 > extends React.HTMLAttributes<HTMLButtonElement> {
   mutationMode?: MutationMode;
@@ -25,15 +25,15 @@ export interface BulkDeleteButtonProps<
   className?: string;
   icon?: ReactNode;
   mutationOptions?: UseDeleteManyOptions<RecordType, MutationOptionsError> & {
-    meta?: any;
+    meta?: Record<string, unknown>;
   };
 }
 
 export const BulkDeleteButton = <
-  RecordType extends RaRecord = any,
+  RecordType extends RaRecord = RaRecord,
   MutationOptionsError = unknown,
 >(
-  props: BulkDeleteButtonProps<RecordType, MutationOptionsError>,
+  props: BulkDeleteButtonProps<RecordType, MutationOptionsError>
 ) => {
   const {
     mutationMode = "undoable",
@@ -74,7 +74,9 @@ export const BulkDeleteButton = <
         },
         onError: (error: MutationOptionsError) => {
           const errorMessage =
-            typeof error === "string" ? error : (error as any)?.message;
+            typeof error === "string"
+              ? error
+              : (error as { message?: string })?.message;
           notify(errorMessage || "ra.notification.http_error", {
             type: "error",
             messageArgs: { _: errorMessage },
@@ -82,7 +84,7 @@ export const BulkDeleteButton = <
           refresh();
         },
         ...otherMutationOptions,
-      },
+      }
     );
   };
   return (

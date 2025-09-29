@@ -17,9 +17,9 @@ import { cn } from "@/lib/utils";
 import { TextField } from "@/components/admin/text-field";
 
 export const RecordField = <
-  RecordType extends Record<string, any> = Record<string, any>,
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
 >(
-  props: RecordFieldProps<RecordType>,
+  props: RecordFieldProps<RecordType>
 ) => {
   const {
     children,
@@ -45,7 +45,7 @@ export const RecordField = <
       className={cn(
         className,
         "flex",
-        variant === "inline" ? "flex-row" : "flex-col",
+        variant === "inline" ? "flex-row" : "flex-col"
       )}
       {...rest}
     >
@@ -53,7 +53,7 @@ export const RecordField = <
         <div
           className={cn(
             variant === "inline" ? "block min-w-50" : "text-xs",
-            "text-muted-foreground",
+            "text-muted-foreground"
           )}
         >
           <FieldTitle
@@ -92,7 +92,7 @@ export const RecordField = <
 type NoInfer<T> = T extends infer U ? U : never;
 
 export interface RecordFieldProps<
-  RecordType extends Record<string, any> = Record<string, any>,
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
 > extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   className?: string;

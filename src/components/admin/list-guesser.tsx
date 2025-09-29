@@ -20,7 +20,7 @@ import { SingleFieldList } from "@/components/admin/single-field-list";
 import { ReferenceArrayField } from "@/components/admin/reference-array-field";
 
 export const ListGuesser = <RecordType extends RaRecord = RaRecord>(
-  props: Omit<ListProps, "children"> & { enableLog?: boolean },
+  props: Omit<ListProps, "children"> & { enableLog?: boolean }
 ) => {
   const {
     debounce,
@@ -64,7 +64,7 @@ export const ListGuesser = <RecordType extends RaRecord = RaRecord>(
 };
 
 const ListViewGuesser = (
-  props: Omit<ListViewProps, "children"> & { enableLog?: boolean },
+  props: Omit<ListViewProps, "children"> & { enableLog?: boolean }
 ) => {
   const { data } = useListContext();
   const resource = useResourceContext();
@@ -81,13 +81,13 @@ const ListViewGuesser = (
       const inferredChild = new InferredElement(
         listFieldTypes.table,
         null,
-        inferredElements,
+        inferredElements
       );
       const inferredChildElement = inferredChild.getElement();
       const representation = inferredChild.getRepresentation();
       if (!resource) {
         throw new Error(
-          "Cannot use <ListGuesser> outside of a ResourceContext",
+          "Cannot use <ListGuesser> outside of a ResourceContext"
         );
       }
       if (!inferredChildElement || !representation) {
@@ -102,9 +102,9 @@ const ListViewGuesser = (
             new Set(
               Array.from(representation.matchAll(/<([^/\s\\.>]+)/g))
                 .map((match) => match[1])
-                .filter((component) => component !== "span"),
-            ),
-          ),
+                .filter((component) => component !== "span")
+            )
+          )
         )
         .sort();
 
@@ -116,8 +116,8 @@ ${components
   .map(
     (component) =>
       `import { ${component} } from "@/components/admin/${kebabCase(
-        component,
-      )}";`,
+        component
+      )}";`
   )
   .join("\n")}
 
@@ -125,7 +125,7 @@ export const ${capitalize(singularize(resource))}List = () => (
     <List>
 ${inferredChild.getRepresentation()}
     </List>
-);`,
+);`
         );
       }
     }
@@ -136,12 +136,12 @@ ${inferredChild.getRepresentation()}
 
 const listFieldTypes = {
   table: {
-    component: (props: any) => {
+    component: (props: Record<string, unknown>) => {
       return <DataTable {...props} />;
     },
     representation: (
-      _props: any,
-      children: { getRepresentation: () => string }[],
+      _props: Record<string, unknown>,
+      children: { getRepresentation: () => string }[]
     ) =>
       `        <DataTable>
 ${children
@@ -151,18 +151,21 @@ ${children
   },
 
   reference: {
-    component: (props: any) => (
+    component: (props: Record<string, unknown>) => (
       <DataTable.Col source={props.source}>
         <ReferenceField source={props.source} reference={props.reference} />
       </DataTable.Col>
     ),
-    representation: (props: any) =>
+    representation: (props: Record<string, unknown>) =>
       `<DataTable.Col source="${props.source}">
                 <ReferenceField source="${props.source}" reference="${props.reference}" />
             </DataTable.Col>`,
   },
   array: {
-    component: ({ children, ...props }: any) => {
+    component: ({
+      children,
+      ...props
+    }: Record<string, unknown> & { children: React.ReactNode }) => {
       const childrenArray = React.Children.toArray(children);
       return (
         <DataTable.Col source={props.source}>
@@ -172,7 +175,7 @@ ${children
                 source={
                   childrenArray.length > 0 &&
                   React.isValidElement(childrenArray[0]) &&
-                  (childrenArray[0].props as any).source
+                  (childrenArray[0].props as Record<string, unknown>).source
                 }
               />
             </SingleFieldList>
@@ -180,7 +183,7 @@ ${children
         </DataTable.Col>
       );
     },
-    representation: (props: any, children: any) =>
+    representation: (props: Record<string, unknown>, children: unknown[]) =>
       `<DataTable.Col source="${props.source}">
                <ArrayField source="${props.source}">
                     <SingleFieldList>
@@ -192,19 +195,19 @@ ${children
             </DataTable.Col>`,
   },
   referenceArray: {
-    component: (props: any) => (
+    component: (props: Record<string, unknown>) => (
       <DataTable.Col {...props}>
         <ReferenceArrayField {...props} />
       </DataTable.Col>
     ),
-    representation: (props: any) =>
+    representation: (props: Record<string, unknown>) =>
       `<DataTable.Col source="${props.source}">
                 <ReferenceArrayField source="${props.source}" reference="${props.reference}" />
             </DataTable.Col>`,
   },
   string: {
     component: DataTable.Col,
-    representation: (props: any) =>
+    representation: (props: Record<string, unknown>) =>
       `<DataTable.Col source="${props.source}" />`,
   },
 };

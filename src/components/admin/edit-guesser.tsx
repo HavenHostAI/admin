@@ -45,7 +45,7 @@ const EditViewGuesser = (props: { enableLog?: boolean }) => {
       const inferredChild = new InferredElement(
         editFieldTypes.form,
         null,
-        inferredElements,
+        inferredElements
       );
       setChild(inferredChild.getElement());
 
@@ -59,9 +59,9 @@ const EditViewGuesser = (props: { enableLog?: boolean }) => {
             new Set(
               Array.from(representation.matchAll(/<([^/\s>]+)/g))
                 .map((match) => match[1])
-                .filter((component) => component !== "span"),
-            ),
-          ),
+                .filter((component) => component !== "span")
+            )
+          )
         )
         .sort();
 
@@ -72,8 +72,8 @@ ${components
   .map(
     (component) =>
       `import { ${component} } from "@/components/admin/${kebabCase(
-        component,
-      )}";`,
+        component
+      )}";`
   )
   .join("\n")}
 
@@ -81,7 +81,7 @@ export const ${capitalize(singularize(resource))}Edit = () => (
     <Edit>
 ${representation}
     </Edit>
-);`,
+);`
       );
     }
   }, [record, child, resource, enableLog]);
@@ -91,10 +91,10 @@ ${representation}
 
 const editFieldTypes: InferredTypeMap = {
   form: {
-    component: (props: any) => <SimpleForm {...props} />,
+    component: (props: Record<string, unknown>) => <SimpleForm {...props} />,
     representation: (
-      _props: any,
-      children: { getRepresentation: () => string }[],
+      _props: Record<string, unknown>,
+      children: { getRepresentation: () => string }[]
     ) => `        <SimpleForm>
 ${children
   .map((child) => `            ${child.getRepresentation()}`)
@@ -102,28 +102,32 @@ ${children
         </SimpleForm>`,
   },
   reference: {
-    component: (props: any) => (
+    component: (props: Record<string, unknown>) => (
       <ReferenceInput source={props.source} reference={props.reference}>
         <AutocompleteInput />
       </ReferenceInput>
     ),
-    representation: (props: any) =>
+    representation: (props: Record<string, unknown>) =>
       `<ReferenceInput source="${props.source}" reference="${props.reference}">
                   <AutocompleteInput />
               </ReferenceInput>`,
   },
   referenceArray: {
-    component: (props: any) => <ReferenceArrayInput {...props} />,
-    representation: (props: any) =>
+    component: (props: Record<string, unknown>) => (
+      <ReferenceArrayInput {...props} />
+    ),
+    representation: (props: Record<string, unknown>) =>
       `<ReferenceArrayInput source="${props.source}" reference="${props.reference}" />`,
   },
   boolean: {
-    component: (props: any) => <BooleanInput {...props} />,
-    representation: (props: any) => `<BooleanInput source="${props.source}" />`,
+    component: (props: Record<string, unknown>) => <BooleanInput {...props} />,
+    representation: (props: Record<string, unknown>) =>
+      `<BooleanInput source="${props.source}" />`,
   },
   string: {
-    component: (props: any) => <TextInput {...props} />,
-    representation: (props: any) => `<TextInput source="${props.source}" />`,
+    component: (props: Record<string, unknown>) => <TextInput {...props} />,
+    representation: (props: Record<string, unknown>) =>
+      `<TextInput source="${props.source}" />`,
   },
 };
 
