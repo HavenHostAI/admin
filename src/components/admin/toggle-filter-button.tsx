@@ -13,7 +13,7 @@ export const ToggleFilterButton = ({
   className,
 }: {
   label: React.ReactElement | string;
-  value: unknown;
+  value: Record<string, unknown>;
   className?: string;
   size?: "default" | "sm" | "lg" | "icon" | null | undefined;
 }) => {

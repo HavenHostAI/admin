@@ -21,14 +21,14 @@ const getAppBaseUrl = () => process.env.APP_BASE_URL ?? "http://localhost:5173";
 async function getSessionForToken(ctx: ActionCtx, token: string) {
   const sessions = (await ctx.runQuery(internal.authStore.getAll, {
     table: "authSessions",
-  })) as Array<Record<string, unknown>>;
+  })) as Array<Doc<"authSessions">>;
   return sessions.find((session) => session.token === token) ?? null;
 }
 
 async function getUserDocByAuthId(ctx: ActionCtx, authUserId: string) {
   const users = (await ctx.runQuery(internal.authStore.getAll, {
     table: "users",
-  })) as Array<Record<string, unknown>>;
+  })) as Array<Doc<"users">>;
   return users.find((user) => user.id === authUserId) ?? null;
 }
 
@@ -135,7 +135,7 @@ export const inviteUser = action({
 
     const users = (await ctx.runQuery(internal.authStore.getAll, {
       table: "users",
-    })) as Array<Record<string, unknown>>;
+    })) as Array<Doc<"users">>;
     const existingUser = users.find(
       (user) =>
         user.email?.toLowerCase() === emailLower &&
@@ -187,7 +187,7 @@ export const inviteUser = action({
         companyId: inviter.companyId,
         email: emailLower,
       }
-    )) as Record<string, unknown> | null;
+    )) as Doc<"companyInvitations"> | null;
 
     if (existingInvitation) {
       await ctx.runMutation(internal.companyStore.updateInvitation, {

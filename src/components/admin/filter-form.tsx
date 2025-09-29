@@ -143,9 +143,9 @@ const isEmptyValue = (filterValue: unknown): boolean => {
 
   // If one of the value leaf is not empty
   // the value is considered not empty
-  if (typeof filterValue === "object") {
-    return Object.keys(filterValue).every((key) =>
-      isEmptyValue(filterValue[key])
+  if (filterValue && typeof filterValue === "object") {
+    return Object.values(filterValue as Record<string, unknown>).every(
+      (value) => isEmptyValue(value)
     );
   }
 
@@ -440,25 +440,34 @@ export const FilterButtonMenuItem = React.forwardRef<
 >((props, ref) => {
   const { filter, onShow, onHide, displayed } = props;
   const resource = useResourceContext(props);
+  const source =
+    typeof filter.props.source === "string" ? filter.props.source : "";
+  const defaultValue = filter.props.defaultValue;
   const handleShow = useCallback(() => {
+    if (!source) {
+      return;
+    }
     onShow({
-      source: filter.props.source,
-      defaultValue: filter.props.defaultValue,
+      source,
+      defaultValue,
     });
-  }, [filter.props.defaultValue, filter.props.source, onShow]);
+  }, [defaultValue, onShow, source]);
   const handleHide = useCallback(() => {
+    if (!source) {
+      return;
+    }
     onHide({
-      source: filter.props.source,
+      source,
     });
-  }, [filter.props.source, onHide]);
+  }, [onHide, source]);
 
   return (
     <div
       className={cn(
         "new-filter-item flex items-center px-2 py-1.5 text-sm cursor-pointer hover:bg-accent rounded-sm",
-        filter.props.disabled && "opacity-50 cursor-not-allowed"
+        filter.props.disabled ? "opacity-50 cursor-not-allowed" : undefined
       )}
-      data-key={filter.props.source}
+      data-key={source}
       data-default-value={filter.props.defaultValue}
       onClick={
         filter.props.disabled ? undefined : displayed ? handleHide : handleShow
@@ -472,8 +481,8 @@ export const FilterButtonMenuItem = React.forwardRef<
       </div>
       <div>
         <FieldTitle
-          label={filter.props.label}
-          source={filter.props.source}
+          label={filter.props.label as React.ReactNode}
+          source={source}
           resource={resource}
         />
       </div>
