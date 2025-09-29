@@ -1,4 +1,4 @@
-'use node';
+"use node";
 
 import { action } from "./_generated/server";
 import { v } from "convex/values";
@@ -21,14 +21,14 @@ const getAppBaseUrl = () => process.env.APP_BASE_URL ?? "http://localhost:5173";
 async function getSessionForToken(ctx: ActionCtx, token: string) {
   const sessions = (await ctx.runQuery(internal.authStore.getAll, {
     table: "authSessions",
-  })) as Array<Record<string, any>>;
+  })) as Array<Record<string, unknown>>;
   return sessions.find((session) => session.token === token) ?? null;
 }
 
 async function getUserDocByAuthId(ctx: ActionCtx, authUserId: string) {
   const users = (await ctx.runQuery(internal.authStore.getAll, {
     table: "users",
-  })) as Array<Record<string, any>>;
+  })) as Array<Record<string, unknown>>;
   return users.find((user) => user.id === authUserId) ?? null;
 }
 
@@ -52,13 +52,15 @@ async function sendInvitationEmail({
         hasFromEmail: Boolean(fromEmail),
         envApiKey: process.env.SENDGRID_API_KEY ? "[set]" : "[missing]",
         envFromEmail: process.env.SENDGRID_FROM_EMAIL ? "[set]" : "[missing]",
-      },
+      }
     );
     return;
   }
 
   const subject = `You've been invited to join ${companyName}`;
-  const inviterText = inviterName ? `${inviterName} has invited you` : "You've been invited";
+  const inviterText = inviterName
+    ? `${inviterName} has invited you`
+    : "You've been invited";
   const plainText = `${inviterText} to join ${companyName} on HavenHost.\n\nClick the link below to create your account:\n${inviteLink}\n\nIf you did not expect this invitation, you can ignore this email.`;
   const htmlContent = `
     <p>${inviterText} to join <strong>${companyName}</strong> on HavenHost.</p>
@@ -133,11 +135,11 @@ export const inviteUser = action({
 
     const users = (await ctx.runQuery(internal.authStore.getAll, {
       table: "users",
-    })) as Array<Record<string, any>>;
+    })) as Array<Record<string, unknown>>;
     const existingUser = users.find(
       (user) =>
         user.email?.toLowerCase() === emailLower &&
-        String(user.companyId) === String(inviter.companyId),
+        String(user.companyId) === String(inviter.companyId)
     );
 
     if (existingUser && existingUser.status === "active") {
@@ -152,7 +154,9 @@ export const inviteUser = action({
         table: "users",
         documentId: existingUser._id,
         patch: {
-          id: existingUser.id?.startsWith("invitation:") ? existingUser.id : `invitation:${token}`,
+          id: existingUser.id?.startsWith("invitation:")
+            ? existingUser.id
+            : `invitation:${token}`,
           status: "invited",
           role,
           name: args.name ?? existingUser.name,
@@ -182,8 +186,8 @@ export const inviteUser = action({
       {
         companyId: inviter.companyId,
         email: emailLower,
-      },
-    )) as Record<string, any> | null;
+      }
+    )) as Record<string, unknown> | null;
 
     if (existingInvitation) {
       await ctx.runMutation(internal.companyStore.updateInvitation, {
@@ -211,7 +215,7 @@ export const inviteUser = action({
 
     const baseUrl = getAppBaseUrl().replace(/\/$/, "");
     const inviteLink = `${baseUrl}/signup?invitation=${token}&email=${encodeURIComponent(
-      emailLower,
+      emailLower
     )}`;
 
     await sendInvitationEmail({

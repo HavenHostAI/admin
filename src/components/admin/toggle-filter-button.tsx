@@ -13,7 +13,7 @@ export const ToggleFilterButton = ({
   className,
 }: {
   label: React.ReactElement | string;
-  value: any;
+  value: unknown;
   className?: string;
   size?: "default" | "sm" | "lg" | "icon" | null | undefined;
 }) => {
@@ -28,7 +28,7 @@ export const ToggleFilterButton = ({
       className={cn(
         "cursor-pointer",
         "flex flex-row items-center justify-between gap-2 px-2.5 w-full",
-        className,
+        className
       )}
       size={size}
     >
@@ -38,9 +38,12 @@ export const ToggleFilterButton = ({
   );
 };
 
-const toggleFilter = (value: any, filters: any) => {
+const toggleFilter = (
+  value: Record<string, unknown>,
+  filters: Record<string, unknown>
+) => {
   const isSelected = matches(
-    pickBy(value, (val) => typeof val !== "undefined"),
+    pickBy(value, (val) => typeof val !== "undefined")
   )(filters);
 
   if (isSelected) {
@@ -48,12 +51,14 @@ const toggleFilter = (value: any, filters: any) => {
     return Object.keys(filters).reduce(
       (acc, key) =>
         keysToRemove.includes(key) ? acc : { ...acc, [key]: filters[key] },
-      {},
+      {}
     );
   }
 
   return { ...filters, ...value };
 };
 
-const getIsSelected = (value: any, filters: any) =>
-  matches(pickBy(value, (val) => typeof val !== "undefined"))(filters);
+const getIsSelected = (
+  value: Record<string, unknown>,
+  filters: Record<string, unknown>
+) => matches(pickBy(value, (val) => typeof val !== "undefined"))(filters);

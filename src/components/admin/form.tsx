@@ -32,7 +32,7 @@ type FormItemContextValue = {
 };
 
 const FormItemContext = createContext<FormItemContextValue>(
-  {} as FormItemContextValue,
+  {} as FormItemContextValue
 );
 
 const useFormField = () => {
@@ -48,7 +48,7 @@ const useFormField = () => {
       formMessageId: `${id}-message`,
       ...fieldState,
     }),
-    [id, fieldState],
+    [id, fieldState]
   );
 };
 
@@ -58,7 +58,7 @@ function FormField({ className, id, name, ...props }: FormItemProps) {
       id,
       name,
     }),
-    [id, name],
+    [id, name]
   );
 
   return (
@@ -177,7 +177,7 @@ const SaveButton = (props: SaveButtonProps) => {
     disabledProp ||
       (!isDirty && recordFromLocation == null) ||
       isValidating ||
-      isSubmitting,
+      isSubmitting
   );
 
   warning(
@@ -185,11 +185,11 @@ const SaveButton = (props: SaveButtonProps) => {
       ((mutationOptions &&
         (mutationOptions.onSuccess || mutationOptions.onError)) ||
         transform),
-    'Cannot use <SaveButton mutationOptions> props on a button of type "submit". To override the default mutation options on a particular save button, set the <SaveButton type="button"> prop, or set mutationOptions in the main view component (<Create> or <Edit>).',
+    'Cannot use <SaveButton mutationOptions> props on a button of type "submit". To override the default mutation options on a particular save button, set the <SaveButton type="button"> prop, or set mutationOptions in the main view component (<Create> or <Edit>).'
   );
 
   const handleSubmit = useCallback(
-    async (values: any) => {
+    async (values: Record<string, unknown>) => {
       let errors;
       if (saveContext?.save) {
         errors = await saveContext.save(values, {
@@ -201,7 +201,7 @@ const SaveButton = (props: SaveButtonProps) => {
         setSubmissionErrors(errors, form.setError);
       }
     },
-    [form.setError, saveContext, mutationOptions, transform],
+    [form.setError, saveContext, mutationOptions, transform]
   );
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
@@ -219,7 +219,7 @@ const SaveButton = (props: SaveButtonProps) => {
         await form.handleSubmit(handleSubmit)(event);
       }
     },
-    [onClick, type, form, handleSubmit],
+    [onClick, type, form, handleSubmit]
   );
 
   const displayedLabel = label && translate(label, { _: label });
@@ -232,7 +232,7 @@ const SaveButton = (props: SaveButtonProps) => {
       onClick={handleClick}
       className={cn(
         disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
-        className,
+        className
       )}
       {...rest}
     >
@@ -265,7 +265,7 @@ export type SaveButtonProps = SaveButtonBaseProps &
     alwaysEnable?: boolean;
   };
 
-const valueOrDefault = (value: any, defaultValue: any) =>
+const valueOrDefault = (value: unknown, defaultValue: unknown) =>
   typeof value === "undefined" ? defaultValue : value;
 
 export {

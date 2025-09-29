@@ -17,7 +17,7 @@ type ReferenceArgs = ListArgs & {
 export const listDocuments = async (
   ctx: QueryCtx,
   table: TableNames,
-  args: ListArgs,
+  args: ListArgs
 ) => {
   const { pagination, sort, filter } = args;
   const allDocs = await ctx.db.query(table).collect();
@@ -31,7 +31,7 @@ export const listDocuments = async (
 export const listReference = async (
   ctx: QueryCtx,
   table: TableNames,
-  args: ReferenceArgs,
+  args: ReferenceArgs
 ) => {
   const { target, id, ...rest } = args;
   return listDocuments(ctx, table, {
@@ -46,7 +46,7 @@ export const listReference = async (
 export const getDocumentOrThrow = async (
   ctx: QueryCtx,
   table: TableNames,
-  id: string,
+  id: string
 ) => {
   const normalized = ctx.db.normalizeId(table, id);
   if (normalized) {
@@ -67,7 +67,7 @@ export const getDocumentOrThrow = async (
   if (table === "users") {
     const authUsers = (await ctx.runQuery(internal.authStore.getAll, {
       table: "users",
-    })) as Array<Record<string, any>>;
+    })) as Array<Record<string, unknown>>;
     const found = authUsers.find((doc) => doc.id === id);
     if (found) {
       return found;
@@ -80,14 +80,14 @@ export const getDocumentOrThrow = async (
 export const getManyDocuments = async (
   ctx: QueryCtx,
   table: TableNames,
-  ids: string[],
+  ids: string[]
 ) => {
   const records = await Promise.all(
     ids.map(async (rawId) => {
       const convexId = ctx.db.normalizeId(table, rawId);
       if (!convexId) return null;
       return ctx.db.get(convexId);
-    }),
+    })
   );
 
   return records.filter((doc): doc is NonNullable<typeof doc> => !!doc);
@@ -96,8 +96,9 @@ export const getManyDocuments = async (
 export const createDocument = async (
   ctx: MutationCtx,
   table: TableNames,
-  data: Record<string, unknown>,
+  data: Record<string, unknown>
 ) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const id = await ctx.db.insert(table, data as any);
   return (await ctx.db.get(id))!;
 };
@@ -106,9 +107,10 @@ export const updateDocument = async (
   ctx: MutationCtx,
   table: TableNames,
   id: string,
-  data: Record<string, unknown>,
+  data: Record<string, unknown>
 ) => {
   const convexId = normalizeOrThrow(ctx, table, id);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await ctx.db.patch(convexId, data as any);
   return (await ctx.db.get(convexId))!;
 };
@@ -116,7 +118,7 @@ export const updateDocument = async (
 export const deleteDocument = async (
   ctx: MutationCtx,
   table: TableNames,
-  id: string,
+  id: string
 ) => {
   const convexId = normalizeOrThrow(ctx, table, id);
   const existing = await ctx.db.get(convexId);
@@ -130,7 +132,7 @@ export const deleteDocument = async (
 export const deleteManyDocuments = async (
   ctx: MutationCtx,
   table: TableNames,
-  ids: string[],
+  ids: string[]
 ) => {
   const deletedIds: string[] = [];
 
@@ -150,13 +152,14 @@ export const updateManyDocuments = async (
   ctx: MutationCtx,
   table: TableNames,
   ids: string[],
-  data: Record<string, unknown>,
+  data: Record<string, unknown>
 ) => {
   const updatedIds: string[] = [];
 
   for (const rawId of ids) {
     const convexId = ctx.db.normalizeId(table, rawId);
     if (!convexId) continue;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await ctx.db.patch(convexId, data as any);
     updatedIds.push(rawId);
   }
@@ -166,19 +169,19 @@ export const updateManyDocuments = async (
 
 const applyFilter = (
   records: Array<Record<string, unknown>>,
-  filters: Record<string, unknown>,
+  filters: Record<string, unknown>
 ) => {
   const filterEntries = Object.entries(filters ?? {});
   if (filterEntries.length === 0) return records;
 
   return records.filter((record) =>
-    filterEntries.every(([key, value]) => get(record, key) === value),
+    filterEntries.every(([key, value]) => get(record, key) === value)
   );
 };
 
 const applySort = (
   records: Array<Record<string, unknown>>,
-  sort?: { field?: string; order?: "ASC" | "DESC" } | null,
+  sort?: { field?: string; order?: "ASC" | "DESC" } | null
 ) => {
   if (!sort?.field) return records;
   const direction = sort.order === "DESC" ? -1 : 1;
@@ -199,7 +202,7 @@ const applySort = (
 
 const applyPagination = (
   records: Array<Record<string, unknown>>,
-  pagination?: { page?: number; perPage?: number },
+  pagination?: { page?: number; perPage?: number }
 ) => {
   if (!pagination?.perPage) {
     return {
@@ -222,7 +225,7 @@ const applyPagination = (
 export const normalizeOrThrow = <TableName extends TableNames>(
   ctx: QueryCtx | MutationCtx,
   table: TableName,
-  id: string,
+  id: string
 ) => {
   const convexId = ctx.db.normalizeId(table, id);
   if (!convexId) {
@@ -252,13 +255,13 @@ export const listArgsValidator = {
     v.object({
       page: v.optional(v.number()),
       perPage: v.optional(v.number()),
-    }),
+    })
   ),
   sort: v.optional(
     v.object({
       field: v.optional(v.string()),
       order: v.optional(v.union(v.literal("ASC"), v.literal("DESC"))),
-    }),
+    })
   ),
   filter: v.optional(v.any()),
 };

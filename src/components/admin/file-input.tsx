@@ -120,9 +120,9 @@ export const FileInput = (props: FileInputProps) => {
   const files = value ? (Array.isArray(value) ? value : [value]) : [];
 
   const onDrop = (
-    newFiles: any[],
+    newFiles: File[],
     rejectedFiles: FileRejection[],
-    event: DropEvent,
+    event: DropEvent
   ) => {
     const updatedFiles = multiple ? [...files, ...newFiles] : [...newFiles];
 
@@ -139,7 +139,7 @@ export const FileInput = (props: FileInputProps) => {
     }
   };
 
-  const onRemove = (file: any) => async () => {
+  const onRemove = (file: File) => async () => {
     if (validateFileRemoval) {
       try {
         await validateFileRemoval(file);
@@ -150,7 +150,7 @@ export const FileInput = (props: FileInputProps) => {
 
     if (multiple) {
       const filteredFiles = files.filter(
-        (stateFile) => !shallowEqual(stateFile, file),
+        (stateFile) => !shallowEqual(stateFile, file)
       );
       onChange(filteredFiles);
       onBlur();
@@ -205,7 +205,7 @@ export const FileInput = (props: FileInputProps) => {
             "hover:border-sidebar-ring focus:outline-none",
             disabled || readOnly
               ? "bg-muted cursor-not-allowed"
-              : "bg-muted text-muted-foreground cursor-pointer",
+              : "bg-muted text-muted-foreground cursor-pointer"
           ),
         })}
       >
@@ -231,20 +231,18 @@ export const FileInput = (props: FileInputProps) => {
 
       {children && (
         <div className="previews flex flex-col gap-1">
-          {
-            files.map((file: any, index: number) => (
-              <FileInputPreview
-                key={index}
-                file={file}
-                onRemove={onRemove(file)}
-                removeIcon={removeIcon}
-              >
-                <RecordContextProvider value={file}>
-                  {childrenElement}
-                </RecordContextProvider>
-              </FileInputPreview>
-            ))
-          }
+          {files.map((file: File, index: number) => (
+            <FileInputPreview
+              key={index}
+              file={file}
+              onRemove={onRemove(file)}
+              removeIcon={removeIcon}
+            >
+              <RecordContextProvider value={file}>
+                {childrenElement}
+              </RecordContextProvider>
+            </FileInputPreview>
+          ))}
         </div>
       )}
     </FormField>
@@ -261,11 +259,11 @@ export type FileInputProps = Omit<InputProps, "type"> & {
   minSize?: DropzoneOptions["minSize"];
   multiple?: DropzoneOptions["multiple"];
   options?: DropzoneOptions;
-  onRemove?: (file: any) => void;
+  onRemove?: (file: File) => void;
   placeholder?: ReactNode;
   removeIcon?: ComponentType<{ className?: string }>;
   inputProps?: DropzoneInputProps & React.ComponentProps<"input">;
-  validateFileRemoval?(file: any): boolean | Promise<boolean>;
+  validateFileRemoval?(file: File): boolean | Promise<boolean>;
 };
 
 export interface TransformedFile {
@@ -316,7 +314,7 @@ export const FileInputPreview = (props: FileInputPreviewProps) => {
 };
 
 export interface FileInputPreviewProps extends HTMLAttributes<HTMLDivElement> {
-  file: any;
+  file: File;
   onRemove: () => void;
   removeIcon?: React.ComponentType<{ className?: string }>;
 }

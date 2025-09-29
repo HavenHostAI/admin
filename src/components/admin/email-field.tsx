@@ -6,9 +6,9 @@ import { genericMemo } from "@/lib/genericMemo";
 import { FieldProps } from "@/lib/field.type";
 
 const EmailFieldImpl = <
-  RecordType extends Record<string, any> = Record<string, any>,
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
 >(
-  inProps: EmailFieldProps<RecordType>,
+  inProps: EmailFieldProps<RecordType>
 ) => {
   const { className, empty, defaultValue, source, record, ...rest } = inProps;
   const value = useFieldValue({ defaultValue, source, record });
@@ -42,7 +42,7 @@ EmailFieldImpl.displayName = "EmailFieldImpl";
 export const EmailField = genericMemo(EmailFieldImpl);
 
 export interface EmailFieldProps<
-  RecordType extends Record<string, any> = Record<string, any>,
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
 > extends FieldProps<RecordType>,
     AnchorHTMLAttributes<HTMLAnchorElement> {}
 

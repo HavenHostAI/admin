@@ -34,13 +34,13 @@ export const AutocompleteArrayInput = (
     ChoicesProps & {
       className?: string;
       disableValue?: string;
-      filterToQuery?: (searchText: string) => any;
+      filterToQuery?: (searchText: string) => Record<string, unknown>;
       translateChoice?: boolean;
       placeholder?: string;
       inputText?:
         | React.ReactNode
-        | ((option: any | undefined) => React.ReactNode);
-    },
+        | ((option: unknown | undefined) => React.ReactNode);
+    }
 ) => {
   const { filterToQuery = DefaultFilterToQuery, inputText } = props;
   const {
@@ -67,9 +67,9 @@ export const AutocompleteArrayInput = (
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
 
-  const handleUnselect = useEvent((choice: any) => {
+  const handleUnselect = useEvent((choice: unknown) => {
     field.onChange(
-      field.value.filter((v: any) => v !== getChoiceValue(choice)),
+      field.value.filter((v: unknown) => v !== getChoiceValue(choice))
     );
   });
 
@@ -89,15 +89,15 @@ export const AutocompleteArrayInput = (
   });
 
   const availableChoices = allChoices.filter(
-    (choice) => !field.value.includes(getChoiceValue(choice)),
+    (choice) => !field.value.includes(getChoiceValue(choice))
   );
   const selectedChoices = allChoices.filter((choice) =>
-    field.value.includes(getChoiceValue(choice)),
+    field.value.includes(getChoiceValue(choice))
   );
   const [filterValue, setFilterValue] = React.useState("");
 
   const getInputText = useCallback(
-    (selectedChoice: any) => {
+    (selectedChoice: unknown) => {
       if (typeof inputText === "function") {
         return inputText(selectedChoice);
       }
@@ -106,7 +106,7 @@ export const AutocompleteArrayInput = (
       }
       return getChoiceText(selectedChoice);
     },
-    [inputText, getChoiceText],
+    [inputText, getChoiceText]
   );
 
   return (
@@ -185,7 +185,9 @@ export const AutocompleteArrayInput = (
                       return (
                         <CommandItem
                           key={getChoiceValue(choice)}
-                          onMouseDown={(event: React.MouseEvent<HTMLDivElement>) => {
+                          onMouseDown={(
+                            event: React.MouseEvent<HTMLDivElement>
+                          ) => {
                             event.preventDefault();
                             event.stopPropagation();
                           }}

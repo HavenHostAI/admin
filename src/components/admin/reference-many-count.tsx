@@ -8,7 +8,7 @@ import {
 import { Link } from "react-router";
 
 export const ReferenceManyCount = <RecordType extends RaRecord = RaRecord>(
-  props: ReferenceManyCountProps<RecordType>,
+  props: ReferenceManyCountProps<RecordType>
 ) => {
   const {
     reference,
@@ -64,7 +64,7 @@ export interface ReferenceManyCountProps<
   target: string;
   source?: string;
   sort?: SortPayload;
-  filter?: any;
+  filter?: Record<string, unknown>;
   link?: boolean;
   timeout?: number;
 }

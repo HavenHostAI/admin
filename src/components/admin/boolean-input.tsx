@@ -43,7 +43,7 @@ export const BooleanInput = (props: BooleanInputProps) => {
       // Ensure field is considered as touched
       field.onBlur();
     },
-    [field],
+    [field]
   );
 
   return (
@@ -73,16 +73,16 @@ export const BooleanInput = (props: BooleanInputProps) => {
 export interface BooleanInputProps {
   className?: string;
   defaultValue?: boolean;
-  format?: (value: any) => any;
+  format?: (value: unknown) => unknown;
   helperText?: React.ReactNode;
   label?: React.ReactNode;
   onBlur?: (event: React.FocusEvent<HTMLButtonElement>) => void;
-  onChange?: (value: any) => void;
+  onChange?: (value: unknown) => void;
   onFocus?: (event: React.FocusEvent<HTMLButtonElement>) => void;
   readOnly?: boolean;
   disabled?: boolean;
-  parse?: (value: any) => any;
+  parse?: (value: unknown) => unknown;
   resource?: string;
   source: string;
-  validate?: any;
+  validate?: unknown;
 }

@@ -23,9 +23,9 @@ import type { FieldProps } from "@/lib/field.type";
  * </div>
  */
 export const FileField = <
-  RecordType extends Record<string, any> = Record<string, any>,
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
 >(
-  props: FileFieldProps<RecordType>,
+  props: FileFieldProps<RecordType>
 ) => {
   const {
     className,
@@ -106,7 +106,7 @@ export const FileField = <
 };
 
 export interface FileFieldProps<
-  RecordType extends Record<string, any> = Record<string, any>,
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
 > extends FieldProps<RecordType>,
     HTMLAttributes<HTMLElement> {
   /**

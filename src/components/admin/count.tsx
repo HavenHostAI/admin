@@ -81,7 +81,7 @@ export const Count = (props: CountProps) => {
 };
 
 export interface CountProps {
-  filter?: any;
+  filter?: Record<string, unknown>;
   sort?: SortPayload;
   link?: boolean;
   resource?: string;

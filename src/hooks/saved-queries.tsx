@@ -13,8 +13,8 @@ export const useSavedQueries = (resource: string) => {
 export interface SavedQuery {
   label: string;
   value: {
-    filter?: any;
-    displayedFilters?: any[];
+    filter?: Record<string, unknown>;
+    displayedFilters?: Record<string, unknown>[];
     sort?: SortPayload;
     perPage?: number;
   };

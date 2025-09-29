@@ -1,8 +1,7 @@
+"use node";
+
 import { action } from "./_generated/server";
 import { v } from "convex/values";
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-'use node';
-/* eslint-enable @typescript-eslint/no-unused-expressions */
 
 import { betterAuth } from "better-auth";
 import type { ActionCtx } from "./_generated/server";
@@ -10,13 +9,17 @@ import { internal } from "./_generated/api";
 import { createConvexAdapter, convertFromStorage } from "./_lib/authAdapter";
 import type { Doc, Id } from "./_generated/dataModel";
 
-const DEFAULT_BASE_URL = process.env.BETTER_AUTH_BASE_URL ?? "http://localhost:5173";
+const DEFAULT_BASE_URL =
+  process.env.BETTER_AUTH_BASE_URL ?? "http://localhost:5173";
 const DEFAULT_SECRET = process.env.BETTER_AUTH_SECRET ?? "dev-secret";
 
 const trustedOrigins = (() => {
   const envOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS;
   if (!envOrigins) return [DEFAULT_BASE_URL];
-  return envOrigins.split(",").map((origin) => origin.trim()).filter(Boolean);
+  return envOrigins
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 })();
 
 const createAuth = (ctx: ActionCtx) =>
@@ -92,11 +95,13 @@ const createAuth = (ctx: ActionCtx) =>
     database: () => createConvexAdapter(ctx),
   });
 
-const serializeUser = (raw: Record<string, any>) => ({
+const serializeUser = (raw: Record<string, unknown>) => ({
   ...raw,
   companyId: raw.companyId ? String(raw.companyId) : raw.companyId,
-  createdAt: raw.createdAt instanceof Date ? raw.createdAt.toISOString() : raw.createdAt,
-  updatedAt: raw.updatedAt instanceof Date ? raw.updatedAt.toISOString() : raw.updatedAt,
+  createdAt:
+    raw.createdAt instanceof Date ? raw.createdAt.toISOString() : raw.createdAt,
+  updatedAt:
+    raw.updatedAt instanceof Date ? raw.updatedAt.toISOString() : raw.updatedAt,
 });
 
 export const signIn = action({
@@ -122,11 +127,14 @@ export const signIn = action({
 
       return {
         token: result.token,
-        user: serializeUser(result.user as Record<string, any>),
+        user: serializeUser(result.user as Record<string, unknown>),
       };
     } catch (error) {
       if (error && typeof error === "object" && "body" in error) {
-        throw new Error((error as any).body?.message ?? "Unable to sign in");
+        throw new Error(
+          (error as { body?: { message?: string } }).body?.message ??
+            "Unable to sign in"
+        );
       }
       throw error;
     }
@@ -145,8 +153,8 @@ export const signUp = action({
   },
   handler: async (
     ctx,
-    args,
-  ): Promise<{ token: string; user: Record<string, any> }> => {
+    args
+  ): Promise<{ token: string; user: Record<string, unknown> }> => {
     const auth = createAuth(ctx);
     const now = Date.now();
     const emailLower = args.email.trim().toLowerCase();
@@ -155,9 +163,12 @@ export const signUp = action({
     let roleForUser = "member";
 
     if (args.invitationToken) {
-      const invitation = (await ctx.runQuery(internal.companyStore.getInvitationByToken, {
-        token: args.invitationToken,
-      })) as (Doc<"companyInvitations"> & Record<string, any>) | null;
+      const invitation = (await ctx.runQuery(
+        internal.companyStore.getInvitationByToken,
+        {
+          token: args.invitationToken,
+        }
+      )) as (Doc<"companyInvitations"> & Record<string, unknown>) | null;
       if (!invitation || invitation.status !== "pending") {
         throw new Error("This invitation is no longer valid");
       }
@@ -169,7 +180,9 @@ export const signUp = action({
         throw new Error("This invitation has expired");
       }
       if (invitation.email.toLowerCase() !== emailLower) {
-        throw new Error("This invitation was sent to a different email address");
+        throw new Error(
+          "This invitation was sent to a different email address"
+        );
       }
       companyId = invitation.companyId;
       roleForUser = invitation.role ?? "agent";
@@ -178,12 +191,15 @@ export const signUp = action({
       if (!companyName) {
         throw new Error("Company name is required to create a new account");
       }
-      const companyDoc = (await ctx.runMutation(internal.companyStore.createCompany, {
-        name: companyName,
-        timezone: args.companyTimezone ?? "UTC",
-        plan: args.companyPlan ?? "starter",
-        createdAt: now,
-      })) as Doc<"companies">;
+      const companyDoc = (await ctx.runMutation(
+        internal.companyStore.createCompany,
+        {
+          name: companyName,
+          timezone: args.companyTimezone ?? "UTC",
+          plan: args.companyPlan ?? "starter",
+          createdAt: now,
+        }
+      )) as Doc<"companies">;
       companyId = companyDoc._id;
       roleForUser = "owner";
     }
@@ -198,14 +214,14 @@ export const signUp = action({
       request: new Request(`${auth.options.baseURL}/sign-up/email`, {
         method: "POST",
       }),
-    })) as { token: string; user: Record<string, any> };
+    })) as { token: string; user: Record<string, unknown> };
 
     const users = (await ctx.runQuery(internal.authStore.getAll, {
       table: "users",
-    })) as Array<Record<string, any>>;
+    })) as Array<Record<string, unknown>>;
     const existingUserDoc = users.find((doc) => doc.id === result.user.id);
 
-    const baseUserData: Record<string, any> = {
+    const baseUserData: Record<string, unknown> = {
       id: result.user.id,
       companyId,
       email: emailLower,
@@ -236,9 +252,12 @@ export const signUp = action({
     }
 
     if (args.invitationToken) {
-      const invitation = (await ctx.runQuery(internal.companyStore.getInvitationByToken, {
-        token: args.invitationToken,
-      })) as (Doc<"companyInvitations"> & Record<string, any>) | null;
+      const invitation = (await ctx.runQuery(
+        internal.companyStore.getInvitationByToken,
+        {
+          token: args.invitationToken,
+        }
+      )) as (Doc<"companyInvitations"> & Record<string, unknown>) | null;
       if (invitation) {
         await ctx.runMutation(internal.companyStore.updateInvitation, {
           id: invitation._id,
@@ -252,7 +271,7 @@ export const signUp = action({
 
     const updatedUsers = (await ctx.runQuery(internal.authStore.getAll, {
       table: "users",
-    })) as Array<Record<string, any>>;
+    })) as Array<Record<string, unknown>>;
     const finalUserDoc = updatedUsers.find((doc) => doc.id === result.user.id);
     if (finalUserDoc) {
       result.user = {
@@ -263,7 +282,7 @@ export const signUp = action({
 
     return {
       token: result.token,
-      user: serializeUser(result.user as Record<string, any>),
+      user: serializeUser(result.user as Record<string, unknown>),
     };
   },
 });
@@ -275,10 +294,13 @@ export const validateSession = action({
   handler: async (ctx, { token }) => {
     const sessions = (await ctx.runQuery(internal.authStore.getAll, {
       table: "authSessions",
-    })) as Array<Record<string, any>>;
+    })) as Array<Record<string, unknown>>;
     const sessionDoc = sessions.find((doc) => doc.token === token);
     if (!sessionDoc) return null;
-    if (typeof sessionDoc.expiresAt === "number" && sessionDoc.expiresAt <= Date.now()) {
+    if (
+      typeof sessionDoc.expiresAt === "number" &&
+      sessionDoc.expiresAt <= Date.now()
+    ) {
       await ctx.runMutation(internal.authStore.remove, {
         table: "authSessions",
         documentId: sessionDoc._id,
@@ -288,7 +310,7 @@ export const validateSession = action({
 
     const users = (await ctx.runQuery(internal.authStore.getAll, {
       table: "users",
-    })) as Array<Record<string, any>>;
+    })) as Array<Record<string, unknown>>;
     const userDoc = users.find((doc) => doc.id === sessionDoc.userId);
     if (!userDoc) return null;
 
@@ -321,7 +343,7 @@ export const signOut = action({
   handler: async (ctx, { token }) => {
     const sessions = (await ctx.runQuery(internal.authStore.getAll, {
       table: "authSessions",
-    })) as Array<Record<string, any>>;
+    })) as Array<Record<string, unknown>>;
     const sessionDoc = sessions.find((doc) => doc.token === token);
     if (!sessionDoc) return;
     await ctx.runMutation(internal.authStore.remove, {
