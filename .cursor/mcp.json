@@ -1,24 +1,10 @@
 {
     "mcpServers": {
-        "shadcn-admin-kit": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "shadcn@canary",
-                "registry:mcp"
-            ],
-            "env": {
-                "REGISTRY_URL": "https://marmelab.com/shadcn-admin-kit/r/registry.json"
+            "context7": {
+            "url": "https://mcp.context7.com/mcp",
+            "headers": {
+                "CONTEXT7_API_KEY": "ctx7sk-2eb90c4c-9e22-4a72-9782-ce94954b3c1f"
             }
-        },
-        "convex": {
-            "command": "npx",
-            "args": [
-              "-y",
-              "convex@latest",
-              "mcp",
-              "start"
-            ]
         }
     }
 }
