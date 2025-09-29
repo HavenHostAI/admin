@@ -1,8 +1,7 @@
+"use node";
+
 import { action } from "./_generated/server";
 import { v } from "convex/values";
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-("use node");
-/* eslint-enable @typescript-eslint/no-unused-expressions */
 
 import { betterAuth } from "better-auth";
 import type { ActionCtx } from "./_generated/server";
