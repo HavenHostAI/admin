@@ -203,6 +203,7 @@ export default defineSchema({
   faqs: defineTable({
     propertyId: v.id("properties"),
     text: v.string(),
+    category: v.optional(v.string()),
     tags: v.array(v.string()),
     embedding: v.optional(v.array(v.float64())),
     updatedAt: v.number(),
@@ -221,6 +222,7 @@ export default defineSchema({
     url: v.optional(v.string()),
     tips: v.optional(v.string()),
     hours: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
     embedding: v.optional(v.array(v.float64())),
     updatedAt: v.number(),
   })
