@@ -140,11 +140,11 @@ export const useSupportCreateSuggestion = <T = unknown,>(
           value={{
             filter: filterRef.current,
             onCancel: () => setRenderOnCreate(false),
-            onCreate: (item: T) => {
+            onCreate: (item) => {
               setRenderOnCreate(false);
-              handleChange(item);
+              handleChange(item as T);
             },
-          } as CreateSuggestionContextValue<any>}
+          } satisfies CreateSuggestionContextValue<unknown>}
         >
           {create}
         </CreateSuggestionContext.Provider>
@@ -191,7 +191,7 @@ export interface UseSupportCreateValue<T = unknown> {
  * @deprecated Use `CreateSuggestionContext` from "ra-core" when available.
  */
 const CreateSuggestionContext = createContext<
-  CreateSuggestionContextValue<any> | undefined
+  CreateSuggestionContextValue<unknown> | undefined
 >(undefined);
 
 /**

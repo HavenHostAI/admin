@@ -35,6 +35,8 @@ const getStringProp = (props: Record<string, unknown>, key: string) => {
   return typeof value === "string" ? value : undefined;
 };
 
+const isTruthy = (value: unknown): boolean => Boolean(value);
+
 const ShowViewGuesser = (props: { enableLog?: boolean }) => {
   const resource = useResourceContext();
 
@@ -243,7 +245,7 @@ ${children
           source={source}
           render={(record: Record<string, unknown>) => {
             const key = source as keyof typeof record;
-            return Boolean(record[key]) ? "Yes" : "No";
+            return isTruthy(record[key]) ? "Yes" : "No";
           }}
         />
       );
