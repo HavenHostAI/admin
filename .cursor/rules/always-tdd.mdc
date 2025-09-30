@@ -1,0 +1,13 @@
+---
+alwaysApply: true
+description: Always follow test-driven development practices
+---
+
+# Test-Driven Development
+
+- Start by writing or updating an automated test that fails because the desired behaviour does not yet exist.
+- Run the relevant test command to observe the failure before making implementation changes.
+- Implement the minimal code necessary to make the failing test(s) pass.
+- Re-run the test suite (or focused tests) to confirm the fix.
+- Only then proceed to refactor or extend the code, keeping the test suite green at each step.
+- Prefer unit or integration tests that align with the project's existing testing stack (Vitest for unit, Playwright for e2e) unless the user specifies otherwise.
