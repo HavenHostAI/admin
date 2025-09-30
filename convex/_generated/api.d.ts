@@ -16,6 +16,7 @@ import type {
 import type * as _lib_authAdapter from "../_lib/authAdapter.js";
 import type * as admin from "../admin.js";
 import type * as auth from "../auth.js";
+import type * as authHelpers from "../authHelpers.js";
 import type * as authStore from "../authStore.js";
 import type * as company from "../company.js";
 import type * as companyStore from "../companyStore.js";
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   "_lib/authAdapter": typeof _lib_authAdapter;
   admin: typeof admin;
   auth: typeof auth;
+  authHelpers: typeof authHelpers;
   authStore: typeof authStore;
   company: typeof company;
   companyStore: typeof companyStore;
