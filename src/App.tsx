@@ -3,6 +3,7 @@ import { Route } from "react-router-dom";
 import { Admin } from "@/components/admin";
 import dataProvider from "@/lib/convexDataProvider";
 import { authProvider } from "@/lib/authProvider";
+import { Dashboard } from "@/pages/dashboard";
 import {
   CompanyCreate,
   CompanyEdit,
@@ -26,7 +27,11 @@ import { SignupPage } from "@/components/admin/login-page";
 
 function App() {
   return (
-    <Admin dataProvider={dataProvider} authProvider={authProvider}>
+    <Admin
+      dataProvider={dataProvider}
+      authProvider={authProvider}
+      dashboard={Dashboard}
+    >
       <Resource
         name="companies"
         list={CompanyList}
