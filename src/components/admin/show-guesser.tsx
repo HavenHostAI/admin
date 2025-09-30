@@ -30,6 +30,13 @@ export const ShowGuesser = (props: { enableLog?: boolean }) => (
   </ShowBase>
 );
 
+const getStringProp = (props: Record<string, unknown>, key: string) => {
+  const value = props[key];
+  return typeof value === "string" ? value : undefined;
+};
+
+const isTruthy = (value: unknown): boolean => Boolean(value);
+
 const ShowViewGuesser = (props: { enableLog?: boolean }) => {
   const resource = useResourceContext();
 
@@ -51,7 +58,7 @@ const ShowViewGuesser = (props: { enableLog?: boolean }) => {
       const inferredChild = new InferredElement(
         showFieldTypes.show,
         null,
-        inferredElements
+        inferredElements,
       );
       setChild(inferredChild.getElement());
 
@@ -65,10 +72,10 @@ const ShowViewGuesser = (props: { enableLog?: boolean }) => {
               Array.from(representation.matchAll(/<([^/\s>]+)/g))
                 .map((match) => match[1])
                 .filter(
-                  (component) => component !== "span" && component !== "div"
-                )
-            )
-          )
+                  (component) => component !== "span" && component !== "div",
+                ),
+            ),
+          ),
         )
         .sort();
 
@@ -79,8 +86,8 @@ ${components
   .map(
     (component) =>
       `import { ${component} } from "@/components/admin/${kebabCase(
-        component
-      )}";`
+        component,
+      )}";`,
   )
   .join("\n")}
 
@@ -88,7 +95,7 @@ export const ${capitalize(singularize(resource))}Show = () => (
     <Show>
 ${inferredChild.getRepresentation()}
     </Show>
-);`
+);`,
       );
     }
   }, [record, child, resource, enableLog]);
@@ -98,12 +105,13 @@ ${inferredChild.getRepresentation()}
 
 const showFieldTypes: InferredTypeMap = {
   show: {
-    component: (props: Record<string, unknown>) => (
-      <div className="flex flex-col gap-4">{props.children}</div>
-    ),
+    component: (props: Record<string, unknown>) => {
+      const children = props.children as ReactNode;
+      return <div className="flex flex-col gap-4">{children}</div>;
+    },
     representation: (
       _props: Record<string, unknown>,
-      children: { getRepresentation: () => string }[]
+      children: { getRepresentation: () => string }[],
     ) => `        <div className="flex flex-col gap-4">
 ${children
   .map((child) => `            ${child.getRepresentation()}`)
@@ -111,98 +119,194 @@ ${children
         </div>`,
   },
   reference: {
-    component: (props: Record<string, unknown>) => (
-      <RecordField source={props.source}>
-        <ReferenceField source={props.source} reference={props.reference} />
-      </RecordField>
-    ),
-    representation: (props: Record<string, unknown>) =>
-      `<RecordField source="${props.source}">
-                <ReferenceField source="${props.source}" reference="${props.reference}" />
-            </RecordField>`,
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      const reference = getStringProp(props, "reference");
+      if (!source || !reference) {
+        return null;
+      }
+      return (
+        <RecordField source={source}>
+          <ReferenceField source={source} reference={reference} />
+        </RecordField>
+      );
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      const reference = getStringProp(props, "reference") ?? "";
+      return `<RecordField source="${source}">
+                <ReferenceField source="${source}" reference="${reference}" />
+            </RecordField>`;
+    },
   },
   array: {
-    component: ({
-      children,
-      ...props
-    }: Record<string, unknown> & { children: React.ReactNode }) => {
-      const childrenArray = Children.toArray(children);
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      if (!source) {
+        return null;
+      }
+      const childrenNodes = props.children as ReactNode;
+      const childrenArray = Children.toArray(childrenNodes);
       return (
-        <RecordField source={props.source}>
-          <ArrayField source={props.source}>
+        <RecordField source={source}>
+          <ArrayField source={source}>
             <SingleFieldList>
-              <BadgeField
-                source={
-                  childrenArray.length > 0 &&
-                  isValidElement(childrenArray[0]) &&
-                  (childrenArray[0].props as Record<string, unknown>).source
-                }
-              />
+              {childrenArray.length > 0 &&
+              isValidElement(childrenArray[0]) &&
+              typeof (childrenArray[0].props as Record<string, unknown>)
+                .source === "string" ? (
+                <BadgeField
+                  source={
+                    (childrenArray[0].props as Record<string, unknown>)
+                      .source as string
+                  }
+                />
+              ) : null}
             </SingleFieldList>
           </ArrayField>
         </RecordField>
       );
     },
-    representation: (props: Record<string, unknown>, children: unknown[]) =>
-      `<RecordField source="${props.source}">
-                <ArrayField source="${props.source}">
+    representation: (props: Record<string, unknown>, children: unknown[]) => {
+      const source = getStringProp(props, "source") ?? "";
+      const badgeSource = (() => {
+        if (children.length === 0) {
+          return "";
+        }
+        const firstChild = children[0];
+        if (
+          firstChild &&
+          typeof firstChild === "object" &&
+          firstChild !== null &&
+          "getProps" in firstChild &&
+          typeof (firstChild as { getProps?: unknown }).getProps === "function"
+        ) {
+          const childProps = (
+            firstChild as {
+              getProps: () => Record<string, unknown>;
+            }
+          ).getProps();
+          return getStringProp(childProps, "source") ?? "";
+        }
+        return "";
+      })();
+      return `<RecordField source="${source}">
+                <ArrayField source="${source}">
                     <SingleFieldList>
-                        <BadgeField source="${
-                          children.length > 0 && children[0].getProps().source
-                        }" />
+                        <BadgeField source="${badgeSource}" />
                     </SingleFieldList>
                 </ArrayField>
-            </RecordField>`,
+            </RecordField>`;
+    },
   },
   referenceArray: {
-    component: (props: Record<string, unknown>) => (
-      <RecordField source={props.source}>
-        <ReferenceArrayField {...props} />
-      </RecordField>
-    ),
-    representation: (props: Record<string, unknown>) =>
-      `<RecordField source="${props.source}">
-                <ReferenceArrayField source="${props.source}" reference="${props.reference}" />
-            </RecordField>`,
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      const reference = getStringProp(props, "reference");
+      if (!source || !reference) {
+        return null;
+      }
+      const {
+        children,
+        source: _unusedSource,
+        reference: _unusedReference,
+        ...rest
+      } = props as {
+        children?: ReactNode;
+        source?: unknown;
+        reference?: unknown;
+      };
+      return (
+        <RecordField source={source}>
+          <ReferenceArrayField
+            {...(rest as Record<string, unknown>)}
+            source={source}
+            reference={reference}
+          >
+            {children as ReactNode}
+          </ReferenceArrayField>
+        </RecordField>
+      );
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      const reference = getStringProp(props, "reference") ?? "";
+      return `<RecordField source="${source}">
+                <ReferenceArrayField source="${source}" reference="${reference}" />
+            </RecordField>`;
+    },
   },
   boolean: {
-    component: (props: Record<string, unknown>) => (
-      <RecordField
-        source={props.source}
-        render={(record) => (record[props.source] ? "Yes" : "No")}
-      />
-    ),
-    representation: (props: Record<string, unknown>) =>
-      `<RecordField source="${props.source}" render={record => record[${props.source}] ? 'Yes' : 'No'} />`,
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      if (!source) {
+        return null;
+      }
+      return (
+        <RecordField
+          source={source}
+          render={(record: Record<string, unknown>) => {
+            const key = source as keyof typeof record;
+            return isTruthy(record[key]) ? "Yes" : "No";
+          }}
+        />
+      );
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      return `<RecordField source="${source}" render={record => record[${source}] ? 'Yes' : 'No'} />`;
+    },
   },
   date: {
-    component: (props: Record<string, unknown>) => (
-      <RecordField source={props.source}>
-        <DateField source={props.source} />
-      </RecordField>
-    ),
-    representation: (props: Record<string, unknown>) =>
-      `<RecordField source="${props.source}">
-                <DateField source="${props.source}" />
-            </RecordField>`,
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      if (!source) {
+        return null;
+      }
+      return (
+        <RecordField source={source}>
+          <DateField source={source} />
+        </RecordField>
+      );
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      return `<RecordField source="${source}">
+                <DateField source="${source}" />
+            </RecordField>`;
+    },
   },
   number: {
-    component: (props: Record<string, unknown>) => (
-      <RecordField source={props.source}>
-        <NumberField source={props.source} />
-      </RecordField>
-    ),
-    representation: (props: Record<string, unknown>) =>
-      `<RecordField source="${props.source}">
-                <NumberField source="${props.source}" />
-            </RecordField>`,
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      if (!source) {
+        return null;
+      }
+      return (
+        <RecordField source={source}>
+          <NumberField source={source} />
+        </RecordField>
+      );
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      return `<RecordField source="${source}">
+                <NumberField source="${source}" />
+            </RecordField>`;
+    },
   },
   string: {
-    component: (props: Record<string, unknown>) => (
-      <RecordField source={props.source} />
-    ),
-    representation: (props: Record<string, unknown>) =>
-      `<RecordField source="${props.source}" />`,
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      if (!source) {
+        return null;
+      }
+      return <RecordField source={source} />;
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      return `<RecordField source="${source}" />`;
+    },
   },
 };
 

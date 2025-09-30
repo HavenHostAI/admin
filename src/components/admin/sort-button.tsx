@@ -102,7 +102,7 @@ const SortButtonComponent = (props: SortButtonProps) => {
             {translate(
               `ra.sort.${
                 sort.field === field ? inverseOrder(sort.order) : "ASC"
-              }`
+              }`,
             )}
           </DropdownMenuItem>
         ))}
@@ -117,7 +117,7 @@ const inverseOrder = (sort: string) => (sort === "ASC" ? "DESC" : "ASC");
 
 const arePropsEqual = (
   prevProps: Record<string, unknown>,
-  nextProps: Record<string, unknown>
+  nextProps: Record<string, unknown>,
 ) => shallowEqual(prevProps.fields, nextProps.fields);
 
 export interface SortButtonProps extends ButtonProps {

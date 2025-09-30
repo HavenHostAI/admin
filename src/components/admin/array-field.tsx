@@ -9,7 +9,7 @@ import {
 } from "ra-core";
 
 export const ArrayField = <RecordType extends RaRecord = RaRecord>(
-  props: ArrayFieldProps<RecordType>
+  props: ArrayFieldProps<RecordType>,
 ) => {
   const { children, resource, perPage, sort, filter } = props;
   const data = useFieldValue(props) || emptyArray;

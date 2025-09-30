@@ -21,14 +21,14 @@ const getAppBaseUrl = () => process.env.APP_BASE_URL ?? "http://localhost:5173";
 async function getSessionForToken(ctx: ActionCtx, token: string) {
   const sessions = (await ctx.runQuery(internal.authStore.getAll, {
     table: "authSessions",
-  })) as Array<Record<string, unknown>>;
+  })) as Array<Doc<"authSessions">>;
   return sessions.find((session) => session.token === token) ?? null;
 }
 
 async function getUserDocByAuthId(ctx: ActionCtx, authUserId: string) {
   const users = (await ctx.runQuery(internal.authStore.getAll, {
     table: "users",
-  })) as Array<Record<string, unknown>>;
+  })) as Array<Doc<"users">>;
   return users.find((user) => user.id === authUserId) ?? null;
 }
 
@@ -52,7 +52,7 @@ async function sendInvitationEmail({
         hasFromEmail: Boolean(fromEmail),
         envApiKey: process.env.SENDGRID_API_KEY ? "[set]" : "[missing]",
         envFromEmail: process.env.SENDGRID_FROM_EMAIL ? "[set]" : "[missing]",
-      }
+      },
     );
     return;
   }
@@ -96,6 +96,13 @@ async function sendInvitationEmail({
   }
 }
 
+/**
+ * OpenAPI operation `companyInviteUser` (`POST /companies/invitations`).
+ *
+ * Issues or refreshes a company invitation for a teammate and dispatches the
+ * accompanying SendGrid email when credentials are configured. Requires an
+ * active owner session token.
+ */
 export const inviteUser = action({
   args: {
     sessionToken: v.string(),
@@ -135,11 +142,11 @@ export const inviteUser = action({
 
     const users = (await ctx.runQuery(internal.authStore.getAll, {
       table: "users",
-    })) as Array<Record<string, unknown>>;
+    })) as Array<Doc<"users">>;
     const existingUser = users.find(
       (user) =>
         user.email?.toLowerCase() === emailLower &&
-        String(user.companyId) === String(inviter.companyId)
+        String(user.companyId) === String(inviter.companyId),
     );
 
     if (existingUser && existingUser.status === "active") {
@@ -186,8 +193,8 @@ export const inviteUser = action({
       {
         companyId: inviter.companyId,
         email: emailLower,
-      }
-    )) as Record<string, unknown> | null;
+      },
+    )) as Doc<"companyInvitations"> | null;
 
     if (existingInvitation) {
       await ctx.runMutation(internal.companyStore.updateInvitation, {
@@ -215,7 +222,7 @@ export const inviteUser = action({
 
     const baseUrl = getAppBaseUrl().replace(/\/$/, "");
     const inviteLink = `${baseUrl}/signup?invitation=${token}&email=${encodeURIComponent(
-      emailLower
+      emailLower,
     )}`;
 
     await sendInvitationEmail({

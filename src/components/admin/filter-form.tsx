@@ -71,7 +71,7 @@ export const FilterFormBase = (props: FilterFormBaseProps) => {
     filters.forEach((filter) => {
       if (filter.props.alwaysOn && filter.props.defaultValue) {
         throw new Error(
-          "Cannot use alwaysOn and defaultValue on a filter input. Please set the filterDefaultValues props on the <List> element instead."
+          "Cannot use alwaysOn and defaultValue on a filter input. Please set the filterDefaultValues props on the <List> element instead.",
         );
       }
     });
@@ -93,7 +93,7 @@ export const FilterFormBase = (props: FilterFormBaseProps) => {
   const handleHide = useCallback(
     (event: React.MouseEvent<HTMLElement>) =>
       hideFilter(event.currentTarget.dataset.key!),
-    [hideFilter]
+    [hideFilter],
   );
 
   return (
@@ -130,9 +130,9 @@ const StyledForm = (props: React.FormHTMLAttributes<HTMLFormElement>) => {
     <form
       {...props}
       className={cn(
-        "flex flex-row justify-start items-end gap-x-2 gap-y-3 pointer-events-none flex-wrap",
+        "pointer-events-none flex flex-row flex-wrap items-end justify-start gap-x-2 gap-y-3",
         "[&_.form-helper-text]:hidden",
-        props.className
+        props.className,
       )}
     />
   );
@@ -143,9 +143,9 @@ const isEmptyValue = (filterValue: unknown): boolean => {
 
   // If one of the value leaf is not empty
   // the value is considered not empty
-  if (typeof filterValue === "object") {
-    return Object.keys(filterValue).every((key) =>
-      isEmptyValue(filterValue[key])
+  if (filterValue && typeof filterValue === "object") {
+    return Object.values(filterValue as Record<string, unknown>).every(
+      (value) => isEmptyValue(value),
     );
   }
 
@@ -161,8 +161,8 @@ export const FilterFormInput = (inProps: FilterFormInputProps) => {
     <div
       data-source={filterElement.props.source}
       className={cn(
-        "filter-field flex flex-row pointer-events-auto gap-2 relative",
-        className
+        "filter-field pointer-events-auto relative flex flex-row gap-2",
+        className,
       )}
     >
       {React.cloneElement(filterElement, {
@@ -178,7 +178,7 @@ export const FilterFormInput = (inProps: FilterFormInputProps) => {
           type="button"
           variant="ghost"
           size="sm"
-          className="hide-filter h-9 w-9 cursor-pointer mt-auto"
+          className="hide-filter mt-auto h-9 w-9 cursor-pointer"
           onClick={handleHide}
           data-key={filterElement.props.source}
           title={translate("ra.action.remove_filter")}
@@ -213,7 +213,7 @@ export const FilterButton = (props: FilterButtonProps) => {
   const translate = useTranslate();
   if (!resource && !disableSaveQuery) {
     throw new Error(
-      "<FilterButton> must be called inside a ResourceContextProvider, or must provide a resource prop"
+      "<FilterButton> must be called inside a ResourceContextProvider, or must provide a resource prop",
     );
   }
   const [savedQueries] = useSavedQueries(resource || "");
@@ -235,19 +235,19 @@ export const FilterButton = (props: FilterButtonProps) => {
       sort,
       perPage,
       displayedFilters,
-    })
+    }),
   );
   const [open, setOpen] = useState(false);
 
   if (filters === undefined) {
     throw new Error(
-      "The <FilterButton> component requires the <List filters> prop to be set"
+      "The <FilterButton> component requires the <List filters> prop to be set",
     );
   }
 
   const allTogglableFilters = filters.filter(
     (filterElement: React.ReactElement<FilterElementProps>) =>
-      !filterElement.props.alwaysOn
+      !filterElement.props.alwaysOn,
   );
 
   const handleShow = useCallback(
@@ -257,7 +257,7 @@ export const FilterButton = (props: FilterButtonProps) => {
       // has no way of knowing it has just been displayed (and thus that it should focus its input)
       setTimeout(() => {
         const inputElement = document.querySelector(
-          `input[name='${source}']`
+          `input[name='${source}']`,
         ) as HTMLInputElement;
         if (inputElement) {
           inputElement.focus();
@@ -265,7 +265,7 @@ export const FilterButton = (props: FilterButtonProps) => {
       }, 50);
       setOpen(false);
     },
-    [showFilter, setOpen]
+    [showFilter, setOpen],
   );
 
   const handleRemove = useCallback(
@@ -273,7 +273,7 @@ export const FilterButton = (props: FilterButtonProps) => {
       hideFilter(source);
       setOpen(false);
     },
-    [hideFilter, setOpen]
+    [hideFilter, setOpen],
   );
 
   // add query dialog state
@@ -323,7 +323,7 @@ export const FilterButton = (props: FilterButtonProps) => {
           {allTogglableFilters.map(
             (
               filterElement: React.ReactElement<FilterElementProps>,
-              index: number
+              index: number,
             ) => (
               <FilterButtonMenuItem
                 key={filterElement.props.source}
@@ -334,7 +334,7 @@ export const FilterButton = (props: FilterButtonProps) => {
                 onHide={handleRemove}
                 autoFocus={index === 0}
               />
-            )
+            ),
           )}
           {(hasFilterValues || validSavedQueries.length > 0) && (
             <DropdownMenuSeparator />
@@ -350,7 +350,7 @@ export const FilterButton = (props: FilterButtonProps) => {
                 onClick={showRemoveSavedQueryDialog}
                 key={index}
               >
-                <BookmarkMinus className="h-4 w-4 mr-2" />
+                <BookmarkMinus className="mr-2 h-4 w-4" />
                 {translate("ra.saved_queries.remove_label_with_name", {
                   _: 'Remove query "%{name}"',
                   name: savedQuery.label,
@@ -367,7 +367,7 @@ export const FilterButton = (props: FilterButtonProps) => {
                       page: 1,
                       perPage: savedQuery.value.perPage,
                       displayedFilters: JSON.stringify(
-                        savedQuery.value.displayedFilters
+                        savedQuery.value.displayedFilters,
                       ),
                     }),
                   });
@@ -375,14 +375,14 @@ export const FilterButton = (props: FilterButtonProps) => {
                 }}
                 key={index}
               >
-                <Bookmark className="h-4 w-4 mr-2" />
+                <Bookmark className="mr-2 h-4 w-4" />
                 {savedQuery.label}
               </DropdownMenuItem>
-            )
+            ),
           )}
           {hasFilterValues && !hasSavedCurrentQuery && !disableSaveQuery && (
             <DropdownMenuItem onClick={showAddSavedQueryDialog}>
-              <BookmarkPlus className="h-4 w-4 mr-2" />
+              <BookmarkPlus className="mr-2 h-4 w-4" />
               {translate("ra.saved_queries.new_label", {
                 _: "Save current query...",
               })}
@@ -395,7 +395,7 @@ export const FilterButton = (props: FilterButtonProps) => {
                 setOpen(false);
               }}
             >
-              <X className="h-4 w-4 mr-2" />
+              <X className="mr-2 h-4 w-4" />
               {translate("ra.action.remove_all_filters", {
                 _: "Remove all filters",
               })}
@@ -440,25 +440,34 @@ export const FilterButtonMenuItem = React.forwardRef<
 >((props, ref) => {
   const { filter, onShow, onHide, displayed } = props;
   const resource = useResourceContext(props);
+  const source =
+    typeof filter.props.source === "string" ? filter.props.source : "";
+  const defaultValue = filter.props.defaultValue;
   const handleShow = useCallback(() => {
+    if (!source) {
+      return;
+    }
     onShow({
-      source: filter.props.source,
-      defaultValue: filter.props.defaultValue,
+      source,
+      defaultValue,
     });
-  }, [filter.props.defaultValue, filter.props.source, onShow]);
+  }, [defaultValue, onShow, source]);
   const handleHide = useCallback(() => {
+    if (!source) {
+      return;
+    }
     onHide({
-      source: filter.props.source,
+      source,
     });
-  }, [filter.props.source, onHide]);
+  }, [onHide, source]);
 
   return (
     <div
       className={cn(
-        "new-filter-item flex items-center px-2 py-1.5 text-sm cursor-pointer hover:bg-accent rounded-sm",
-        filter.props.disabled && "opacity-50 cursor-not-allowed"
+        "new-filter-item hover:bg-accent flex cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm",
+        filter.props.disabled ? "cursor-not-allowed opacity-50" : undefined,
       )}
-      data-key={filter.props.source}
+      data-key={source}
       data-default-value={filter.props.defaultValue}
       onClick={
         filter.props.disabled ? undefined : displayed ? handleHide : handleShow
@@ -467,13 +476,13 @@ export const FilterButtonMenuItem = React.forwardRef<
       role="menuitemcheckbox"
       aria-checked={displayed}
     >
-      <div className="flex items-center justify-center w-4 h-4 mr-2">
+      <div className="mr-2 flex h-4 w-4 items-center justify-center">
         {displayed && <Check className="h-3 w-3" />}
       </div>
       <div>
         <FieldTitle
-          label={filter.props.label}
-          source={filter.props.source}
+          label={filter.props.label as React.ReactNode}
+          source={source}
           resource={resource}
         />
       </div>

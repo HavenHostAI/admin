@@ -14,6 +14,7 @@ import {
   useCallback,
   useEffect,
   type ReactElement,
+  type ChangeEvent,
 } from "react";
 
 import { FormError, FormField, FormLabel } from "@/components/admin/form";
@@ -76,7 +77,7 @@ export const SelectInput = (props: SelectInputProps) => {
   useEffect(() => {
     if (emptyValue == null) {
       throw new Error(
-        `emptyValue being set to null or undefined is not supported. Use parse to turn the empty string into null.`
+        `emptyValue being set to null or undefined is not supported. Use parse to turn the empty string into null.`,
       );
     }
   }, [emptyValue]);
@@ -99,13 +100,13 @@ export const SelectInput = (props: SelectInputProps) => {
 
   if (source === undefined) {
     throw new Error(
-      `If you're not wrapping the SelectInput inside a ReferenceInput, you must provide the source prop`
+      `If you're not wrapping the SelectInput inside a ReferenceInput, you must provide the source prop`,
     );
   }
 
   if (!isPending && !fetchError && allChoices === undefined) {
     throw new Error(
-      `If you're not wrapping the SelectInput inside a ReferenceInput, you must provide the choices prop`
+      `If you're not wrapping the SelectInput inside a ReferenceInput, you must provide the choices prop`,
     );
   }
 
@@ -146,35 +147,63 @@ export const SelectInput = (props: SelectInputProps) => {
 
   const renderMenuItemOption = useCallback(
     (choice: unknown) => getChoiceText(choice),
-    [getChoiceText]
+    [getChoiceText],
   );
 
   const handleChange = useCallback(
-    async (value: string) => {
+    (value: string) => {
       if (value === emptyValue) {
         field.onChange(emptyValue);
       } else {
         // Find the choice by value and pass it to field.onChange
         const choice = allChoices?.find(
-          (choice) => getChoiceValue(choice) === value
+          (choice) => getChoiceValue(choice) === value,
         );
         field.onChange(choice ? getChoiceValue(choice) : value);
       }
     },
-    [field, getChoiceValue, emptyValue, allChoices]
+    [field, getChoiceValue, emptyValue, allChoices],
+  );
+
+  const handleCreateSuggestionChange = useCallback(
+    (input: string | ChangeEvent<unknown> | unknown) => {
+      if (typeof input === "string") {
+        handleChange(input);
+        return;
+      }
+      if (
+        input &&
+        typeof input === "object" &&
+        "target" in input &&
+        (input as { target?: unknown }).target &&
+        typeof (input as { target?: unknown }).target === "object" &&
+        (input as { target: unknown }).target !== null &&
+        "value" in (input as { target: Record<string, unknown> }).target
+      ) {
+        const eventValue = (
+          input as {
+            target: { value?: unknown };
+          }
+        ).target.value;
+        if (typeof eventValue === "string") {
+          handleChange(eventValue);
+        }
+      }
+    },
+    [handleChange],
   );
 
   const {
     getCreateItem,
     handleChange: handleChangeWithCreateSupport,
     createElement,
-  } = useSupportCreateSuggestion({
+  } = useSupportCreateSuggestion<string>({
     create,
     createLabel,
     createValue,
     createHintValue,
     onCreate,
-    handleChange,
+    handleChange: handleCreateSuggestionChange,
     optionText,
   });
 
@@ -196,7 +225,7 @@ export const SelectInput = (props: SelectInputProps) => {
           </FormLabel>
         )}
         <div className="relative">
-          <Skeleton className="w-full h-9" />
+          <Skeleton className="h-9 w-full" />
         </div>
         <InputHelperText helperText={helperText} />
         <FormError />
@@ -245,7 +274,7 @@ export const SelectInput = (props: SelectInputProps) => {
             onValueChange={handleChangeWithCreateSupport}
           >
             <SelectTrigger
-              className={cn("w-full transition-all hover:bg-accent")}
+              className={cn("hover:bg-accent w-full transition-all")}
               disabled={field.disabled}
             >
               <SelectValue placeholder={renderEmptyItemOption()} />
@@ -253,7 +282,7 @@ export const SelectInput = (props: SelectInputProps) => {
               {field.value && field.value !== emptyValue ? (
                 <div
                   role="button"
-                  className="p-0 ml-auto pointer-events-auto hover:bg-transparent text-muted-foreground opacity-50 hover:opacity-100"
+                  className="text-muted-foreground pointer-events-auto ml-auto p-0 opacity-50 hover:bg-transparent hover:opacity-100"
                   onClick={handleReset}
                 >
                   <X className="h-4 w-4" />
@@ -275,7 +304,7 @@ export const SelectInput = (props: SelectInputProps) => {
                     {renderMenuItemOption(
                       !!createItem && choice?.id === createItem.id
                         ? createItem
-                        : choice
+                        : choice,
                     )}
                   </SelectItem>
                 );
@@ -293,7 +322,7 @@ export const SelectInput = (props: SelectInputProps) => {
 export type SelectInputProps = ChoicesProps &
   // Source is optional as SelectInput can be used inside a ReferenceInput that already defines the source
   Partial<InputProps> &
-  Omit<SupportCreateSuggestionOptions, "handleChange"> & {
+  Omit<SupportCreateSuggestionOptions<string>, "handleChange"> & {
     emptyText?: string | ReactElement;
     emptyValue?: unknown;
     onChange?: (value: string) => void;

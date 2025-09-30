@@ -68,9 +68,13 @@ export const UserCreate = () => {
 
   const handleSubmit: SubmitHandler<FieldValues> = async (values) => {
     const token =
-      typeof window !== "undefined" ? localStorage.getItem("better-auth:token") : null;
+      typeof window !== "undefined"
+        ? localStorage.getItem("better-auth:token")
+        : null;
     if (!token) {
-      notify("Your session has expired. Please sign in again.", { type: "warning" });
+      notify("Your session has expired. Please sign in again.", {
+        type: "warning",
+      });
       return;
     }
 
@@ -101,11 +105,13 @@ export const UserCreate = () => {
 
   return (
     <Create>
-      <SimpleForm
-        onSubmit={handleSubmit}
-        defaultValues={{ role: "agent" }}
-      >
-        <TextInput source="email" label="Email" type="email" validate={[required()]} />
+      <SimpleForm onSubmit={handleSubmit} defaultValues={{ role: "agent" }}>
+        <TextInput
+          source="email"
+          label="Email"
+          type="email"
+          validate={[required()]}
+        />
         <TextInput source="name" label="Name" />
         <SelectInput
           source="role"
@@ -128,10 +134,25 @@ export const UserEdit = () => (
           validate={[required()]}
         />
       </ReferenceInput>
-      <TextInput source="email" label="Email" type="email" validate={[required()]} />
+      <TextInput
+        source="email"
+        label="Email"
+        type="email"
+        validate={[required()]}
+      />
       <TextInput source="name" label="Name" />
-      <SelectInput source="role" label="Role" choices={roleChoices} validate={[required()]} />
-      <SelectInput source="status" label="Status" choices={statusChoices} validate={[required()]} />
+      <SelectInput
+        source="role"
+        label="Role"
+        choices={roleChoices}
+        validate={[required()]}
+      />
+      <SelectInput
+        source="status"
+        label="Status"
+        choices={statusChoices}
+        validate={[required()]}
+      />
       <BooleanInput source="emailVerified" label="Email Verified" />
       <NumberInput source="createdAt" label="Created At (epoch ms)" />
       <NumberInput source="updatedAt" label="Updated At (epoch ms)" />

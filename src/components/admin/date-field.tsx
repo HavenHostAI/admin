@@ -31,7 +31,7 @@ import { FieldProps } from "@/lib/field.type";
 const DateFieldImpl = <
   RecordType extends Record<string, unknown> = Record<string, unknown>,
 >(
-  inProps: DateFieldProps<RecordType>
+  inProps: DateFieldProps<RecordType>,
 ) => {
   const {
     empty,
@@ -49,7 +49,7 @@ const DateFieldImpl = <
 
   if (!showTime && !showDate) {
     throw new Error(
-      "<DateField> cannot have showTime and showDate false at the same time"
+      "<DateField> cannot have showTime and showDate false at the same time",
     );
   }
 

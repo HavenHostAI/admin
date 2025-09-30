@@ -24,6 +24,11 @@ export const EditGuesser = (props: { enableLog?: boolean }) => {
   );
 };
 
+const getStringProp = (props: Record<string, unknown>, key: string) => {
+  const value = props[key];
+  return typeof value === "string" ? value : undefined;
+};
+
 const EditViewGuesser = (props: { enableLog?: boolean }) => {
   const resource = useResourceContext();
 
@@ -45,7 +50,7 @@ const EditViewGuesser = (props: { enableLog?: boolean }) => {
       const inferredChild = new InferredElement(
         editFieldTypes.form,
         null,
-        inferredElements
+        inferredElements,
       );
       setChild(inferredChild.getElement());
 
@@ -59,9 +64,9 @@ const EditViewGuesser = (props: { enableLog?: boolean }) => {
             new Set(
               Array.from(representation.matchAll(/<([^/\s>]+)/g))
                 .map((match) => match[1])
-                .filter((component) => component !== "span")
-            )
-          )
+                .filter((component) => component !== "span"),
+            ),
+          ),
         )
         .sort();
 
@@ -72,8 +77,8 @@ ${components
   .map(
     (component) =>
       `import { ${component} } from "@/components/admin/${kebabCase(
-        component
-      )}";`
+        component,
+      )}";`,
   )
   .join("\n")}
 
@@ -81,7 +86,7 @@ export const ${capitalize(singularize(resource))}Edit = () => (
     <Edit>
 ${representation}
     </Edit>
-);`
+);`,
       );
     }
   }, [record, child, resource, enableLog]);
@@ -91,10 +96,12 @@ ${representation}
 
 const editFieldTypes: InferredTypeMap = {
   form: {
-    component: (props: Record<string, unknown>) => <SimpleForm {...props} />,
+    component: (props: Record<string, unknown>) => (
+      <SimpleForm {...(props as { children: ReactNode })} />
+    ),
     representation: (
       _props: Record<string, unknown>,
-      children: { getRepresentation: () => string }[]
+      children: { getRepresentation: () => string }[],
     ) => `        <SimpleForm>
 ${children
   .map((child) => `            ${child.getRepresentation()}`)
@@ -102,32 +109,76 @@ ${children
         </SimpleForm>`,
   },
   reference: {
-    component: (props: Record<string, unknown>) => (
-      <ReferenceInput source={props.source} reference={props.reference}>
-        <AutocompleteInput />
-      </ReferenceInput>
-    ),
-    representation: (props: Record<string, unknown>) =>
-      `<ReferenceInput source="${props.source}" reference="${props.reference}">
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      const reference = getStringProp(props, "reference");
+      if (!source || !reference) {
+        return null;
+      }
+      return (
+        <ReferenceInput source={source} reference={reference}>
+          <AutocompleteInput />
+        </ReferenceInput>
+      );
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      const reference = getStringProp(props, "reference") ?? "";
+      return `<ReferenceInput source="${source}" reference="${reference}">
                   <AutocompleteInput />
-              </ReferenceInput>`,
+              </ReferenceInput>`;
+    },
   },
   referenceArray: {
-    component: (props: Record<string, unknown>) => (
-      <ReferenceArrayInput {...props} />
-    ),
-    representation: (props: Record<string, unknown>) =>
-      `<ReferenceArrayInput source="${props.source}" reference="${props.reference}" />`,
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      const reference = getStringProp(props, "reference");
+      if (!source || !reference) {
+        return null;
+      }
+      return (
+        <ReferenceArrayInput
+          {...(props as Record<string, unknown>)}
+          source={source}
+          reference={reference}
+        />
+      );
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      const reference = getStringProp(props, "reference") ?? "";
+      return `<ReferenceArrayInput source="${source}" reference="${reference}" />`;
+    },
   },
   boolean: {
-    component: (props: Record<string, unknown>) => <BooleanInput {...props} />,
-    representation: (props: Record<string, unknown>) =>
-      `<BooleanInput source="${props.source}" />`,
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      if (!source) {
+        return null;
+      }
+      return (
+        <BooleanInput {...(props as Record<string, unknown>)} source={source} />
+      );
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      return `<BooleanInput source="${source}" />`;
+    },
   },
   string: {
-    component: (props: Record<string, unknown>) => <TextInput {...props} />,
-    representation: (props: Record<string, unknown>) =>
-      `<TextInput source="${props.source}" />`,
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      if (!source) {
+        return null;
+      }
+      return (
+        <TextInput {...(props as Record<string, unknown>)} source={source} />
+      );
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      return `<TextInput source="${source}" />`;
+    },
   },
 };
 

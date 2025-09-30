@@ -49,7 +49,7 @@ const ensureAdapterId = (value: unknown) =>
 
 export const convertToStorage = (
   model: string,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): Record<string, unknown> => {
   const dateFields = DATE_FIELDS[model] ?? new Set<string>();
   const result: Record<string, unknown> = {};
@@ -82,7 +82,7 @@ export const convertToStorage = (
 
 export const convertFromStorage = (
   model: string,
-  doc: Record<string, unknown>
+  doc: Record<string, unknown>,
 ): Record<string, unknown> => {
   const dateFields = DATE_FIELDS[model] ?? new Set<string>();
   const result: Record<string, unknown> = {};
@@ -108,7 +108,7 @@ const normalizeWhereValue = (value: Where["value"]) => {
 const compare = (
   fieldValue: unknown,
   operator: NonNullable<Where["operator"]> | "eq",
-  compareValue: unknown
+  compareValue: unknown,
 ) => {
   switch (operator) {
     case "eq":
@@ -174,7 +174,7 @@ const compare = (
 const matchesWhere = (
   model: string,
   doc: Record<string, unknown>,
-  where: Where[] = []
+  where: Where[] = [],
 ) => {
   if (!where?.length) return true;
   const normalizedDoc = convertFromStorage(model, doc);
@@ -187,7 +187,7 @@ const matchesWhere = (
     const candidate = compare(
       value instanceof Date ? value.valueOf() : value,
       op,
-      targetValue instanceof Date ? targetValue.valueOf() : targetValue
+      targetValue instanceof Date ? targetValue.valueOf() : targetValue,
     );
     if (connector === "AND") {
       accumulator = accumulator && candidate;
@@ -202,7 +202,7 @@ const matchesWhere = (
 const sortDocuments = (
   model: string,
   docs: StoredDoc[],
-  sortBy?: { field: string; direction: "asc" | "desc" }
+  sortBy?: { field: string; direction: "asc" | "desc" },
 ) => {
   if (!sortBy) return docs;
   const { field, direction } = sortBy;
@@ -230,7 +230,7 @@ const filterDocs = (model: string, docs: StoredDoc[], where?: Where[]) => {
 
 const applyUpdate = (
   doc: StoredDoc,
-  update: Partial<StoredDoc>
+  update: Partial<StoredDoc>,
 ): StoredDoc => ({
   ...doc,
   ...update,
@@ -252,7 +252,7 @@ export const createConvexAdapter = (ctx: ActionCtx): Adapter => {
   const patchDoc = async (
     table: string,
     docId: string,
-    patch: Record<string, unknown>
+    patch: Record<string, unknown>,
   ) =>
     (await ctx.runMutation(internal.authStore.patch, {
       table,
@@ -311,7 +311,7 @@ export const createConvexAdapter = (ctx: ActionCtx): Adapter => {
       if (!matches.length) return null;
       const storageUpdate = convertToStorage(
         table,
-        update as Record<string, unknown>
+        update as Record<string, unknown>,
       );
       delete (storageUpdate as Record<string, unknown>).id;
       let updatedDoc: Record<string, unknown> | null = null;
@@ -333,7 +333,7 @@ export const createConvexAdapter = (ctx: ActionCtx): Adapter => {
       if (!matches.length) return 0;
       const storageUpdate = convertToStorage(
         table,
-        update as Record<string, unknown>
+        update as Record<string, unknown>,
       );
       delete (storageUpdate as Record<string, unknown>).id;
       for (const doc of matches) {

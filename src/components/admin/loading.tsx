@@ -10,10 +10,10 @@ export const Loading = (props: LoadingProps) => {
   } = props;
   const oneSecondHasPassed = useTimeout(delay);
   return oneSecondHasPassed ? (
-    <div className="flex flex-col justify-center items-center h-full" {...rest}>
-      <div className="text-center font-sans color-muted pt-1 pb-1">
+    <div className="flex h-full flex-col items-center justify-center" {...rest}>
+      <div className="color-muted pt-1 pb-1 text-center font-sans">
         <Spinner size="large" className="width-9 height-9" />
-        <h5 className="mt-3 text-2xl text-secondary-foreground">
+        <h5 className="text-secondary-foreground mt-3 text-2xl">
           <Translate i18nKey={loadingPrimary}>{loadingPrimary}</Translate>
         </h5>
         <p className="text-primary">

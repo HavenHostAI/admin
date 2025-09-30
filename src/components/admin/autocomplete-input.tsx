@@ -52,7 +52,7 @@ export const AutocompleteInput = (
       inputText?:
         | React.ReactNode
         | ((option: unknown | undefined) => React.ReactNode);
-    }
+    },
 ) => {
   const {
     filterToQuery = DefaultFilterToQuery,
@@ -90,7 +90,7 @@ export const AutocompleteInput = (
 
   const [open, setOpen] = React.useState(false);
   const selectedChoice = allChoices.find(
-    (choice) => getChoiceValue(choice) === field.value
+    (choice) => getChoiceValue(choice) === field.value,
   );
 
   const getInputText = useCallback(
@@ -103,7 +103,7 @@ export const AutocompleteInput = (
       }
       return getChoiceText(selectedChoice);
     },
-    [inputText, getChoiceText]
+    [inputText, getChoiceText],
   );
 
   const handleOpenChange = useEvent((isOpen: boolean) => {
@@ -140,7 +140,7 @@ export const AutocompleteInput = (
       setFilters,
       filterToQuery,
       setOpen,
-    ]
+    ],
   );
 
   const {
@@ -189,7 +189,7 @@ export const AutocompleteInput = (
                 variant="outline"
                 role="combobox"
                 aria-expanded={open}
-                className="w-full justify-between h-auto py-1.75 font-normal"
+                className="h-auto w-full justify-between py-1.75 font-normal"
               >
                 {selectedChoice ? (
                   getInputText(selectedChoice)
@@ -241,7 +241,7 @@ export const AutocompleteInput = (
                               "mr-2 h-4 w-4",
                               field.value === getChoiceValue(choice)
                                 ? "opacity-100"
-                                : "opacity-0"
+                                : "opacity-0",
                             )}
                           />
                           {getChoiceText(isCreateItem ? createItem : choice)}

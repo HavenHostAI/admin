@@ -19,11 +19,14 @@ describe("authProvider", () => {
     const user = { id: "user_1", email, role: "admin" };
 
     server.use(
-      rest.post("http://test.convex/actions/auth/signIn", async (req, res, ctx) => {
-        const body = await req.json();
-        expect(body).toEqual({ email, password });
-        return res(ctx.json({ token: "session-token", user }));
-      }),
+      rest.post(
+        "http://test.convex/actions/auth/signIn",
+        async (req, res, ctx) => {
+          const body = await req.json();
+          expect(body).toEqual({ email, password });
+          return res(ctx.json({ token: "session-token", user }));
+        },
+      ),
     );
 
     await authProvider.login({ email, password });
@@ -37,12 +40,15 @@ describe("authProvider", () => {
     localStorage.setItem(USER_KEY, JSON.stringify({ id: "user_1" }));
 
     server.use(
-      rest.post("http://test.convex/actions/auth/validateSession", (_req, res, ctx) =>
-        res(ctx.json(null)),
+      rest.post(
+        "http://test.convex/actions/auth/validateSession",
+        (_req, res, ctx) => res(ctx.json(null)),
       ),
     );
 
-    await expect(authProvider.checkAuth()).rejects.toThrowError("Session expired");
+    await expect(authProvider.checkAuth({})).rejects.toThrowError(
+      "Session expired",
+    );
 
     expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
     expect(localStorage.getItem(USER_KEY)).toBeNull();

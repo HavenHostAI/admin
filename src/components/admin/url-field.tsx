@@ -8,7 +8,7 @@ import { FieldProps } from "@/lib/field.type";
 const UrlFieldImpl = <
   RecordType extends Record<string, unknown> = Record<string, unknown>,
 >(
-  inProps: UrlFieldProps<RecordType>
+  inProps: UrlFieldProps<RecordType>,
 ) => {
   const {
     empty,

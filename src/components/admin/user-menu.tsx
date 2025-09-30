@@ -45,7 +45,7 @@ export function UserMenu({ children }: UserMenuProps) {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="relative h-8 w-8 ml-2 rounded-full"
+            className="relative ml-2 h-8 w-8 rounded-full"
           >
             <Avatar className="h-8 w-8">
               <AvatarImage src={identity?.avatar} role="presentation" />
@@ -56,7 +56,7 @@ export function UserMenu({ children }: UserMenuProps) {
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">
+              <p className="text-sm leading-none font-medium">
                 {identity?.fullName}
               </p>
             </div>

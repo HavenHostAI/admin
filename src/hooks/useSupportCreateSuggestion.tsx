@@ -32,8 +32,40 @@ import set from "lodash/set";
  * - createElement: a React element to render after the input. It will be rendered when users choose to create a new choice. It renders null otherwise.
  * - getOptionDisabled: a function which should be passed to the input to disable the create choice when the filter is empty (to make it a hint).
  */
+type EventLike = { target?: { value?: unknown } | null };
+
+const isEventLike = (value: unknown): value is EventLike =>
+  typeof value === "object" &&
+  value !== null &&
+  "target" in value &&
+  typeof (value as { target?: unknown }).target === "object";
+
+const extractValueFromEvent = (value: unknown): unknown => {
+  if (isEventLike(value)) {
+    const target = value.target;
+    if (target && typeof target === "object" && "value" in target) {
+      return (target as { value?: unknown }).value;
+    }
+  }
+  return undefined;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const isCreateTriggerValue = (value: unknown, createValue: string) => {
+  if (value === createValue) {
+    return true;
+  }
+  if (isRecord(value)) {
+    const id = value.id;
+    return typeof id === "string" && id === createValue;
+  }
+  return false;
+};
+
 export const useSupportCreateSuggestion = <T = unknown,>(
-  options: SupportCreateSuggestionOptions<T>
+  options: SupportCreateSuggestionOptions<T>,
 ): UseSupportCreateValue<T> => {
   const {
     create,
@@ -71,20 +103,23 @@ export const useSupportCreateSuggestion = <T = unknown,>(
             : createItemLabel(filter)
           : typeof createLabel === "string"
             ? translate(createLabel, { _: createLabel })
-            : createLabel
+            : createLabel,
       );
     },
-    handleChange: async (eventOrValue: MouseEvent | unknown) => {
-      const value = eventOrValue?.target?.value || eventOrValue;
-      const finalValue = Array.isArray(value) ? [...value].pop() : value;
+    handleChange: async (
+      eventOrValue: ChangeEvent<unknown> | T | EventLike,
+    ) => {
+      const eventValue = extractValueFromEvent(eventOrValue);
+      const value = eventValue ?? eventOrValue;
+      const finalValue = Array.isArray(value) ? value[value.length - 1] : value;
 
-      if (finalValue?.id === createValue || finalValue === createValue) {
+      if (isCreateTriggerValue(finalValue, createValue)) {
         if (!isValidElement(create)) {
           if (!onCreate) {
             // this should never happen because the createValue is only added if a create function is provided
             // @see AutocompleteInput:filterOptions
             throw new Error(
-              "To create a new option, you must pass an onCreate function or a create element."
+              "To create a new option, you must pass an onCreate function or a create element.",
             );
           }
           const newSuggestion = await onCreate(filter);
@@ -102,14 +137,16 @@ export const useSupportCreateSuggestion = <T = unknown,>(
     createElement:
       renderOnCreate && isValidElement(create) ? (
         <CreateSuggestionContext.Provider
-          value={{
-            filter: filterRef.current,
-            onCancel: () => setRenderOnCreate(false),
-            onCreate: (item) => {
-              setRenderOnCreate(false);
-              handleChange(item as T);
-            },
-          }}
+          value={
+            {
+              filter: filterRef.current,
+              onCancel: () => setRenderOnCreate(false),
+              onCreate: (item) => {
+                setRenderOnCreate(false);
+                handleChange(item as T);
+              },
+            } satisfies CreateSuggestionContextValue<unknown>
+          }
         >
           {create}
         </CreateSuggestionContext.Provider>
@@ -130,8 +167,8 @@ export interface SupportCreateSuggestionOptions<T = unknown> {
   createLabel?: React.ReactNode;
   createItemLabel?: string | ((filter: string) => React.ReactNode);
   filter?: string;
-  handleChange: (value: T) => void;
-  onCreate?: OnCreateHandler;
+  handleChange: (value: T | ChangeEvent<unknown> | EventLike) => void;
+  onCreate?: OnCreateHandler<T>;
   optionText?: OptionText;
 }
 
@@ -145,7 +182,9 @@ export interface UseSupportCreateValue<T = unknown> {
     id: Identifier;
     [key: string]: unknown;
   };
-  handleChange: (eventOrValue: ChangeEvent | T) => Promise<void>;
+  handleChange: (
+    eventOrValue: ChangeEvent<unknown> | T | EventLike,
+  ) => Promise<void>;
   createElement: ReactElement | null;
   getOptionDisabled: (option: T) => boolean;
 }
@@ -154,7 +193,7 @@ export interface UseSupportCreateValue<T = unknown> {
  * @deprecated Use `CreateSuggestionContext` from "ra-core" when available.
  */
 const CreateSuggestionContext = createContext<
-  CreateSuggestionContextValue | undefined
+  CreateSuggestionContextValue<unknown> | undefined
 >(undefined);
 
 /**
@@ -173,7 +212,7 @@ export const useCreateSuggestionContext = () => {
   const context = useContext(CreateSuggestionContext);
   if (!context) {
     throw new Error(
-      "useCreateSuggestionContext must be used inside a CreateSuggestionContext.Provider"
+      "useCreateSuggestionContext must be used inside a CreateSuggestionContext.Provider",
     );
   }
   return context;
@@ -182,4 +221,6 @@ export const useCreateSuggestionContext = () => {
 /**
  * @deprecated Use `OnCreateHandler` from "ra-core" when available.
  */
-export type OnCreateHandler = (filter?: string) => unknown | Promise<unknown>;
+export type OnCreateHandler<T = unknown> = (
+  filter?: string,
+) => T | null | undefined | Promise<T | null | undefined>;

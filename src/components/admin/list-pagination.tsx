@@ -49,7 +49,7 @@ export const ListPagination = ({
   const startPages = range(1, Math.min(boundaryCount, count));
   const endPages = range(
     Math.max(count - boundaryCount + 1, boundaryCount + 1),
-    count
+    count,
   );
 
   const siblingsStart = Math.max(
@@ -57,10 +57,10 @@ export const ListPagination = ({
       // Natural start
       page - siblingCount,
       // Lower boundary when page is high
-      count - boundaryCount - siblingCount * 2 - 1
+      count - boundaryCount - siblingCount * 2 - 1,
     ),
     // Greater than startPages
-    boundaryCount + 2
+    boundaryCount + 2,
   );
 
   const siblingsEnd = Math.min(
@@ -68,10 +68,10 @@ export const ListPagination = ({
       // Natural end
       page + siblingCount,
       // Upper boundary when page is low
-      boundaryCount + siblingCount * 2 + 2
+      boundaryCount + siblingCount * 2 + 2,
     ),
     // Less than endPages
-    count - boundaryCount - 1
+    count - boundaryCount - 1,
   );
 
   const siblingPages = range(siblingsStart, siblingsEnd);
@@ -85,9 +85,9 @@ export const ListPagination = ({
 
   return (
     <div
-      className={`flex items-center justify-end space-x-2 gap-4 ${className}`}
+      className={`flex items-center justify-end gap-4 space-x-2 ${className}`}
     >
-      <div className="hidden md:flex items-center space-x-2">
+      <div className="hidden items-center space-x-2 md:flex">
         <p className="text-sm font-medium">
           <Translate i18nKey="ra.navigation.page_rows_per_page">
             Rows per page
@@ -111,7 +111,7 @@ export const ListPagination = ({
           </SelectContent>
         </Select>
       </div>
-      <div className="text-sm text-muted-foreground">
+      <div className="text-muted-foreground text-sm">
         <Translate
           i18nKey="ra.navigation.page_range_info"
           options={{
@@ -133,7 +133,7 @@ export const ListPagination = ({
               onClick={pageChangeHandler(page - 1)}
               className={cn(
                 "gap-1 px-2.5 sm:pr-2.5",
-                !hasPreviousPage ? "opacity-50 cursor-not-allowed" : ""
+                !hasPreviousPage ? "cursor-not-allowed opacity-50" : "",
               )}
               aria-label={translate("ra.navigation.previous", {
                 _: "Previous",
@@ -212,7 +212,7 @@ export const ListPagination = ({
               size="default"
               className={cn(
                 "gap-1 px-2.5 sm:pr-2.5",
-                !hasNextPage ? "opacity-50 cursor-not-allowed" : ""
+                !hasNextPage ? "cursor-not-allowed opacity-50" : "",
               )}
               aria-label={translate("ra.navigation.next", { _: "Next" })}
             >

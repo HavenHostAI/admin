@@ -96,7 +96,7 @@ export const RadioButtonGroupInput = (inProps: RadioButtonGroupInputProps) => {
   });
 
   if (isPending) {
-    return <Skeleton className="w-full h-9" />;
+    return <Skeleton className="h-9 w-full" />;
   }
 
   return (
@@ -134,8 +134,8 @@ export const RadioButtonGroupInput = (inProps: RadioButtonGroupInputProps) => {
                 <Label
                   htmlFor={`${id}-${value}`}
                   className={cn(
-                    "text-sm font-normal cursor-pointer",
-                    isDisabled && "opacity-50 cursor-not-allowed",
+                    "cursor-pointer text-sm font-normal",
+                    isDisabled && "cursor-not-allowed opacity-50",
                   )}
                 >
                   {getChoiceText(choice)}

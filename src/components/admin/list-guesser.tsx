@@ -20,7 +20,7 @@ import { SingleFieldList } from "@/components/admin/single-field-list";
 import { ReferenceArrayField } from "@/components/admin/reference-array-field";
 
 export const ListGuesser = <RecordType extends RaRecord = RaRecord>(
-  props: Omit<ListProps, "children"> & { enableLog?: boolean }
+  props: Omit<ListProps, "children"> & { enableLog?: boolean },
 ) => {
   const {
     debounce,
@@ -64,7 +64,7 @@ export const ListGuesser = <RecordType extends RaRecord = RaRecord>(
 };
 
 const ListViewGuesser = (
-  props: Omit<ListViewProps, "children"> & { enableLog?: boolean }
+  props: Omit<ListViewProps, "children"> & { enableLog?: boolean },
 ) => {
   const { data } = useListContext();
   const resource = useResourceContext();
@@ -81,13 +81,13 @@ const ListViewGuesser = (
       const inferredChild = new InferredElement(
         listFieldTypes.table,
         null,
-        inferredElements
+        inferredElements,
       );
       const inferredChildElement = inferredChild.getElement();
       const representation = inferredChild.getRepresentation();
       if (!resource) {
         throw new Error(
-          "Cannot use <ListGuesser> outside of a ResourceContext"
+          "Cannot use <ListGuesser> outside of a ResourceContext",
         );
       }
       if (!inferredChildElement || !representation) {
@@ -102,9 +102,9 @@ const ListViewGuesser = (
             new Set(
               Array.from(representation.matchAll(/<([^/\s\\.>]+)/g))
                 .map((match) => match[1])
-                .filter((component) => component !== "span")
-            )
-          )
+                .filter((component) => component !== "span"),
+            ),
+          ),
         )
         .sort();
 
@@ -116,8 +116,8 @@ ${components
   .map(
     (component) =>
       `import { ${component} } from "@/components/admin/${kebabCase(
-        component
-      )}";`
+        component,
+      )}";`,
   )
   .join("\n")}
 
@@ -125,7 +125,7 @@ export const ${capitalize(singularize(resource))}List = () => (
     <List>
 ${inferredChild.getRepresentation()}
     </List>
-);`
+);`,
         );
       }
     }
@@ -134,14 +134,33 @@ ${inferredChild.getRepresentation()}
   return <ListView {...rest}>{child}</ListView>;
 };
 
+const getStringProp = (props: Record<string, unknown>, key: string) => {
+  const value = props[key];
+  return typeof value === "string" ? value : undefined;
+};
+
 const listFieldTypes = {
   table: {
     component: (props: Record<string, unknown>) => {
-      return <DataTable {...props} />;
+      const {
+        children,
+        source: _unusedSource,
+        reference: _unusedReference,
+        ...rest
+      } = props as {
+        children?: React.ReactNode;
+        source?: unknown;
+        reference?: unknown;
+      };
+      return (
+        <DataTable {...(rest as Record<string, unknown>)}>
+          {children as React.ReactNode}
+        </DataTable>
+      );
     },
     representation: (
       _props: Record<string, unknown>,
-      children: { getRepresentation: () => string }[]
+      children: { getRepresentation: () => string }[],
     ) =>
       `        <DataTable>
 ${children
@@ -151,64 +170,124 @@ ${children
   },
 
   reference: {
-    component: (props: Record<string, unknown>) => (
-      <DataTable.Col source={props.source}>
-        <ReferenceField source={props.source} reference={props.reference} />
-      </DataTable.Col>
-    ),
-    representation: (props: Record<string, unknown>) =>
-      `<DataTable.Col source="${props.source}">
-                <ReferenceField source="${props.source}" reference="${props.reference}" />
-            </DataTable.Col>`,
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      const reference = getStringProp(props, "reference");
+      if (!source || !reference) {
+        return null;
+      }
+      return (
+        <DataTable.Col source={source}>
+          <ReferenceField source={source} reference={reference} />
+        </DataTable.Col>
+      );
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      const reference = getStringProp(props, "reference") ?? "";
+      return `<DataTable.Col source="${source}">
+                <ReferenceField source="${source}" reference="${reference}" />
+            </DataTable.Col>`;
+    },
   },
   array: {
-    component: ({
-      children,
-      ...props
-    }: Record<string, unknown> & { children: React.ReactNode }) => {
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      if (!source) {
+        return null;
+      }
+      const children = props.children as React.ReactNode;
       const childrenArray = React.Children.toArray(children);
+      const badgeSource =
+        childrenArray.length > 0 &&
+        React.isValidElement(childrenArray[0]) &&
+        typeof (childrenArray[0].props as Record<string, unknown>).source ===
+          "string"
+          ? ((childrenArray[0].props as Record<string, unknown>)
+              .source as string)
+          : undefined;
       return (
-        <DataTable.Col source={props.source}>
-          <ArrayField source={props.source}>
+        <DataTable.Col source={source}>
+          <ArrayField source={source}>
             <SingleFieldList>
-              <BadgeField
-                source={
-                  childrenArray.length > 0 &&
-                  React.isValidElement(childrenArray[0]) &&
-                  (childrenArray[0].props as Record<string, unknown>).source
-                }
-              />
+              {badgeSource ? <BadgeField source={badgeSource} /> : null}
             </SingleFieldList>
           </ArrayField>
         </DataTable.Col>
       );
     },
-    representation: (props: Record<string, unknown>, children: unknown[]) =>
-      `<DataTable.Col source="${props.source}">
-               <ArrayField source="${props.source}">
+    representation: (props: Record<string, unknown>, children: unknown[]) => {
+      const source = getStringProp(props, "source") ?? "";
+      const badgeSource = (() => {
+        if (children.length === 0) {
+          return "";
+        }
+        const firstChild = children[0];
+        if (
+          firstChild &&
+          typeof firstChild === "object" &&
+          firstChild !== null &&
+          "getProps" in firstChild &&
+          typeof (firstChild as { getProps?: unknown }).getProps === "function"
+        ) {
+          const childProps = (
+            firstChild as {
+              getProps: () => Record<string, unknown>;
+            }
+          ).getProps();
+          return getStringProp(childProps, "source") ?? "";
+        }
+        return "";
+      })();
+      return `<DataTable.Col source="${source}">
+               <ArrayField source="${source}">
                     <SingleFieldList>
-                        <BadgeField source="${
-                          children.length > 0 && children[0].getProps().source
-                        }" />
+                        <BadgeField source="${badgeSource}" />
                    </SingleFieldList>
                 </ArrayField>
-            </DataTable.Col>`,
+            </DataTable.Col>`;
+    },
   },
   referenceArray: {
-    component: (props: Record<string, unknown>) => (
-      <DataTable.Col {...props}>
-        <ReferenceArrayField {...props} />
-      </DataTable.Col>
-    ),
-    representation: (props: Record<string, unknown>) =>
-      `<DataTable.Col source="${props.source}">
-                <ReferenceArrayField source="${props.source}" reference="${props.reference}" />
-            </DataTable.Col>`,
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      const reference = getStringProp(props, "reference");
+      if (!source || !reference) {
+        return null;
+      }
+      const { children, ...rest } = props as { children?: React.ReactNode };
+      return (
+        <DataTable.Col {...(rest as Record<string, unknown>)} source={source}>
+          <ReferenceArrayField
+            {...(rest as Record<string, unknown>)}
+            source={source}
+            reference={reference}
+          >
+            {children as React.ReactNode}
+          </ReferenceArrayField>
+        </DataTable.Col>
+      );
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      const reference = getStringProp(props, "reference") ?? "";
+      return `<DataTable.Col source="${source}">
+                <ReferenceArrayField source="${source}" reference="${reference}" />
+            </DataTable.Col>`;
+    },
   },
   string: {
-    component: DataTable.Col,
-    representation: (props: Record<string, unknown>) =>
-      `<DataTable.Col source="${props.source}" />`,
+    component: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source");
+      if (!source) {
+        return null;
+      }
+      return <DataTable.Col source={source} />;
+    },
+    representation: (props: Record<string, unknown>) => {
+      const source = getStringProp(props, "source") ?? "";
+      return `<DataTable.Col source="${source}" />`;
+    },
   },
 };
 

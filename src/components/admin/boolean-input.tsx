@@ -2,6 +2,7 @@ import React, { useCallback } from "react";
 import { Switch } from "@/components/ui/switch";
 import { FormError, FormField, FormLabel } from "@/components/admin/form";
 import { useInput, FieldTitle } from "ra-core";
+import type { Validator } from "ra-core";
 import { InputHelperText } from "./input-helper-text";
 
 export const BooleanInput = (props: BooleanInputProps) => {
@@ -43,7 +44,7 @@ export const BooleanInput = (props: BooleanInputProps) => {
       // Ensure field is considered as touched
       field.onBlur();
     },
-    [field]
+    [field],
   );
 
   return (
@@ -84,5 +85,5 @@ export interface BooleanInputProps {
   parse?: (value: unknown) => unknown;
   resource?: string;
   source: string;
-  validate?: unknown;
+  validate?: Validator | Validator[];
 }
