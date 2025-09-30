@@ -20,6 +20,19 @@ description: Always follow test-driven development practices
 - Only then proceed to refactor or extend the code, keeping the test suite green at each step.
 - Prefer unit or integration tests that align with the project's existing testing stack (Vitest for unit, Playwright for e2e) unless the user specifies otherwise.
 
+## husky-precommit.mdc
+
+---
+
+alwaysApply: true
+description: Ensure Husky pre-commit checks pass before completing tasks
+
+---
+
+# Husky Pre-commit Checks
+
+- All Husky pre-commit checks must pass before a task can be deemed complete.
+
 ## context7.mdc
 
 ---
