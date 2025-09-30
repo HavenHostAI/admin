@@ -7,6 +7,7 @@ import { betterAuth } from "better-auth";
 import type { ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { createConvexAdapter, convertFromStorage } from "./_lib/authAdapter";
+import { removeInvitationPlaceholder } from "./authHelpers";
 import type { Doc, Id } from "./_generated/dataModel";
 
 const DEFAULT_BASE_URL =
@@ -215,6 +216,10 @@ export const signUp = action({
       )) as Doc<"companies">;
       companyId = companyDoc._id;
       roleForUser = "owner";
+    }
+
+    if (args.invitationToken) {
+      await removeInvitationPlaceholder(ctx, emailLower, companyId);
     }
 
     const result = (await auth.api.signUpEmail({
