@@ -53,7 +53,7 @@ const decodeConvexRequest = (route: Route) => {
 
 const setupConvexMocks = async (
   page: Page,
-  options: { user?: Partial<AuthUser> } = {}
+  options: { user?: Partial<AuthUser> } = {},
 ): Promise<ConvexMocks> => {
   const signUpCalls: ConvexCall[] = [];
   const signInCalls: ConvexCall[] = [];
@@ -70,7 +70,7 @@ const setupConvexMocks = async (
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ ts: Date.now().toString() }),
-    })
+    }),
   );
 
   const handleQuery = (route: Route) => {
@@ -125,7 +125,7 @@ const setupConvexMocks = async (
           createdAt: now.toISOString(),
           updatedAt: now.toISOString(),
           expiresAt: new Date(
-            now.getTime() + 24 * 60 * 60 * 1000
+            now.getTime() + 24 * 60 * 60 * 1000,
           ).toISOString(),
         },
         user: currentUser,
@@ -154,7 +154,7 @@ test.describe("Authentication flows", () => {
     await expect(openSignUp).toBeVisible();
     await openSignUp.click();
     await expect(
-      page.getByRole("heading", { level: 1, name: /create an account/i })
+      page.getByRole("heading", { level: 1, name: /create an account/i }),
     ).toBeVisible();
 
     const nameField = page.getByPlaceholder("Jane Doe");
@@ -166,12 +166,12 @@ test.describe("Authentication flows", () => {
     await page.getByRole("button", { name: "Create account" }).click();
 
     await expect(
-      page.getByRole("heading", { level: 2, name: /companies/i })
+      page.getByRole("heading", { level: 2, name: /companies/i }),
     ).toBeVisible();
 
     await expect
       .poll(() =>
-        page.evaluate(() => window.localStorage.getItem("better-auth:token"))
+        page.evaluate(() => window.localStorage.getItem("better-auth:token")),
       )
       .toBe("test-session-token");
 
@@ -204,12 +204,12 @@ test.describe("Authentication flows", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await expect(
-      page.getByRole("heading", { level: 2, name: /companies/i })
+      page.getByRole("heading", { level: 2, name: /companies/i }),
     ).toBeVisible();
 
     await expect
       .poll(() =>
-        page.evaluate(() => window.localStorage.getItem("better-auth:token"))
+        page.evaluate(() => window.localStorage.getItem("better-auth:token")),
       )
       .toBe("test-session-token");
 

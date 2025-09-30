@@ -354,6 +354,5 @@ export default defineSchema({
     expiresAt: v.number(),
     createdAt: v.number(),
     updatedAt: v.number(),
-  })
-    .index("by_identifier", ["identifier"]),
+  }).index("by_identifier", ["identifier"]),
 });

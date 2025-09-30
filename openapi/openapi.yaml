@@ -1,0 +1,1716 @@
+openapi: 3.0.3
+info:
+  title: HavenHost Admin API
+  version: 1.0.0
+  description: |
+    API surface that powers the HavenHost admin UI. The server is implemented on
+    top of Convex actions and queries and allows authenticated operators to
+    administer cross-company resources such as users, properties, and
+    operational records. Authentication, invitation flows, and all generic
+    table operations exposed to the admin UI are captured here.
+  contact:
+    name: HavenHost Platform Team
+    email: api@havenhost.dev
+servers:
+  - url: https://{deployment}.convex.cloud
+    description: Convex deployment hosting the admin API.
+    variables:
+      deployment:
+        default: havenhost-admin
+        description: Convex deployment subdomain (without protocol).
+tags:
+  - name: Auth
+    description: Authentication and session lifecycle actions.
+  - name: Company
+    description: Company invitation and enrollment flows.
+  - name: Admin
+    description: Generic data access helpers that wrap Convex tables.
+paths:
+  /auth/sign-in:
+    post:
+      tags:
+        - Auth
+      summary: Sign in with email and password.
+      description: |
+        Wraps the `auth.signIn` Convex action. Returns an opaque session token
+        alongside the serialized user document on success.
+      operationId: authSignIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInRequest'
+      responses:
+        '200':
+          description: Authentication succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionWithUser'
+        '400':
+          description: Authentication failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/sign-up:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user via email and password.
+      description: |
+        Wraps the `auth.signUp` Convex action. Creates a new user, optionally
+        seeding a company and applying invitation metadata.
+      operationId: authSignUp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+      responses:
+        '200':
+          description: Account created and signed in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionWithUser'
+        '400':
+          description: Input validation failure or invitation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/validate-session:
+    post:
+      tags:
+        - Auth
+      summary: Validate an existing session token.
+      description: Returns session metadata together with the associated user when the token is active.
+      operationId: authValidateSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateSessionRequest'
+      responses:
+        '200':
+          description: Session information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionValidation'
+        '401':
+          description: Token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/sign-out:
+    post:
+      tags:
+        - Auth
+      summary: Revoke an existing session token.
+      description: Removes the session that matches the provided token.
+      operationId: authSignOut
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignOutRequest'
+      responses:
+        '204':
+          description: Session revoked or nothing to revoke.
+        '400':
+          description: Invalid request payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /companies/invitations:
+    post:
+      tags:
+        - Company
+      summary: Send a company invitation email.
+      description: |
+        Wraps the `company.inviteUser` Convex action. Requires an active owner
+        session token. Creates or updates an invitation and dispatches email via
+        SendGrid when credentials are configured.
+      operationId: companyInviteUser
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteUserRequest'
+      responses:
+        '200':
+          description: Invitation created or refreshed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteUserResponse'
+        '400':
+          description: Validation or business rule failure.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Session token is not valid for inviting users.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/list:
+    post:
+      tags:
+        - Admin
+      summary: Query a paginated list of documents from a table.
+      description: Executes the generic `admin.list` query.
+      operationId: adminList
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListRequest'
+      responses:
+        '200':
+          description: Matching documents.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+        '400':
+          description: Invalid table or filter arguments.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/get:
+    post:
+      tags:
+        - Admin
+      summary: Fetch a single document by id.
+      description: Executes the generic `admin.get` query.
+      operationId: adminGet
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetRequest'
+      responses:
+        '200':
+          description: Matching document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          description: Invalid table or identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Document not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/getMany:
+    post:
+      tags:
+        - Admin
+      summary: Fetch multiple documents by id.
+      description: Executes the generic `admin.getMany` query.
+      operationId: adminGetMany
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetManyRequest'
+      responses:
+        '200':
+          description: Matching documents.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetManyResponse'
+        '400':
+          description: Invalid table or identifiers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/getManyReference:
+    post:
+      tags:
+        - Admin
+      summary: List documents referencing another resource.
+      description: Executes the `admin.getManyReference` query used for reference inputs.
+      operationId: adminGetManyReference
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetManyReferenceRequest'
+      responses:
+        '200':
+          description: Matching documents.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+        '400':
+          description: Invalid reference or table arguments.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/create:
+    post:
+      tags:
+        - Admin
+      summary: Insert a new document into a table.
+      description: Executes the generic `admin.create` mutation.
+      operationId: adminCreate
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MutateRequest'
+      responses:
+        '200':
+          description: Newly inserted document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          description: Invalid table or payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/update:
+    post:
+      tags:
+        - Admin
+      summary: Update an existing document.
+      description: Executes the generic `admin.update` mutation.
+      operationId: adminUpdate
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRequest'
+      responses:
+        '200':
+          description: Updated document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          description: Invalid table, identifier, or payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/updateMany:
+    post:
+      tags:
+        - Admin
+      summary: Apply the same update to multiple documents.
+      description: Executes the `admin.updateMany` mutation.
+      operationId: adminUpdateMany
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateManyRequest'
+      responses:
+        '200':
+          description: List of ids that were updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkIdsResponse'
+        '400':
+          description: Invalid table, identifiers, or payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/delete:
+    post:
+      tags:
+        - Admin
+      summary: Delete a single document by id.
+      description: Executes the generic `admin.del` mutation.
+      operationId: adminDelete
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteRequest'
+      responses:
+        '200':
+          description: Deleted document as it existed prior to removal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          description: Invalid table or identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/deleteMany:
+    post:
+      tags:
+        - Admin
+      summary: Delete multiple documents by id.
+      description: Executes the `admin.deleteMany` mutation.
+      operationId: adminDeleteMany
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteManyRequest'
+      responses:
+        '200':
+          description: List of ids that were deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkIdsResponse'
+        '400':
+          description: Invalid table or identifiers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/normalizeId:
+    post:
+      tags:
+        - Admin
+      summary: Normalize an external id into a Convex document id.
+      description: Executes the `admin.normalizeId` query.
+      operationId: adminNormalizeId
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NormalizeIdRequest'
+      responses:
+        '200':
+          description: Normalized Convex identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NormalizeIdResponse'
+        '400':
+          description: Invalid id or table.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SignInRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        rememberMe:
+          type: boolean
+          default: true
+    SignUpRequest:
+      type: object
+      required:
+        - email
+        - password
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+        companyName:
+          type: string
+          description: Required when creating a brand new company.
+        companyTimezone:
+          type: string
+          example: America/New_York
+        companyPlan:
+          type: string
+          description: Preferred company plan tier.
+        invitationToken:
+          type: string
+          description: Token from an invitation email when joining an existing company.
+    ValidateSessionRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: Session token issued by `auth.signIn` or `auth.signUp`.
+    SignOutRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: Session token to revoke.
+    SessionWithUser:
+      type: object
+      required:
+        - token
+        - user
+      properties:
+        token:
+          type: string
+          description: Session token used to authenticate subsequent requests.
+        user:
+          $ref: '#/components/schemas/User'
+    SessionValidation:
+      type: object
+      nullable: true
+      description: Session data and associated user or `null` when the token is not valid.
+      properties:
+        session:
+          $ref: '#/components/schemas/Session'
+        user:
+          $ref: '#/components/schemas/User'
+    Session:
+      type: object
+      required:
+        - token
+        - userId
+        - expiresAt
+        - createdAt
+        - updatedAt
+      properties:
+        token:
+          type: string
+        userId:
+          type: string
+        expiresAt:
+          type: string
+          description: ISO-8601 timestamp representing expiry.
+        createdAt:
+          type: string
+          description: ISO-8601 timestamp when the session was created.
+        updatedAt:
+          type: string
+          description: ISO-8601 timestamp when the session last changed.
+        ipAddress:
+          type: string
+          nullable: true
+        userAgent:
+          type: string
+          nullable: true
+    InviteUserRequest:
+      type: object
+      required:
+        - sessionToken
+        - email
+      properties:
+        sessionToken:
+          type: string
+          description: Active session token belonging to a company owner.
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          nullable: true
+        role:
+          type: string
+          nullable: true
+          description: Role assigned to the invited user.
+          enum:
+            - owner
+            - manager
+            - agent
+    InviteUserResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          example: true
+    ListRequest:
+      type: object
+      required:
+        - table
+      properties:
+        table:
+          $ref: '#/components/schemas/TableName'
+        pagination:
+          $ref: '#/components/schemas/PaginationInput'
+        sort:
+          $ref: '#/components/schemas/SortInput'
+        filter:
+          $ref: '#/components/schemas/FilterInput'
+    GetRequest:
+      type: object
+      required:
+        - table
+        - id
+      properties:
+        table:
+          $ref: '#/components/schemas/TableName'
+        id:
+          type: string
+    GetManyRequest:
+      type: object
+      required:
+        - table
+        - ids
+      properties:
+        table:
+          $ref: '#/components/schemas/TableName'
+        ids:
+          type: array
+          minItems: 1
+          items:
+            type: string
+    GetManyReferenceRequest:
+      type: object
+      required:
+        - table
+        - target
+        - id
+      properties:
+        table:
+          $ref: '#/components/schemas/TableName'
+        target:
+          type: string
+          description: Field name that stores the foreign key.
+        id:
+          type: string
+          description: Foreign id to match against the `target` field.
+        pagination:
+          $ref: '#/components/schemas/PaginationInput'
+        sort:
+          $ref: '#/components/schemas/SortInput'
+        filter:
+          $ref: '#/components/schemas/FilterInput'
+    MutateRequest:
+      type: object
+      required:
+        - table
+        - data
+      properties:
+        table:
+          $ref: '#/components/schemas/TableName'
+        data:
+          $ref: '#/components/schemas/DocumentInput'
+        meta:
+          $ref: '#/components/schemas/MetaInput'
+    UpdateRequest:
+      type: object
+      required:
+        - table
+        - id
+        - data
+      properties:
+        table:
+          $ref: '#/components/schemas/TableName'
+        id:
+          type: string
+        data:
+          $ref: '#/components/schemas/DocumentInput'
+        meta:
+          $ref: '#/components/schemas/MetaInput'
+    UpdateManyRequest:
+      type: object
+      required:
+        - table
+        - ids
+        - data
+      properties:
+        table:
+          $ref: '#/components/schemas/TableName'
+        ids:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        data:
+          $ref: '#/components/schemas/DocumentInput'
+        meta:
+          $ref: '#/components/schemas/MetaInput'
+    DeleteRequest:
+      type: object
+      required:
+        - table
+        - id
+      properties:
+        table:
+          $ref: '#/components/schemas/TableName'
+        id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/MetaInput'
+        previousData:
+          $ref: '#/components/schemas/DocumentInput'
+    DeleteManyRequest:
+      type: object
+      required:
+        - table
+        - ids
+      properties:
+        table:
+          $ref: '#/components/schemas/TableName'
+        ids:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        meta:
+          $ref: '#/components/schemas/MetaInput'
+    NormalizeIdRequest:
+      type: object
+      required:
+        - table
+        - id
+      properties:
+        table:
+          $ref: '#/components/schemas/TableName'
+        id:
+          type: string
+    NormalizeIdResponse:
+      type: object
+      required:
+        - normalizedId
+      properties:
+        normalizedId:
+          type: string
+          description: Convex document identifier.
+    ListResponse:
+      type: object
+      required:
+        - data
+        - total
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminDocument'
+        total:
+          type: integer
+          format: int32
+    DocumentResponse:
+      $ref: '#/components/schemas/AdminDocument'
+    GetManyResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/AdminDocument'
+    BulkIdsResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            type: string
+    PaginationInput:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        perPage:
+          type: integer
+          minimum: 1
+    SortInput:
+      type: object
+      properties:
+        field:
+          type: string
+        order:
+          type: string
+          enum:
+            - ASC
+            - DESC
+    FilterInput:
+      type: object
+      additionalProperties: true
+    DocumentInput:
+      type: object
+      additionalProperties: true
+    MetaInput:
+      type: object
+      additionalProperties: true
+    AdminDocument:
+      description: |
+        Convex document returned by the generic admin helpers. The `_id` field
+        is always present together with the table-specific fields described in
+        the referenced schemas.
+      oneOf:
+        - $ref: '#/components/schemas/Company'
+        - $ref: '#/components/schemas/User'
+        - $ref: '#/components/schemas/Property'
+        - $ref: '#/components/schemas/PropertyConfig'
+        - $ref: '#/components/schemas/Number'
+        - $ref: '#/components/schemas/Faq'
+        - $ref: '#/components/schemas/LocalRec'
+        - $ref: '#/components/schemas/Integration'
+        - $ref: '#/components/schemas/Interaction'
+        - $ref: '#/components/schemas/Escalation'
+        - $ref: '#/components/schemas/Notification'
+        - $ref: '#/components/schemas/BillingUsage'
+        - $ref: '#/components/schemas/AuditLog'
+        - $ref: '#/components/schemas/CompanyInvitation'
+        - $ref: '#/components/schemas/AuthAccount'
+        - $ref: '#/components/schemas/AuthSession'
+        - $ref: '#/components/schemas/AuthVerification'
+      example:
+        _id: "h7yhwq6g1z2z8f13rvw8y2x4"
+        name: Acme Hospitality
+        plan: starter
+        timezone: America/New_York
+        createdAt: 1704067200000
+    TableName:
+      type: string
+      enum:
+        - companies
+        - users
+        - properties
+        - propertyConfigs
+        - numbers
+        - faqs
+        - localRecs
+        - integrations
+        - interactions
+        - escalations
+        - notifications
+        - billingUsage
+        - auditLogs
+        - companyInvitations
+        - authSessions
+        - authAccounts
+        - authVerifications
+    Company:
+      type: object
+      required:
+        - _id
+        - name
+        - timezone
+        - plan
+        - createdAt
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        timezone:
+          type: string
+        plan:
+          type: string
+        branding:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            logoUrl:
+              type: string
+              format: uri
+              nullable: true
+            greetingName:
+              type: string
+              nullable: true
+        createdAt:
+          type: integer
+          format: int64
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - emailVerified
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+          description: Convex internal identifier.
+        id:
+          type: string
+          description: Stable Better Auth user identifier.
+        companyId:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          nullable: true
+        status:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        image:
+          type: string
+          format: uri
+          nullable: true
+        emailVerified:
+          type: boolean
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+    Property:
+      type: object
+      required:
+        - _id
+        - companyId
+        - name
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        name:
+          type: string
+        address:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            street:
+              type: string
+              nullable: true
+            city:
+              type: string
+              nullable: true
+            state:
+              type: string
+              nullable: true
+            postalCode:
+              type: string
+              nullable: true
+            country:
+              type: string
+              nullable: true
+        timeZone:
+          type: string
+          nullable: true
+        flags:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            noCodeOverPhone:
+              type: boolean
+              nullable: true
+            alwaysEscalateLockout:
+              type: boolean
+              nullable: true
+            upsellEnabled:
+              type: boolean
+              nullable: true
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+    PropertyConfig:
+      type: object
+      required:
+        - _id
+        - propertyId
+      properties:
+        _id:
+          type: string
+        propertyId:
+          type: string
+        access:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            lockType:
+              type: string
+            code:
+              type: string
+              nullable: true
+            instructions:
+              type: string
+            backup:
+              type: string
+              nullable: true
+        wifi:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            ssid:
+              type: string
+            password:
+              type: string
+            tips:
+              type: string
+              nullable: true
+        checkin:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            time:
+              type: string
+            instructions:
+              type: string
+        checkout:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            time:
+              type: string
+            instructions:
+              type: string
+            eligibleForLate:
+              type: boolean
+              nullable: true
+        parking:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            instructions:
+              type: string
+            notes:
+              type: string
+              nullable: true
+            permitRequired:
+              type: boolean
+              nullable: true
+        rules:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            pets:
+              type: boolean
+              nullable: true
+            smoking:
+              type: boolean
+              nullable: true
+            parties:
+              type: boolean
+              nullable: true
+            quietHours:
+              type: object
+              nullable: true
+              additionalProperties: false
+              properties:
+                start:
+                  type: string
+                end:
+                  type: string
+            extraFees:
+              type: object
+              nullable: true
+              additionalProperties: false
+              properties:
+                feeName:
+                  type: string
+                amount:
+                  type: number
+        amenities:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            ac:
+              type: boolean
+              nullable: true
+            heating:
+              type: boolean
+              nullable: true
+            laundry:
+              type: boolean
+              nullable: true
+            tv:
+              type: boolean
+              nullable: true
+            streamingApps:
+              type: array
+              nullable: true
+              items:
+                type: string
+            hotTub:
+              type: boolean
+              nullable: true
+            pool:
+              type: boolean
+              nullable: true
+            other:
+              type: string
+              nullable: true
+        contacts:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            onCall:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                  - name
+                  - phone
+                  - role
+                properties:
+                  name:
+                    type: string
+                  phone:
+                    type: string
+                  role:
+                    type: string
+            vendors:
+              type: array
+              nullable: true
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                  - type
+                  - name
+                  - phone
+                properties:
+                  type:
+                    type: string
+                  name:
+                    type: string
+                  phone:
+                    type: string
+            emergency:
+              type: object
+              nullable: true
+              additionalProperties: false
+              properties:
+                police:
+                  type: string
+                  nullable: true
+                fire:
+                  type: string
+                  nullable: true
+                medical:
+                  type: string
+                  nullable: true
+        upsells:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            lateCheckout:
+              type: object
+              nullable: true
+              additionalProperties: false
+              properties:
+                price:
+                  type: number
+            midStayClean:
+              type: object
+              nullable: true
+              additionalProperties: false
+              properties:
+                price:
+                  type: number
+            other:
+              type: array
+              nullable: true
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                  - name
+                  - price
+                properties:
+                  name:
+                    type: string
+                  price:
+                    type: number
+        languages:
+          type: array
+          nullable: true
+          items:
+            type: string
+    Number:
+      type: object
+      required:
+        - _id
+        - companyId
+        - e164
+        - createdAt
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        e164:
+          type: string
+          description: E.164 formatted phone number.
+        assignedPropertyId:
+          type: string
+          nullable: true
+        assignedQueue:
+          type: string
+          nullable: true
+        hours:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            daily:
+              type: array
+              nullable: true
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                  - day
+                  - open
+                  - close
+                properties:
+                  day:
+                    type: string
+                  open:
+                    type: string
+                  close:
+                    type: string
+            fallbackNumber:
+              type: string
+              nullable: true
+        createdAt:
+          type: integer
+          format: int64
+    Faq:
+      type: object
+      required:
+        - _id
+        - propertyId
+        - text
+        - tags
+        - updatedAt
+      properties:
+        _id:
+          type: string
+        propertyId:
+          type: string
+        text:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        embedding:
+          type: array
+          nullable: true
+          items:
+            type: number
+        updatedAt:
+          type: integer
+          format: int64
+    LocalRec:
+      type: object
+      required:
+        - _id
+        - propertyId
+        - name
+        - category
+        - updatedAt
+      properties:
+        _id:
+          type: string
+        propertyId:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        url:
+          type: string
+          format: uri
+          nullable: true
+        tips:
+          type: string
+          nullable: true
+        hours:
+          type: string
+          nullable: true
+        embedding:
+          type: array
+          nullable: true
+          items:
+            type: number
+        updatedAt:
+          type: integer
+          format: int64
+    Integration:
+      type: object
+      required:
+        - _id
+        - companyId
+        - type
+        - status
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+        secretsEncrypted:
+          type: string
+          nullable: true
+        lastSyncAt:
+          type: integer
+          format: int64
+          nullable: true
+    Interaction:
+      type: object
+      required:
+        - _id
+        - companyId
+        - propertyId
+        - channel
+        - intent
+        - result
+        - durationSec
+        - createdAt
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        propertyId:
+          type: string
+        channel:
+          type: string
+        intent:
+          type: string
+        result:
+          type: string
+        durationSec:
+          type: number
+        createdAt:
+          type: integer
+          format: int64
+        piiHash:
+          type: string
+          nullable: true
+        transcriptRef:
+          type: string
+          nullable: true
+    Escalation:
+      type: object
+      required:
+        - _id
+        - companyId
+        - propertyId
+        - priority
+        - topic
+        - status
+        - createdAt
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        propertyId:
+          type: string
+        priority:
+          type: string
+        topic:
+          type: string
+        status:
+          type: string
+        assigneeContact:
+          type: string
+          nullable: true
+        createdAt:
+          type: integer
+          format: int64
+        resolvedAt:
+          type: integer
+          format: int64
+          nullable: true
+        summary:
+          type: string
+          nullable: true
+        transcriptRef:
+          type: string
+          nullable: true
+    Notification:
+      type: object
+      required:
+        - _id
+        - companyId
+        - type
+        - to
+        - status
+        - attempts
+        - createdAt
+      properties:
+        _id:
+          type: string
+        escalationId:
+          type: string
+          nullable: true
+        companyId:
+          type: string
+        type:
+          type: string
+        to:
+          type: string
+        status:
+          type: string
+        attempts:
+          type: integer
+        lastError:
+          type: string
+          nullable: true
+        createdAt:
+          type: integer
+          format: int64
+    BillingUsage:
+      type: object
+      required:
+        - _id
+        - companyId
+        - month
+        - units
+        - minutes
+        - amountCents
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        month:
+          type: string
+          description: Billing month in YYYY-MM format.
+        units:
+          type: number
+        minutes:
+          type: number
+        amountCents:
+          type: number
+    AuditLog:
+      type: object
+      required:
+        - _id
+        - companyId
+        - actorUserId
+        - entityType
+        - entityId
+        - action
+        - createdAt
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        actorUserId:
+          type: string
+        entityType:
+          type: string
+        entityId:
+          type: string
+        action:
+          type: string
+        diff:
+          type: object
+          nullable: true
+          additionalProperties: true
+        createdAt:
+          type: integer
+          format: int64
+    CompanyInvitation:
+      type: object
+      required:
+        - _id
+        - token
+        - companyId
+        - email
+        - invitedByUserId
+        - status
+        - createdAt
+        - expiresAt
+      properties:
+        _id:
+          type: string
+        token:
+          type: string
+        companyId:
+          type: string
+        email:
+          type: string
+          format: email
+        invitedByUserId:
+          type: string
+        role:
+          type: string
+          nullable: true
+        status:
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+        expiresAt:
+          type: integer
+          format: int64
+    AuthAccount:
+      type: object
+      required:
+        - _id
+        - id
+        - userId
+        - providerId
+        - accountId
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+        id:
+          type: string
+        userId:
+          type: string
+        providerId:
+          type: string
+        accountId:
+          type: string
+        password:
+          type: string
+          nullable: true
+        accessToken:
+          type: string
+          nullable: true
+        refreshToken:
+          type: string
+          nullable: true
+        idToken:
+          type: string
+          nullable: true
+        accessTokenExpiresAt:
+          type: integer
+          format: int64
+          nullable: true
+        refreshTokenExpiresAt:
+          type: integer
+          format: int64
+          nullable: true
+        scope:
+          type: string
+          nullable: true
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+    AuthSession:
+      type: object
+      required:
+        - _id
+        - id
+        - userId
+        - token
+        - expiresAt
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+        id:
+          type: string
+        userId:
+          type: string
+        token:
+          type: string
+        expiresAt:
+          type: integer
+          format: int64
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+        ipAddress:
+          type: string
+          nullable: true
+        userAgent:
+          type: string
+          nullable: true
+    AuthVerification:
+      type: object
+      required:
+        - _id
+        - id
+        - identifier
+        - value
+        - expiresAt
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+        id:
+          type: string
+        identifier:
+          type: string
+        value:
+          type: string
+        expiresAt:
+          type: integer
+          format: int64
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Unable to sign in

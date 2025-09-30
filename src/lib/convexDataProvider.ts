@@ -53,7 +53,7 @@ const getClient = () => {
     const convexUrl = import.meta.env.VITE_CONVEX_URL;
     if (!convexUrl) {
       throw new Error(
-        "VITE_CONVEX_URL is required to initialise the Convex data provider."
+        "VITE_CONVEX_URL is required to initialise the Convex data provider.",
       );
     }
     client = new ConvexHttpClient(convexUrl);
@@ -68,7 +68,7 @@ const assertResourceName = (resource: string): ResourceName => {
   }
 
   throw new Error(
-    `Unknown resource "${resource}". Expected one of: ${TABLES.join(", ")}`
+    `Unknown resource "${resource}". Expected one of: ${TABLES.join(", ")}`,
   );
 };
 
@@ -97,7 +97,7 @@ const sanitizeData = (data: Record<string, unknown>) => {
 const dataProvider: DataProvider = {
   async getList(
     resource: string,
-    params: GetListParams
+    params: GetListParams,
   ): Promise<GetListResult> {
     const table = assertResourceName(resource);
     const convex = getClient();
@@ -127,7 +127,7 @@ const dataProvider: DataProvider = {
 
   async getMany(
     resource: string,
-    params: GetManyParams
+    params: GetManyParams,
   ): Promise<GetManyResult> {
     const table = assertResourceName(resource);
     const convex = getClient();
@@ -141,7 +141,7 @@ const dataProvider: DataProvider = {
 
   async getManyReference(
     resource: string,
-    params: GetManyReferenceParams
+    params: GetManyReferenceParams,
   ): Promise<GetManyReferenceResult> {
     const table = assertResourceName(resource);
     const convex = getClient();
@@ -187,7 +187,7 @@ const dataProvider: DataProvider = {
 
   async updateMany(
     resource: string,
-    params: UpdateManyParams
+    params: UpdateManyParams,
   ): Promise<UpdateManyResult> {
     const table = assertResourceName(resource);
     const convex = getClient();
@@ -216,7 +216,7 @@ const dataProvider: DataProvider = {
 
   async deleteMany(
     resource: string,
-    params: DeleteManyParams
+    params: DeleteManyParams,
   ): Promise<DeleteManyResult> {
     const table = assertResourceName(resource);
     const convex = getClient();

@@ -122,7 +122,7 @@ export const FileInput = (props: FileInputProps) => {
   const onDrop = (
     newFiles: File[],
     rejectedFiles: FileRejection[],
-    event: DropEvent
+    event: DropEvent,
   ) => {
     const updatedFiles = multiple ? [...files, ...newFiles] : [...newFiles];
 
@@ -150,7 +150,7 @@ export const FileInput = (props: FileInputProps) => {
 
     if (multiple) {
       const filteredFiles = files.filter(
-        (stateFile) => !shallowEqual(stateFile, file)
+        (stateFile) => !shallowEqual(stateFile, file),
       );
       onChange(filteredFiles);
       onBlur();
@@ -205,7 +205,7 @@ export const FileInput = (props: FileInputProps) => {
             "hover:border-sidebar-ring focus:outline-none",
             disabled || readOnly
               ? "bg-muted cursor-not-allowed"
-              : "bg-muted text-muted-foreground cursor-pointer"
+              : "bg-muted text-muted-foreground cursor-pointer",
           ),
         })}
       >
@@ -263,7 +263,9 @@ export type FileInputProps = Omit<InputProps, "type"> & {
   placeholder?: ReactNode;
   removeIcon?: ComponentType<{ className?: string }>;
   inputProps?: DropzoneInputProps & React.ComponentProps<"input">;
-  validateFileRemoval?(file: File | TransformedFile): boolean | Promise<boolean>;
+  validateFileRemoval?(
+    file: File | TransformedFile,
+  ): boolean | Promise<boolean>;
 };
 
 export interface TransformedFile {
@@ -323,7 +325,7 @@ export const FileInputPreview = (props: FileInputPreviewProps) => {
       <Button
         variant="ghost"
         size="icon"
-        className="h-6 w-6 rounded-full shadow-sm cursor-pointer"
+        className="h-6 w-6 cursor-pointer rounded-full shadow-sm"
         onClick={onRemove}
         aria-label={translate("ra.action.delete")}
         title={translate("ra.action.delete")}

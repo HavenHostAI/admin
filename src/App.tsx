@@ -15,12 +15,7 @@ import {
   PropertyList,
   PropertyShow,
 } from "@/resources/properties";
-import {
-  UserCreate,
-  UserEdit,
-  UserList,
-  UserShow,
-} from "@/resources/users";
+import { UserCreate, UserEdit, UserList, UserShow } from "@/resources/users";
 import {
   NumberCreate,
   NumberEdit,
@@ -65,7 +60,10 @@ function App() {
         recordRepresentation="e164"
       />
       <CustomRoutes noLayout>
-        <Route path="/signup" element={<SignupPage allowModeSwitch={false} />} />
+        <Route
+          path="/signup"
+          element={<SignupPage allowModeSwitch={false} />}
+        />
       </CustomRoutes>
     </Admin>
   );

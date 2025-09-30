@@ -41,17 +41,20 @@ class MockConvexHttpClient {
   private async request(
     type: "queries" | "mutations" | "actions",
     reference: unknown,
-    args: Record<string, unknown> | undefined
+    args: Record<string, unknown> | undefined,
   ) {
-    const response = await fetch(`${this.baseUrl}/${type}/${buildPath(reference)}`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(args ?? {}),
-    });
+    const response = await fetch(
+      `${this.baseUrl}/${type}/${buildPath(reference)}`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(args ?? {}),
+      },
+    );
 
     if (!response.ok) {
       const error = new Error(
-        `Convex ${type} request to ${this.baseUrl} failed with status ${response.status}`
+        `Convex ${type} request to ${this.baseUrl} failed with status ${response.status}`,
       );
       try {
         (error as { body?: unknown }).body = await response.clone().json();

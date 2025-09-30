@@ -68,7 +68,7 @@ export const SimpleFormIterator = (props: SimpleFormIteratorProps) => {
   const finalSource = useWrappedSource("");
   if (!finalSource) {
     throw new Error(
-      "SimpleFormIterator can only be called within an iterator input like ArrayInput"
+      "SimpleFormIterator can only be called within an iterator input like ArrayInput",
     );
   }
 
@@ -83,7 +83,7 @@ export const SimpleFormIterator = (props: SimpleFormIteratorProps) => {
     (index: number) => {
       remove(index);
       const isScalarArray = getValues(finalSource).every(
-        (value: unknown) => typeof value !== "object"
+        (value: unknown) => typeof value !== "object",
       );
       if (isScalarArray) {
         // Trigger validation on the Array to avoid ghost errors.
@@ -91,7 +91,7 @@ export const SimpleFormIterator = (props: SimpleFormIteratorProps) => {
         trigger(finalSource);
       }
     },
-    [remove, trigger, finalSource, getValues]
+    [remove, trigger, finalSource, getValues],
   );
 
   if (fields.length > 0) {
@@ -141,14 +141,14 @@ export const SimpleFormIterator = (props: SimpleFormIteratorProps) => {
       }
       append(defaultValue);
     },
-    [append, children]
+    [append, children],
   );
 
   const handleReorder = useCallback(
     (origin: number, destination: number) => {
       move(origin, destination);
     },
-    [move]
+    [move],
   );
 
   const handleArrayClear = useCallback(() => {
@@ -166,12 +166,12 @@ export const SimpleFormIterator = (props: SimpleFormIteratorProps) => {
       reOrder: handleReorder,
       source: finalSource,
     }),
-    [addField, fields.length, handleReorder, removeField, finalSource]
+    [addField, fields.length, handleReorder, removeField, finalSource],
   );
   return fields ? (
     <SimpleFormIteratorContext.Provider value={context}>
       <div className={cn("w-full", disabled && "disabled", className)}>
-        <ul className="p-0 m-0 flex flex-col gap-2">
+        <ul className="m-0 flex flex-col gap-2 p-0">
           {fields.map((member, index) => (
             <SimpleFormIteratorItem
               key={member.id}
@@ -243,7 +243,7 @@ export interface SimpleFormIteratorProps extends Partial<UseFieldArrayReturn> {
 export const SimpleFormIteratorItem = React.forwardRef(
   (
     props: SimpleFormIteratorItemProps,
-    ref: React.ForwardedRef<HTMLLIElement>
+    ref: React.ForwardedRef<HTMLLIElement>,
   ) => {
     const {
       children,
@@ -260,7 +260,7 @@ export const SimpleFormIteratorItem = React.forwardRef(
     const resource = useResourceContext(props);
     if (!resource) {
       throw new Error(
-        "SimpleFormIteratorItem must be used in a ResourceContextProvider or be passed a resource prop."
+        "SimpleFormIteratorItem must be used in a ResourceContextProvider or be passed a resource prop.",
       );
     }
     const { total, reOrder, remove } = useSimpleFormIterator();
@@ -282,7 +282,7 @@ export const SimpleFormIteratorItem = React.forwardRef(
         reOrder: (newIndex) => reOrder(index, newIndex),
         remove: () => remove(index),
       }),
-      [index, total, reOrder, remove]
+      [index, total, reOrder, remove],
     );
 
     const label =
@@ -321,7 +321,7 @@ export const SimpleFormIteratorItem = React.forwardRef(
           return parentSourceContext.getLabel(source);
         },
       }),
-      [index, parentSourceContext]
+      [index, parentSourceContext],
     );
 
     return (
@@ -329,20 +329,20 @@ export const SimpleFormIteratorItem = React.forwardRef(
         <li
           ref={ref}
           className={cn(
-            "flex flex-row items-start justify-between gap-2 pb-2 border-b border-border last:border-b-0",
+            "border-border flex flex-row items-start justify-between gap-2 border-b pb-2 last:border-b-0",
             // Align the buttons with the input
-            "[&:has(label)>.simple-form-iterator-item-actions]:pt-10"
+            "[&:has(label)>.simple-form-iterator-item-actions]:pt-10",
           )}
         >
           {label != null && label !== false && (
-            <p className="text-sm text-muted-foreground mb-2">{label}</p>
+            <p className="text-muted-foreground mb-2 text-sm">{label}</p>
           )}
           <SourceContextProvider value={sourceContext}>
             <RecordContextProvider value={record}>
               <div
                 className={cn(
                   "flex flex-1 gap-2",
-                  inline ? "flex-col sm:flex-row gap-2" : "flex-col"
+                  inline ? "flex-col gap-2 sm:flex-row" : "flex-col",
                 )}
               >
                 {children}
@@ -350,7 +350,7 @@ export const SimpleFormIteratorItem = React.forwardRef(
             </RecordContextProvider>
           </SourceContextProvider>
           {!disabled && (
-            <div className="simple-form-iterator-item-actions flex flex-row h-9 items-center gap-1">
+            <div className="simple-form-iterator-item-actions flex h-9 flex-row items-center gap-1">
               {!disableReordering && reOrderButtons}
               {!disableRemoveField(record) && removeButton}
             </div>
@@ -358,7 +358,7 @@ export const SimpleFormIteratorItem = React.forwardRef(
         </li>
       </SimpleFormIteratorItemContext.Provider>
     );
-  }
+  },
 );
 
 export type DisableRemoveFunction = (record: RaRecord) => boolean;
@@ -414,7 +414,7 @@ export const ReOrderButtons = ({ className }: { className?: string }) => {
       className={cn(
         "button-reorder",
         `button-reorder-${source}-${index}`,
-        className
+        className,
       )}
     >
       <IconButtonWithTooltip
@@ -471,7 +471,7 @@ export const RemoveItemButton = (props: React.ComponentProps<"button">) => {
             className={cn(
               "button-remove",
               `button-remove-${source}-${index}`,
-              className
+              className,
             )}
             {...rest}
           >

@@ -82,7 +82,7 @@ export const CreateView = ({
       </Breadcrumb>
       <div
         className={cn(
-          "flex justify-between items-start flex-wrap gap-2 my-2",
+          "my-2 flex flex-wrap items-start justify-between gap-2",
           className,
         )}
       >

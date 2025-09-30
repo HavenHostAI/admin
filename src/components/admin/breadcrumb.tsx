@@ -33,7 +33,7 @@ export const Breadcrumb = ({ children, ref }: BreadcrumbProps) => {
       <Separator
         decorative
         orientation="vertical"
-        className="data-[orientation=vertical]:h-4 mr-4"
+        className="mr-4 data-[orientation=vertical]:h-4"
       />
       <BaseBreadcrumb ref={ref}>
         <BreadcrumbList>
@@ -88,7 +88,7 @@ export const Breadcrumb = ({ children, ref }: BreadcrumbProps) => {
         </BreadcrumbList>
       </BaseBreadcrumb>
     </>,
-    breadcrumbPortal
+    breadcrumbPortal,
   );
 };
 

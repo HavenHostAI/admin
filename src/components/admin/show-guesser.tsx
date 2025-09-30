@@ -58,7 +58,7 @@ const ShowViewGuesser = (props: { enableLog?: boolean }) => {
       const inferredChild = new InferredElement(
         showFieldTypes.show,
         null,
-        inferredElements
+        inferredElements,
       );
       setChild(inferredChild.getElement());
 
@@ -72,10 +72,10 @@ const ShowViewGuesser = (props: { enableLog?: boolean }) => {
               Array.from(representation.matchAll(/<([^/\s>]+)/g))
                 .map((match) => match[1])
                 .filter(
-                  (component) => component !== "span" && component !== "div"
-                )
-            )
-          )
+                  (component) => component !== "span" && component !== "div",
+                ),
+            ),
+          ),
         )
         .sort();
 
@@ -86,8 +86,8 @@ ${components
   .map(
     (component) =>
       `import { ${component} } from "@/components/admin/${kebabCase(
-        component
-      )}";`
+        component,
+      )}";`,
   )
   .join("\n")}
 
@@ -95,7 +95,7 @@ export const ${capitalize(singularize(resource))}Show = () => (
     <Show>
 ${inferredChild.getRepresentation()}
     </Show>
-);`
+);`,
       );
     }
   }, [record, child, resource, enableLog]);
@@ -111,7 +111,7 @@ const showFieldTypes: InferredTypeMap = {
     },
     representation: (
       _props: Record<string, unknown>,
-      children: { getRepresentation: () => string }[]
+      children: { getRepresentation: () => string }[],
     ) => `        <div className="flex flex-col gap-4">
 ${children
   .map((child) => `            ${child.getRepresentation()}`)
@@ -153,8 +153,8 @@ ${children
             <SingleFieldList>
               {childrenArray.length > 0 &&
               isValidElement(childrenArray[0]) &&
-              typeof (childrenArray[0].props as Record<string, unknown>).source ===
-                "string" ? (
+              typeof (childrenArray[0].props as Record<string, unknown>)
+                .source === "string" ? (
                 <BadgeField
                   source={
                     (childrenArray[0].props as Record<string, unknown>)
@@ -181,9 +181,11 @@ ${children
           "getProps" in firstChild &&
           typeof (firstChild as { getProps?: unknown }).getProps === "function"
         ) {
-          const childProps = (firstChild as {
-            getProps: () => Record<string, unknown>;
-          }).getProps();
+          const childProps = (
+            firstChild as {
+              getProps: () => Record<string, unknown>;
+            }
+          ).getProps();
           return getStringProp(childProps, "source") ?? "";
         }
         return "";

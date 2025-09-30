@@ -103,7 +103,7 @@ export const ColumnsButton = (props: ColumnsButtonProps) => {
               data-slot="popover-content"
               sideOffset={4}
               align="start"
-              className="bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-md border shadow-md outline-hidden p-0 min-w-[200px]"
+              className="bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-72 min-w-[200px] origin-(--radix-popover-content-transform-origin) rounded-md border p-0 shadow-md outline-hidden"
             >
               <div id={`${storeKey}-columnsSelector`} className="p-2" />
             </PopoverPrimitive.Content>
@@ -170,7 +170,7 @@ export const ColumnsSelector = ({ children }: ColumnsSelectorProps) => {
   const shouldDisplaySearchInput = childrenArray.length > 5;
 
   return createPortal(
-    <ul className="max-h-[50vh] p-1 overflow-auto">
+    <ul className="max-h-[50vh] overflow-auto p-1">
       {shouldDisplaySearchInput ? (
         <li className="pb-2" tabIndex={-1}>
           <div className="relative">
@@ -184,11 +184,11 @@ export const ColumnsSelector = ({ children }: ColumnsSelectorProps) => {
               })}
               className="pr-8"
             />
-            <Search className="absolute right-2 top-2 h-4 w-4 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-2 right-2 h-4 w-4" />
             {columnFilter && (
               <button
                 onClick={() => setColumnFilter("")}
-                className="absolute right-8 top-2 h-4 w-4 text-muted-foreground"
+                className="text-muted-foreground absolute top-2 right-8 h-4 w-4"
                 aria-label="Clear"
               >
                 ×
@@ -207,7 +207,7 @@ export const ColumnsSelector = ({ children }: ColumnsSelectorProps) => {
           </DataTableColumnFilterContext.Provider>
         </DataTableColumnRankContext.Provider>
       ))}
-      <li className="text-center mt-2 px-3">
+      <li className="mt-2 px-3 text-center">
         <Button
           variant="outline"
           size="sm"

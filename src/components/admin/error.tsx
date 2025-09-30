@@ -18,8 +18,8 @@ export const Error = (props: InternalErrorProps & {}) => {
   useResetErrorBoundaryOnLocationChange(resetErrorBoundary);
 
   return (
-    <div className="flex flex-col items-center md:p-16 gap-5" {...rest}>
-      <h1 className="flex items-center text-3xl mt-5 mb-5 gap-3" role="alert">
+    <div className="flex flex-col items-center gap-5 md:p-16" {...rest}>
+      <h1 className="mt-5 mb-5 flex items-center gap-3 text-3xl" role="alert">
         <CircleAlert className="w-2em h-2em" />
         <Translate i18nKey="ra.page.error" />
       </h1>
@@ -30,19 +30,19 @@ export const Error = (props: InternalErrorProps & {}) => {
         <>
           <Accordion
             type="multiple"
-            className="mt-1 p-2 bg-secondary w-full lg:w-150"
+            className="bg-secondary mt-1 w-full p-2 lg:w-150"
           >
             <AccordionItem value="error">
               <AccordionTrigger className="py-2">
                 <Translate i18nKey={error.message}>{error.message}</Translate>
               </AccordionTrigger>
-              <AccordionContent className="whitespace-pre-wrap pt-1">
+              <AccordionContent className="pt-1 whitespace-pre-wrap">
                 <pre className="text-xls">{errorInfo?.componentStack}</pre>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
 
-          <p className="text-center ">
+          <p className="text-center">
             Need help with this error? Try the following:
           </p>
           <div>

@@ -41,10 +41,23 @@ export const CompanyCreate = () => (
   <Create>
     <SimpleForm defaultValues={{ createdAt: Date.now() }}>
       <TextInput source="name" label="Name" validate={[required()]} />
-      <SelectInput source="plan" label="Plan" choices={planChoices} validate={[required()]} />
-      <TextInput source="timezone" label="Timezone" placeholder="America/New_York" validate={[required()]} />
+      <SelectInput
+        source="plan"
+        label="Plan"
+        choices={planChoices}
+        validate={[required()]}
+      />
+      <TextInput
+        source="timezone"
+        label="Timezone"
+        placeholder="America/New_York"
+        validate={[required()]}
+      />
       <TextInput source="branding.logoUrl" label="Branding · Logo URL" />
-      <TextInput source="branding.greetingName" label="Branding · Greeting Name" />
+      <TextInput
+        source="branding.greetingName"
+        label="Branding · Greeting Name"
+      />
       <NumberInput source="createdAt" label="Created At (epoch ms)" />
     </SimpleForm>
   </Create>
@@ -54,10 +67,18 @@ export const CompanyEdit = () => (
   <Edit>
     <SimpleForm>
       <TextInput source="name" label="Name" validate={[required()]} />
-      <SelectInput source="plan" label="Plan" choices={planChoices} validate={[required()]} />
+      <SelectInput
+        source="plan"
+        label="Plan"
+        choices={planChoices}
+        validate={[required()]}
+      />
       <TextInput source="timezone" label="Timezone" validate={[required()]} />
       <TextInput source="branding.logoUrl" label="Branding · Logo URL" />
-      <TextInput source="branding.greetingName" label="Branding · Greeting Name" />
+      <TextInput
+        source="branding.greetingName"
+        label="Branding · Greeting Name"
+      />
       <NumberInput source="createdAt" label="Created At (epoch ms)" />
     </SimpleForm>
   </Edit>

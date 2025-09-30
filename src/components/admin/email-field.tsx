@@ -8,7 +8,7 @@ import { FieldProps } from "@/lib/field.type";
 const EmailFieldImpl = <
   RecordType extends Record<string, unknown> = Record<string, unknown>,
 >(
-  inProps: EmailFieldProps<RecordType>
+  inProps: EmailFieldProps<RecordType>,
 ) => {
   const { className, empty, defaultValue, source, record, ...rest } = inProps;
   const value = useFieldValue({ defaultValue, source, record });

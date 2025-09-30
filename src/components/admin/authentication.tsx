@@ -50,12 +50,12 @@ export const AuthError = (props: AuthErrorProps) => {
   return (
     <div
       className={cn(
-        "flex flex-col justify-center items-center h-full",
+        "flex h-full flex-col items-center justify-center",
         className,
       )}
       {...rest}
     >
-      <h1 className="flex items-center text-3xl my-5 gap-3" role="alert">
+      <h1 className="my-5 flex items-center gap-3 text-3xl" role="alert">
         <CircleAlert className="w-2em h-2em" />
         <Translate i18nKey={title} />
       </h1>

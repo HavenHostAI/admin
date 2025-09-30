@@ -17,7 +17,7 @@ export const ReferenceField = <
   RecordType extends RaRecord = RaRecord,
   ReferenceRecordType extends RaRecord = RaRecord,
 >(
-  props: ReferenceFieldProps<RecordType, ReferenceRecordType>
+  props: ReferenceFieldProps<RecordType, ReferenceRecordType>,
 ) => {
   const { loading, error, empty, render, ...rest } = props;
   const id = useFieldValue<RecordType>(props);
@@ -63,7 +63,7 @@ const stopPropagation = (e: MouseEvent<HTMLAnchorElement>) =>
 export const ReferenceFieldView = <
   ReferenceRecordType extends RaRecord = RaRecord,
 >(
-  props: ReferenceFieldViewProps<ReferenceRecordType>
+  props: ReferenceFieldViewProps<ReferenceRecordType>,
 ) => {
   const {
     children,

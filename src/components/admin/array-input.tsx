@@ -121,7 +121,7 @@ export const ArrayInput = (props: ArrayInputProps) => {
   );
 
   if (isPending) {
-    return <Skeleton className="w-full h-9" />;
+    return <Skeleton className="h-9 w-full" />;
   }
 
   return (
@@ -130,7 +130,7 @@ export const ArrayInput = (props: ArrayInputProps) => {
         "ra-input",
         `ra-input-${finalSource}`,
         className,
-        "w-full flex flex-col gap-2",
+        "flex w-full flex-col gap-2",
       )}
       name={finalSource}
       {...sanitizeInputRestProps(rest)}

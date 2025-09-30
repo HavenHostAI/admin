@@ -65,7 +65,7 @@ const isCreateTriggerValue = (value: unknown, createValue: string) => {
 };
 
 export const useSupportCreateSuggestion = <T = unknown,>(
-  options: SupportCreateSuggestionOptions<T>
+  options: SupportCreateSuggestionOptions<T>,
 ): UseSupportCreateValue<T> => {
   const {
     create,
@@ -103,11 +103,11 @@ export const useSupportCreateSuggestion = <T = unknown,>(
             : createItemLabel(filter)
           : typeof createLabel === "string"
             ? translate(createLabel, { _: createLabel })
-            : createLabel
+            : createLabel,
       );
     },
     handleChange: async (
-      eventOrValue: ChangeEvent<unknown> | T | EventLike
+      eventOrValue: ChangeEvent<unknown> | T | EventLike,
     ) => {
       const eventValue = extractValueFromEvent(eventOrValue);
       const value = eventValue ?? eventOrValue;
@@ -119,7 +119,7 @@ export const useSupportCreateSuggestion = <T = unknown,>(
             // this should never happen because the createValue is only added if a create function is provided
             // @see AutocompleteInput:filterOptions
             throw new Error(
-              "To create a new option, you must pass an onCreate function or a create element."
+              "To create a new option, you must pass an onCreate function or a create element.",
             );
           }
           const newSuggestion = await onCreate(filter);
@@ -137,14 +137,16 @@ export const useSupportCreateSuggestion = <T = unknown,>(
     createElement:
       renderOnCreate && isValidElement(create) ? (
         <CreateSuggestionContext.Provider
-          value={{
-            filter: filterRef.current,
-            onCancel: () => setRenderOnCreate(false),
-            onCreate: (item) => {
-              setRenderOnCreate(false);
-              handleChange(item as T);
-            },
-          } satisfies CreateSuggestionContextValue<unknown>}
+          value={
+            {
+              filter: filterRef.current,
+              onCancel: () => setRenderOnCreate(false),
+              onCreate: (item) => {
+                setRenderOnCreate(false);
+                handleChange(item as T);
+              },
+            } satisfies CreateSuggestionContextValue<unknown>
+          }
         >
           {create}
         </CreateSuggestionContext.Provider>
@@ -181,7 +183,7 @@ export interface UseSupportCreateValue<T = unknown> {
     [key: string]: unknown;
   };
   handleChange: (
-    eventOrValue: ChangeEvent<unknown> | T | EventLike
+    eventOrValue: ChangeEvent<unknown> | T | EventLike,
   ) => Promise<void>;
   createElement: ReactElement | null;
   getOptionDisabled: (option: T) => boolean;
@@ -210,7 +212,7 @@ export const useCreateSuggestionContext = () => {
   const context = useContext(CreateSuggestionContext);
   if (!context) {
     throw new Error(
-      "useCreateSuggestionContext must be used inside a CreateSuggestionContext.Provider"
+      "useCreateSuggestionContext must be used inside a CreateSuggestionContext.Provider",
     );
   }
   return context;
@@ -220,5 +222,5 @@ export const useCreateSuggestionContext = () => {
  * @deprecated Use `OnCreateHandler` from "ra-core" when available.
  */
 export type OnCreateHandler<T = unknown> = (
-  filter?: string
+  filter?: string,
 ) => T | null | undefined | Promise<T | null | undefined>;
