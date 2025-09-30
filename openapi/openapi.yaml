@@ -885,6 +885,12 @@ components:
         - $ref: '#/components/schemas/AuthAccount'
         - $ref: '#/components/schemas/AuthSession'
         - $ref: '#/components/schemas/AuthVerification'
+        - $ref: '#/components/schemas/AiSetting'
+        - $ref: '#/components/schemas/ApiKey'
+        - $ref: '#/components/schemas/Webhook'
+        - $ref: '#/components/schemas/DncNumber'
+        - $ref: '#/components/schemas/DataRetentionSetting'
+        - $ref: '#/components/schemas/EvalResult'
       example:
         _id: "h7yhwq6g1z2z8f13rvw8y2x4"
         name: Acme Hospitality
@@ -911,6 +917,12 @@ components:
         - authSessions
         - authAccounts
         - authVerifications
+        - aiSettings
+        - apiKeys
+        - webhooks
+        - dncNumbers
+        - dataRetentionSettings
+        - evalResults
     Company:
       type: object
       required:
@@ -1704,6 +1716,177 @@ components:
           type: integer
           format: int64
         updatedAt:
+          type: integer
+          format: int64
+    AiSetting:
+      type: object
+      required:
+        - _id
+        - companyId
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        propertyId:
+          type: string
+          nullable: true
+        greeting:
+          type: string
+          nullable: true
+        tone:
+          type: string
+          nullable: true
+        modelVersion:
+          type: string
+          nullable: true
+        escalationKeywords:
+          type: array
+          nullable: true
+          items:
+            type: string
+        codeDisclosurePolicy:
+          type: string
+          nullable: true
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+    ApiKey:
+      type: object
+      required:
+        - _id
+        - companyId
+        - name
+        - key
+        - createdAt
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        name:
+          type: string
+        key:
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+        expiresAt:
+          type: integer
+          format: int64
+          nullable: true
+        lastUsedAt:
+          type: integer
+          format: int64
+          nullable: true
+    Webhook:
+      type: object
+      required:
+        - _id
+        - companyId
+        - url
+        - events
+        - status
+        - createdAt
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        url:
+          type: string
+          format: uri
+        events:
+          type: array
+          items:
+            type: string
+        secret:
+          type: string
+          nullable: true
+        status:
+          type: string
+        lastPingAt:
+          type: integer
+          format: int64
+          nullable: true
+        createdAt:
+          type: integer
+          format: int64
+    DncNumber:
+      type: object
+      required:
+        - _id
+        - companyId
+        - phone
+        - createdAt
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        phone:
+          type: string
+        reason:
+          type: string
+          nullable: true
+        createdAt:
+          type: integer
+          format: int64
+    DataRetentionSetting:
+      type: object
+      required:
+        - _id
+        - companyId
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        conversationRetentionDays:
+          type: integer
+          format: int32
+          nullable: true
+        interactionRetentionDays:
+          type: integer
+          format: int32
+          nullable: true
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+    EvalResult:
+      type: object
+      required:
+        - _id
+        - companyId
+        - propertyId
+        - testName
+        - result
+        - createdAt
+      properties:
+        _id:
+          type: string
+        companyId:
+          type: string
+        propertyId:
+          type: string
+        testName:
+          type: string
+        result:
+          type: string
+        score:
+          type: number
+          nullable: true
+        createdAt:
           type: integer
           format: int64
     ErrorResponse:

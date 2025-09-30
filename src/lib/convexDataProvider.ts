@@ -42,6 +42,12 @@ const TABLES = [
   "authSessions",
   "authAccounts",
   "authVerifications",
+  "aiSettings",
+  "apiKeys",
+  "webhooks",
+  "dncNumbers",
+  "dataRetentionSettings",
+  "evalResults",
 ] as const satisfies readonly TableNames[];
 
 type ResourceName = (typeof TABLES)[number];

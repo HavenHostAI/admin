@@ -483,9 +483,9 @@ export interface components {
          *       "createdAt": 1704067200000
          *     }
          */
-        AdminDocument: components["schemas"]["Company"] | components["schemas"]["User"] | components["schemas"]["Property"] | components["schemas"]["PropertyConfig"] | components["schemas"]["Number"] | components["schemas"]["Faq"] | components["schemas"]["LocalRec"] | components["schemas"]["Integration"] | components["schemas"]["Interaction"] | components["schemas"]["Escalation"] | components["schemas"]["Notification"] | components["schemas"]["BillingUsage"] | components["schemas"]["AuditLog"] | components["schemas"]["CompanyInvitation"] | components["schemas"]["AuthAccount"] | components["schemas"]["AuthSession"] | components["schemas"]["AuthVerification"];
+        AdminDocument: components["schemas"]["Company"] | components["schemas"]["User"] | components["schemas"]["Property"] | components["schemas"]["PropertyConfig"] | components["schemas"]["Number"] | components["schemas"]["Faq"] | components["schemas"]["LocalRec"] | components["schemas"]["Integration"] | components["schemas"]["Interaction"] | components["schemas"]["Escalation"] | components["schemas"]["Notification"] | components["schemas"]["BillingUsage"] | components["schemas"]["AuditLog"] | components["schemas"]["CompanyInvitation"] | components["schemas"]["AuthAccount"] | components["schemas"]["AuthSession"] | components["schemas"]["AuthVerification"] | components["schemas"]["AiSetting"] | components["schemas"]["ApiKey"] | components["schemas"]["Webhook"] | components["schemas"]["DncNumber"] | components["schemas"]["DataRetentionSetting"] | components["schemas"]["EvalResult"];
         /** @enum {string} */
-        TableName: "companies" | "users" | "properties" | "propertyConfigs" | "numbers" | "faqs" | "localRecs" | "integrations" | "interactions" | "escalations" | "notifications" | "billingUsage" | "auditLogs" | "companyInvitations" | "authSessions" | "authAccounts" | "authVerifications";
+        TableName: "companies" | "users" | "properties" | "propertyConfigs" | "numbers" | "faqs" | "localRecs" | "integrations" | "interactions" | "escalations" | "notifications" | "billingUsage" | "auditLogs" | "companyInvitations" | "authSessions" | "authAccounts" | "authVerifications" | "aiSettings" | "apiKeys" | "webhooks" | "dncNumbers" | "dataRetentionSettings" | "evalResults";
         Company: {
             _id: string;
             name: string;
@@ -792,6 +792,75 @@ export interface components {
             createdAt: number;
             /** Format: int64 */
             updatedAt: number;
+        };
+        AiSetting: {
+            _id: string;
+            companyId: string;
+            propertyId?: string | null;
+            greeting?: string | null;
+            tone?: string | null;
+            modelVersion?: string | null;
+            escalationKeywords?: string[] | null;
+            codeDisclosurePolicy?: string | null;
+            /** Format: int64 */
+            createdAt: number;
+            /** Format: int64 */
+            updatedAt: number;
+        };
+        ApiKey: {
+            _id: string;
+            companyId: string;
+            name: string;
+            key: string;
+            /** Format: int64 */
+            createdAt: number;
+            /** Format: int64 */
+            expiresAt?: number | null;
+            /** Format: int64 */
+            lastUsedAt?: number | null;
+        };
+        Webhook: {
+            _id: string;
+            companyId: string;
+            /** Format: uri */
+            url: string;
+            events: string[];
+            secret?: string | null;
+            status: string;
+            /** Format: int64 */
+            lastPingAt?: number | null;
+            /** Format: int64 */
+            createdAt: number;
+        };
+        DncNumber: {
+            _id: string;
+            companyId: string;
+            phone: string;
+            reason?: string | null;
+            /** Format: int64 */
+            createdAt: number;
+        };
+        DataRetentionSetting: {
+            _id: string;
+            companyId: string;
+            /** Format: int32 */
+            conversationRetentionDays?: number | null;
+            /** Format: int32 */
+            interactionRetentionDays?: number | null;
+            /** Format: int64 */
+            createdAt: number;
+            /** Format: int64 */
+            updatedAt: number;
+        };
+        EvalResult: {
+            _id: string;
+            companyId: string;
+            propertyId: string;
+            testName: string;
+            result: string;
+            score?: number | null;
+            /** Format: int64 */
+            createdAt: number;
         };
         ErrorResponse: {
             /** @example Unable to sign in */
