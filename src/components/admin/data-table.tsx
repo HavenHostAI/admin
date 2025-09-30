@@ -258,7 +258,10 @@ const DataTableRow = ({
 };
 
 const isPromise = (value: unknown): value is Promise<unknown> =>
-  value && typeof value.then === "function";
+  typeof value === "object" &&
+  value !== null &&
+  "then" in value &&
+  typeof (value as { then?: unknown }).then === "function";
 
 const DataTableEmpty = () => {
   return (

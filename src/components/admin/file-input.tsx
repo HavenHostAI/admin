@@ -139,7 +139,7 @@ export const FileInput = (props: FileInputProps) => {
     }
   };
 
-  const onRemove = (file: File) => async () => {
+  const onRemove = (file: File | TransformedFile) => async () => {
     if (validateFileRemoval) {
       try {
         await validateFileRemoval(file);
@@ -231,7 +231,7 @@ export const FileInput = (props: FileInputProps) => {
 
       {children && (
         <div className="previews flex flex-col gap-1">
-          {files.map((file: File, index: number) => (
+          {files.map((file: File | TransformedFile, index: number) => (
             <FileInputPreview
               key={index}
               file={file}
@@ -259,11 +259,11 @@ export type FileInputProps = Omit<InputProps, "type"> & {
   minSize?: DropzoneOptions["minSize"];
   multiple?: DropzoneOptions["multiple"];
   options?: DropzoneOptions;
-  onRemove?: (file: File) => void;
+  onRemove?: (file: File | TransformedFile) => void;
   placeholder?: ReactNode;
   removeIcon?: ComponentType<{ className?: string }>;
   inputProps?: DropzoneInputProps & React.ComponentProps<"input">;
-  validateFileRemoval?(file: File): boolean | Promise<boolean>;
+  validateFileRemoval?(file: File | TransformedFile): boolean | Promise<boolean>;
 };
 
 export interface TransformedFile {
@@ -271,6 +271,29 @@ export interface TransformedFile {
   src: string;
   title: string;
 }
+
+const isTransformedFile = (file: unknown): file is TransformedFile =>
+  typeof file === "object" &&
+  file !== null &&
+  "rawFile" in file &&
+  (file as { rawFile?: unknown }).rawFile instanceof File &&
+  "src" in file &&
+  typeof (file as { src?: unknown }).src === "string";
+
+const getPreviewUrl = (file: File | TransformedFile) => {
+  if (isTransformedFile(file)) {
+    const rawPreview =
+      "preview" in file.rawFile &&
+      typeof (file.rawFile as { preview?: unknown }).preview === "string"
+        ? ((file.rawFile as { preview?: unknown }).preview as string)
+        : undefined;
+    return rawPreview ?? file.src;
+  }
+  if ("preview" in file && typeof file.preview === "string") {
+    return file.preview;
+  }
+  return undefined;
+};
 
 export const FileInputPreview = (props: FileInputPreviewProps) => {
   const {
@@ -288,8 +311,7 @@ export const FileInputPreview = (props: FileInputPreviewProps) => {
 
   useEffect(() => {
     return () => {
-      const preview = file.rawFile ? file.rawFile.preview : file.preview;
-
+      const preview = getPreviewUrl(file);
       if (preview) {
         window.URL.revokeObjectURL(preview);
       }
@@ -314,7 +336,7 @@ export const FileInputPreview = (props: FileInputPreviewProps) => {
 };
 
 export interface FileInputPreviewProps extends HTMLAttributes<HTMLDivElement> {
-  file: File;
+  file: File | TransformedFile;
   onRemove: () => void;
   removeIcon?: React.ComponentType<{ className?: string }>;
 }

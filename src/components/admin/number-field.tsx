@@ -48,7 +48,7 @@ export interface NumberFieldProps<
     HTMLAttributes<HTMLSpanElement> {
   locales?: string | string[];
   options?: object;
-  transform?: (value: unknown) => number;
+  transform?: (value: unknown) => unknown;
 }
 
 const defaultTransform = (value: unknown) =>

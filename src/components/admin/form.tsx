@@ -265,7 +265,7 @@ export type SaveButtonProps = SaveButtonBaseProps &
     alwaysEnable?: boolean;
   };
 
-const valueOrDefault = (value: unknown, defaultValue: unknown) =>
+const valueOrDefault = <T,>(value: T | undefined, defaultValue: T): T =>
   typeof value === "undefined" ? defaultValue : value;
 
 export {

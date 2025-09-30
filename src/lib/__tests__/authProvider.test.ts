@@ -42,7 +42,9 @@ describe("authProvider", () => {
       ),
     );
 
-    await expect(authProvider.checkAuth()).rejects.toThrowError("Session expired");
+    await expect(authProvider.checkAuth({})).rejects.toThrowError(
+      "Session expired"
+    );
 
     expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
     expect(localStorage.getItem(USER_KEY)).toBeNull();

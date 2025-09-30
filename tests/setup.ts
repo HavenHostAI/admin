@@ -32,7 +32,11 @@ const buildPath = (reference: unknown) => {
 };
 
 class MockConvexHttpClient {
-  constructor(private readonly baseUrl: string) {}
+  private readonly baseUrl: string;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
 
   private async request(
     type: "queries" | "mutations" | "actions",

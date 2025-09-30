@@ -14,6 +14,7 @@ import {
   useCallback,
   useEffect,
   type ReactElement,
+  type ChangeEvent,
 } from "react";
 
 import { FormError, FormField, FormLabel } from "@/components/admin/form";
@@ -150,7 +151,7 @@ export const SelectInput = (props: SelectInputProps) => {
   );
 
   const handleChange = useCallback(
-    async (value: string) => {
+    (value: string) => {
       if (value === emptyValue) {
         field.onChange(emptyValue);
       } else {
@@ -164,17 +165,43 @@ export const SelectInput = (props: SelectInputProps) => {
     [field, getChoiceValue, emptyValue, allChoices]
   );
 
+  const handleCreateSuggestionChange = useCallback(
+    (input: string | ChangeEvent<unknown> | unknown) => {
+      if (typeof input === "string") {
+        handleChange(input);
+        return;
+      }
+      if (
+        input &&
+        typeof input === "object" &&
+        "target" in input &&
+        (input as { target?: unknown }).target &&
+        typeof (input as { target?: unknown }).target === "object" &&
+        (input as { target: unknown }).target !== null &&
+        "value" in (input as { target: Record<string, unknown> }).target
+      ) {
+        const eventValue = (input as {
+          target: { value?: unknown };
+        }).target.value;
+        if (typeof eventValue === "string") {
+          handleChange(eventValue);
+        }
+      }
+    },
+    [handleChange]
+  );
+
   const {
     getCreateItem,
     handleChange: handleChangeWithCreateSupport,
     createElement,
-  } = useSupportCreateSuggestion({
+  } = useSupportCreateSuggestion<string>({
     create,
     createLabel,
     createValue,
     createHintValue,
     onCreate,
-    handleChange,
+    handleChange: handleCreateSuggestionChange,
     optionText,
   });
 
@@ -293,7 +320,7 @@ export const SelectInput = (props: SelectInputProps) => {
 export type SelectInputProps = ChoicesProps &
   // Source is optional as SelectInput can be used inside a ReferenceInput that already defines the source
   Partial<InputProps> &
-  Omit<SupportCreateSuggestionOptions, "handleChange"> & {
+  Omit<SupportCreateSuggestionOptions<string>, "handleChange"> & {
     emptyText?: string | ReactElement;
     emptyValue?: unknown;
     onChange?: (value: string) => void;
