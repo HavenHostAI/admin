@@ -49,6 +49,75 @@ const ensureTable = (table: string): TableNames => {
   throw new Error(`Unknown table "${table}".`);
 };
 
+const AI_RESOLUTION_KEYWORDS = [
+  "ai",
+  "assistant",
+  "automated",
+  "auto",
+  "bot",
+  "virtual",
+];
+
+const CLOSED_ESCALATION_STATUSES = new Set([
+  "closed",
+  "resolved",
+  "completed",
+  "dismissed",
+  "cancelled",
+]);
+
+const DEFAULT_DASHBOARD_WINDOW_DAYS = 7;
+
+const clampWindow = (days: number | undefined) => {
+  if (!days || Number.isNaN(days)) {
+    return DEFAULT_DASHBOARD_WINDOW_DAYS;
+  }
+  return Math.max(1, Math.min(30, Math.floor(days)));
+};
+
+const createDateWindow = (days: number) => {
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const window: string[] = [];
+  for (let offset = days - 1; offset >= 0; offset -= 1) {
+    const date = new Date(today);
+    date.setUTCDate(today.getUTCDate() - offset);
+    window.push(date.toISOString().slice(0, 10));
+  }
+  return window;
+};
+
+const getDateKey = (timestamp: number) => {
+  const date = new Date(timestamp);
+  date.setUTCHours(0, 0, 0, 0);
+  return date.toISOString().slice(0, 10);
+};
+
+const isCallChannel = (channel: string | undefined) => {
+  if (!channel) return true;
+  const value = channel.toLowerCase();
+  return (
+    value.includes("call") ||
+    value.includes("phone") ||
+    value.includes("voice") ||
+    value.includes("telephony")
+  );
+};
+
+const formatPriorityLabel = (priority: string | undefined) => {
+  if (!priority) return "Unspecified";
+  const trimmed = priority.trim();
+  if (!trimmed) return "Unspecified";
+  return trimmed
+    .split(/\s+/)
+    .map((segment) =>
+      segment ? segment[0].toUpperCase() + segment.slice(1).toLowerCase() : "",
+    )
+    .join(" ");
+};
+
+const PRIORITY_ORDER = ["Critical", "High", "Medium", "Low", "Unspecified"];
+
 /**
  * OpenAPI operation `adminList` (`POST /admin/list`).
  *
@@ -222,6 +291,109 @@ export const deleteMany = mutation({
   handler: async (ctx, args) => {
     const table = ensureTable(args.table);
     return deleteManyDocuments(ctx, table, args.ids);
+  },
+});
+
+export const dashboard = query({
+  args: {
+    companyId: v.id("companies"),
+    days: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const windowDays = clampWindow(args.days);
+    const timeline = createDateWindow(windowDays);
+    const timelineSet = new Set(timeline);
+
+    const [properties, interactions, escalations] = await Promise.all([
+      ctx.db
+        .query("properties")
+        .withIndex("by_company", (q) => q.eq("companyId", args.companyId))
+        .collect(),
+      ctx.db
+        .query("interactions")
+        .withIndex("by_company", (q) => q.eq("companyId", args.companyId))
+        .collect(),
+      ctx.db.query("escalations").collect(),
+    ]);
+
+    const relevantEscalations = escalations.filter(
+      (escalation) => escalation.companyId === args.companyId,
+    );
+
+    const callInteractions = interactions.filter((interaction) =>
+      isCallChannel(interaction.channel),
+    );
+
+    const windowedCalls = callInteractions.filter((interaction) =>
+      timelineSet.has(getDateKey(interaction.createdAt)),
+    );
+
+    const callsByDate = new Map<string, number>(
+      timeline.map((date) => [date, 0]),
+    );
+
+    for (const interaction of windowedCalls) {
+      const key = getDateKey(interaction.createdAt);
+      if (callsByDate.has(key)) {
+        callsByDate.set(key, (callsByDate.get(key) ?? 0) + 1);
+      }
+    }
+
+    const callsOverTime = timeline.map((date) => ({
+      date,
+      count: callsByDate.get(date) ?? 0,
+    }));
+
+    const aiResolvedCount = windowedCalls.reduce((total, interaction) => {
+      const result = (interaction.result ?? "").toLowerCase();
+      return AI_RESOLUTION_KEYWORDS.some((keyword) => result.includes(keyword))
+        ? total + 1
+        : total;
+    }, 0);
+
+    const closedStatuses = CLOSED_ESCALATION_STATUSES;
+    const openEscalations = relevantEscalations.filter((escalation) => {
+      const status = (escalation.status ?? "").toLowerCase();
+      return !closedStatuses.has(status);
+    });
+
+    const escalationPriorityMap = new Map<string, number>();
+    for (const escalation of openEscalations) {
+      const label = formatPriorityLabel(escalation.priority);
+      escalationPriorityMap.set(
+        label,
+        (escalationPriorityMap.get(label) ?? 0) + 1,
+      );
+    }
+
+    const escalationsByPriority = Array.from(
+      escalationPriorityMap.entries(),
+      ([priority, value]) => ({ priority, value }),
+    ).sort((a, b) => {
+      const aIndex = PRIORITY_ORDER.indexOf(a.priority);
+      const bIndex = PRIORITY_ORDER.indexOf(b.priority);
+      const safeA = aIndex === -1 ? PRIORITY_ORDER.length : aIndex;
+      const safeB = bIndex === -1 ? PRIORITY_ORDER.length : bIndex;
+      return safeA - safeB;
+    });
+
+    const totalCalls = windowedCalls.length;
+    const aiResolutionRate =
+      totalCalls === 0 ? 0 : aiResolvedCount / totalCalls;
+
+    return {
+      metrics: {
+        callsHandled: totalCalls,
+        aiResolutionRate,
+        openEscalations: openEscalations.length,
+        unitsUnderManagement: properties.length,
+      },
+      charts: {
+        callsOverTime,
+        escalationsByPriority,
+      },
+      lastUpdated: Date.now(),
+    };
   },
 });
 
