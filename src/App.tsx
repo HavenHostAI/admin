@@ -1,5 +1,5 @@
 import { Resource, CustomRoutes } from "ra-core";
-import { Route } from "react-router";
+import { Route } from "react-router-dom";
 import { Admin } from "@/components/admin";
 import dataProvider from "@/lib/convexDataProvider";
 import { authProvider } from "@/lib/authProvider";
