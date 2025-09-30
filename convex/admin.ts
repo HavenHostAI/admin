@@ -34,6 +34,12 @@ const tables: TableNames[] = [
   "authSessions",
   "authAccounts",
   "authVerifications",
+  "aiSettings",
+  "apiKeys",
+  "webhooks",
+  "dncNumbers",
+  "dataRetentionSettings",
+  "evalResults",
 ];
 
 const ensureTable = (table: string): TableNames => {

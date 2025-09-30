@@ -355,4 +355,68 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_identifier", ["identifier"]),
+
+  aiSettings: defineTable({
+    companyId: v.id("companies"),
+    propertyId: v.optional(v.id("properties")),
+    greeting: v.optional(v.string()),
+    tone: v.optional(v.string()),
+    modelVersion: v.optional(v.string()),
+    escalationKeywords: v.optional(v.array(v.string())),
+    codeDisclosurePolicy: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_company_property", ["companyId", "propertyId"]),
+
+  // API keys for tenants to authenticate third‑party services.
+  apiKeys: defineTable({
+    companyId: v.id("companies"),
+    name: v.string(),
+    key: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.optional(v.number()),
+    lastUsedAt: v.optional(v.number()),
+  })
+    .index("by_company", ["companyId"])
+    .index("by_key", ["key"]),
+
+  // Webhook registrations for outbound notifications.
+  webhooks: defineTable({
+    companyId: v.id("companies"),
+    url: v.string(),
+    events: v.array(v.string()),
+    secret: v.optional(v.string()),
+    status: v.string(),
+    lastPingAt: v.optional(v.number()),
+    createdAt: v.number(),
+  }).index("by_company", ["companyId"]),
+
+  // Do‑not‑call numbers to comply with customers’ preferences.
+  dncNumbers: defineTable({
+    companyId: v.id("companies"),
+    phone: v.string(),
+    reason: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_company_phone", ["companyId", "phone"]),
+
+  // Data retention settings controlling how long to store interactions.
+  dataRetentionSettings: defineTable({
+    companyId: v.id("companies"),
+    conversationRetentionDays: v.optional(v.number()),
+    interactionRetentionDays: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_company", ["companyId"]),
+
+  // Evaluation results for nightly QA or test suites.
+  evalResults: defineTable({
+    companyId: v.id("companies"),
+    propertyId: v.id("properties"),
+    testName: v.string(),
+    result: v.string(),
+    score: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_property_test", ["propertyId", "testName"])
+    .index("by_company", ["companyId"]),
 });
