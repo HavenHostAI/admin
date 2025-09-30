@@ -111,7 +111,7 @@ export const ShowView = ({
       </Breadcrumb>
       <div
         className={cn(
-          "flex justify-between items-start flex-wrap gap-2 my-2",
+          "my-2 flex flex-wrap items-start justify-between gap-2",
           className,
         )}
       >
@@ -119,7 +119,7 @@ export const ShowView = ({
           {title !== undefined ? title : context.defaultTitle}
         </h2>
         {actions ?? (
-          <div className="flex justify-end items-center">
+          <div className="flex items-center justify-end">
             {hasEdit ? <EditButton /> : null}
           </div>
         )}

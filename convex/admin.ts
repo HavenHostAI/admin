@@ -43,6 +43,12 @@ const ensureTable = (table: string): TableNames => {
   throw new Error(`Unknown table "${table}".`);
 };
 
+/**
+ * OpenAPI operation `adminList` (`POST /admin/list`).
+ *
+ * Returns paginated documents from the requested table with optional sort and
+ * filter arguments that mirror the admin UI data provider contract.
+ */
 export const list = query({
   args: {
     table: v.string(),
@@ -54,6 +60,12 @@ export const list = query({
   },
 });
 
+/**
+ * OpenAPI operation `adminGet` (`POST /admin/get`).
+ *
+ * Fetches a single document from the target table using either a Convex id or
+ * a stable external identifier recognised by `normalizeId`.
+ */
 export const get = query({
   args: {
     table: v.string(),
@@ -65,6 +77,12 @@ export const get = query({
   },
 });
 
+/**
+ * OpenAPI operation `adminGetMany` (`POST /admin/getMany`).
+ *
+ * Resolves multiple documents by id, preserving only the entries that exist in
+ * the Convex store.
+ */
 export const getMany = query({
   args: {
     table: v.string(),
@@ -76,6 +94,12 @@ export const getMany = query({
   },
 });
 
+/**
+ * OpenAPI operation `adminGetManyReference` (`POST /admin/getManyReference`).
+ *
+ * Lists documents that reference a foreign id, supporting pagination, sort,
+ * and additional filters for admin reference inputs.
+ */
 export const getManyReference = query({
   args: {
     table: v.string(),
@@ -87,6 +111,12 @@ export const getManyReference = query({
   },
 });
 
+/**
+ * OpenAPI operation `adminCreate` (`POST /admin/create`).
+ *
+ * Inserts a new document into the requested table after stripping client-side
+ * identifiers from the payload.
+ */
 export const create = mutation({
   args: {
     table: v.string(),
@@ -104,6 +134,12 @@ export const create = mutation({
   },
 });
 
+/**
+ * OpenAPI operation `adminUpdate` (`POST /admin/update`).
+ *
+ * Partially updates an existing document, ensuring the id is normalised prior
+ * to applying the requested patch.
+ */
 export const update = mutation({
   args: {
     table: v.string(),
@@ -122,6 +158,12 @@ export const update = mutation({
   },
 });
 
+/**
+ * OpenAPI operation `adminUpdateMany` (`POST /admin/updateMany`).
+ *
+ * Applies the same patch across multiple documents and returns the list of
+ * external identifiers that were successfully updated.
+ */
 export const updateMany = mutation({
   args: {
     table: v.string(),
@@ -140,6 +182,12 @@ export const updateMany = mutation({
   },
 });
 
+/**
+ * OpenAPI operation `adminDelete` (`POST /admin/delete`).
+ *
+ * Removes a single document and returns its previous state for audit-aware
+ * clients.
+ */
 export const del = mutation({
   args: {
     table: v.string(),
@@ -153,6 +201,12 @@ export const del = mutation({
   },
 });
 
+/**
+ * OpenAPI operation `adminDeleteMany` (`POST /admin/deleteMany`).
+ *
+ * Deletes multiple documents by id and returns the identifiers that were
+ * successfully removed.
+ */
 export const deleteMany = mutation({
   args: {
     table: v.string(),
@@ -165,6 +219,12 @@ export const deleteMany = mutation({
   },
 });
 
+/**
+ * OpenAPI operation `adminNormalizeId` (`POST /admin/normalizeId`).
+ *
+ * Converts a human-friendly identifier into the Convex document id, throwing
+ * when the value cannot be resolved.
+ */
 export const normalizeId = query({
   args: {
     table: v.string(),

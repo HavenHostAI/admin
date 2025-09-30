@@ -9,14 +9,16 @@ import {
 } from "@/hooks/useSupportCreateSuggestion";
 
 vi.mock("ra-core", () => ({
-  useTranslate: () =>
-    (key: string, options?: { _: string }) => options?._ ?? key,
+  useTranslate: () => (key: string, options?: { _: string }) =>
+    options?._ ?? key,
 }));
 
 describe("useSupportCreateSuggestion", () => {
   it("calls the provided onCreate handler when the create option is selected", async () => {
     const handleChange = vi.fn();
-    const onCreate = vi.fn().mockResolvedValue({ id: "new", name: "New option" });
+    const onCreate = vi
+      .fn()
+      .mockResolvedValue({ id: "new", name: "New option" });
 
     const { result } = renderHook(() =>
       useSupportCreateSuggestion({
@@ -25,10 +27,15 @@ describe("useSupportCreateSuggestion", () => {
       }),
     );
 
-    await result.current.handleChange({ target: { value: { id: "@@ra-create" } } });
+    await result.current.handleChange({
+      target: { value: { id: "@@ra-create" } },
+    });
 
     expect(onCreate).toHaveBeenCalledWith(undefined);
-    expect(handleChange).toHaveBeenCalledWith({ id: "new", name: "New option" });
+    expect(handleChange).toHaveBeenCalledWith({
+      id: "new",
+      name: "New option",
+    });
   });
 
   it("renders the creation form and submits new values", async () => {
@@ -40,7 +47,9 @@ describe("useSupportCreateSuggestion", () => {
       return (
         <div>
           <span data-testid="filter-value">{filter}</span>
-          <button onClick={() => onCreate({ id: "created", name: filter })}>Save</button>
+          <button onClick={() => onCreate({ id: "created", name: filter })}>
+            Save
+          </button>
           <button onClick={onCancel}>Cancel</button>
         </div>
       );
@@ -56,7 +65,9 @@ describe("useSupportCreateSuggestion", () => {
       return (
         <div>
           <button
-            onClick={() => support.handleChange({ target: { value: { id: "@@ra-create" } } })}
+            onClick={() =>
+              support.handleChange({ target: { value: { id: "@@ra-create" } } })
+            }
           >
             Add new
           </button>
@@ -81,9 +92,9 @@ describe("useSupportCreateSuggestion", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByTestId("create-portal").contains(
-          screen.queryByRole("button", { name: /save/i }),
-        ),
+        screen
+          .getByTestId("create-portal")
+          .contains(screen.queryByRole("button", { name: /save/i })),
       ).toBe(false),
     );
   });

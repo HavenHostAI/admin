@@ -33,7 +33,7 @@ export const BulkDeleteButton = <
   RecordType extends RaRecord = RaRecord,
   MutationOptionsError = unknown,
 >(
-  props: BulkDeleteButtonProps<RecordType, MutationOptionsError>
+  props: BulkDeleteButtonProps<RecordType, MutationOptionsError>,
 ) => {
   const {
     mutationMode = "undoable",
@@ -84,7 +84,7 @@ export const BulkDeleteButton = <
           refresh();
         },
         ...otherMutationOptions,
-      }
+      },
     );
   };
   return (

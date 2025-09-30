@@ -104,6 +104,12 @@ const serializeUser = (raw: Record<string, unknown>) => ({
     raw.updatedAt instanceof Date ? raw.updatedAt.toISOString() : raw.updatedAt,
 });
 
+/**
+ * OpenAPI operation `authSignIn` (`POST /auth/sign-in`).
+ *
+ * Authenticates a user via Better Auth and returns the issued session token
+ * alongside the serialized user document used throughout the admin UI.
+ */
 export const signIn = action({
   args: {
     email: v.string(),
@@ -133,7 +139,7 @@ export const signIn = action({
       if (error && typeof error === "object" && "body" in error) {
         throw new Error(
           (error as { body?: { message?: string } }).body?.message ??
-            "Unable to sign in"
+            "Unable to sign in",
         );
       }
       throw error;
@@ -141,6 +147,13 @@ export const signIn = action({
   },
 });
 
+/**
+ * OpenAPI operation `authSignUp` (`POST /auth/sign-up`).
+ *
+ * Registers a user through Better Auth. When an invitation token is supplied,
+ * the user joins an existing company; otherwise a new company record is
+ * created before issuing the session.
+ */
 export const signUp = action({
   args: {
     email: v.string(),
@@ -153,7 +166,7 @@ export const signUp = action({
   },
   handler: async (
     ctx,
-    args
+    args,
   ): Promise<{ token: string; user: Record<string, unknown> }> => {
     const auth = createAuth(ctx);
     const now = Date.now();
@@ -167,7 +180,7 @@ export const signUp = action({
         internal.companyStore.getInvitationByToken,
         {
           token: args.invitationToken,
-        }
+        },
       )) as (Doc<"companyInvitations"> & Record<string, unknown>) | null;
       if (!invitation || invitation.status !== "pending") {
         throw new Error("This invitation is no longer valid");
@@ -181,7 +194,7 @@ export const signUp = action({
       }
       if (invitation.email.toLowerCase() !== emailLower) {
         throw new Error(
-          "This invitation was sent to a different email address"
+          "This invitation was sent to a different email address",
         );
       }
       companyId = invitation.companyId;
@@ -198,7 +211,7 @@ export const signUp = action({
           timezone: args.companyTimezone ?? "UTC",
           plan: args.companyPlan ?? "starter",
           createdAt: now,
-        }
+        },
       )) as Doc<"companies">;
       companyId = companyDoc._id;
       roleForUser = "owner";
@@ -256,7 +269,7 @@ export const signUp = action({
         internal.companyStore.getInvitationByToken,
         {
           token: args.invitationToken,
-        }
+        },
       )) as (Doc<"companyInvitations"> & Record<string, unknown>) | null;
       if (invitation) {
         await ctx.runMutation(internal.companyStore.updateInvitation, {
@@ -287,6 +300,12 @@ export const signUp = action({
   },
 });
 
+/**
+ * OpenAPI operation `authValidateSession` (`POST /auth/validate-session`).
+ *
+ * Validates a session token and resolves both the session metadata and the
+ * associated user document, expiring stale tokens along the way.
+ */
 export const validateSession = action({
   args: {
     token: v.string(),
@@ -336,6 +355,12 @@ export const validateSession = action({
   },
 });
 
+/**
+ * OpenAPI operation `authSignOut` (`POST /auth/sign-out`).
+ *
+ * Revokes a session token by removing the matching record from the backing
+ * storage. No payload is returned when the token is absent.
+ */
 export const signOut = action({
   args: {
     token: v.string(),

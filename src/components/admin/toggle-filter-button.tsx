@@ -27,8 +27,8 @@ export const ToggleFilterButton = ({
       onClick={handleClick}
       className={cn(
         "cursor-pointer",
-        "flex flex-row items-center justify-between gap-2 px-2.5 w-full",
-        className
+        "flex w-full flex-row items-center justify-between gap-2 px-2.5",
+        className,
       )}
       size={size}
     >
@@ -40,10 +40,10 @@ export const ToggleFilterButton = ({
 
 const toggleFilter = (
   value: Record<string, unknown>,
-  filters: Record<string, unknown>
+  filters: Record<string, unknown>,
 ) => {
   const isSelected = matches(
-    pickBy(value, (val) => typeof val !== "undefined")
+    pickBy(value, (val) => typeof val !== "undefined"),
   )(filters);
 
   if (isSelected) {
@@ -51,7 +51,7 @@ const toggleFilter = (
     return Object.keys(filters).reduce(
       (acc, key) =>
         keysToRemove.includes(key) ? acc : { ...acc, [key]: filters[key] },
-      {}
+      {},
     );
   }
 
@@ -60,5 +60,5 @@ const toggleFilter = (
 
 const getIsSelected = (
   value: Record<string, unknown>,
-  filters: Record<string, unknown>
+  filters: Record<string, unknown>,
 ) => matches(pickBy(value, (val) => typeof val !== "undefined"))(filters);

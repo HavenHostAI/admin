@@ -16,7 +16,7 @@ export const SimpleForm = ({
   toolbar?: ReactNode;
 } & FormProps) => (
   <Form
-    className={cn(`flex flex-col gap-4 w-full max-w-lg`, className)}
+    className={cn(`flex w-full max-w-lg flex-col gap-4`, className)}
     {...rest}
   >
     {children}
@@ -32,13 +32,13 @@ export const FormToolbar = ({
   <div
     {...rest}
     className={cn(
-      "sticky pt-4 pb-4 md:block md:pt-2 md:pb-0 bottom-0 bg-linear-to-b from-transparent to-background to-10%",
+      "to-background sticky bottom-0 bg-linear-to-b from-transparent to-10% pt-4 pb-4 md:block md:pt-2 md:pb-0",
       className,
     )}
     role="toolbar"
   >
     {Children.count(children) === 0 ? (
-      <div className="flex flex-row gap-2 justify-end">
+      <div className="flex flex-row justify-end gap-2">
         <CancelButton />
         <SaveButton />
       </div>

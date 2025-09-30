@@ -45,7 +45,7 @@ const EditViewGuesser = (props: { enableLog?: boolean }) => {
       const inferredChild = new InferredElement(
         editFieldTypes.form,
         null,
-        inferredElements
+        inferredElements,
       );
       setChild(inferredChild.getElement());
 
@@ -59,9 +59,9 @@ const EditViewGuesser = (props: { enableLog?: boolean }) => {
             new Set(
               Array.from(representation.matchAll(/<([^/\s>]+)/g))
                 .map((match) => match[1])
-                .filter((component) => component !== "span")
-            )
-          )
+                .filter((component) => component !== "span"),
+            ),
+          ),
         )
         .sort();
 
@@ -72,8 +72,8 @@ ${components
   .map(
     (component) =>
       `import { ${component} } from "@/components/admin/${kebabCase(
-        component
-      )}";`
+        component,
+      )}";`,
   )
   .join("\n")}
 
@@ -81,7 +81,7 @@ export const ${capitalize(singularize(resource))}Edit = () => (
     <Edit>
 ${representation}
     </Edit>
-);`
+);`,
       );
     }
   }, [record, child, resource, enableLog]);
@@ -94,7 +94,7 @@ const editFieldTypes: InferredTypeMap = {
     component: (props: Record<string, unknown>) => <SimpleForm {...props} />,
     representation: (
       _props: Record<string, unknown>,
-      children: { getRepresentation: () => string }[]
+      children: { getRepresentation: () => string }[],
     ) => `        <SimpleForm>
 ${children
   .map((child) => `            ${child.getRepresentation()}`)

@@ -23,12 +23,17 @@ const LoginPageComponent = ({
 }: LoginPageProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search],
+  );
   const invitationToken = searchParams.get("invitation") ?? undefined;
   const invitationEmail = searchParams.get("email") ?? undefined;
 
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<LoginMode>(invitationToken ? "signup" : defaultMode);
+  const [mode, setMode] = useState<LoginMode>(
+    invitationToken ? "signup" : defaultMode,
+  );
   const isSignUp = mode === "signup";
   const login = useLogin();
   const notify = useNotify();
@@ -71,12 +76,19 @@ const LoginPageComponent = ({
       }
       await login({ email, password }, redirectTo);
     } catch (error) {
-      const fallback = isSignUp ? "auth.sign_up_error" : "ra.auth.sign_in_error";
+      const fallback = isSignUp
+        ? "auth.sign_up_error"
+        : "ra.auth.sign_in_error";
       let message = fallback;
       if (typeof error === "string") {
         message = error;
-      } else if (error && typeof (error as { body?: { message?: string } }).body?.message === "string") {
-        message = (error as { body?: { message?: string } }).body!.message as string;
+      } else if (
+        error &&
+        typeof (error as { body?: { message?: string } }).body?.message ===
+          "string"
+      ) {
+        message = (error as { body?: { message?: string } }).body!
+          .message as string;
       } else if (error instanceof Error && error.message) {
         message = error.message;
       }
@@ -90,9 +102,9 @@ const LoginPageComponent = ({
   };
 
   return (
-    <div className="min-h-screen flex">
-      <div className="container relative grid flex-col items-center justify-center sm:max-w-none lg:grid-cols-2 lg:px-0">
-        <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
+    <div className="flex min-h-screen">
+      <div className="relative container grid flex-col items-center justify-center sm:max-w-none lg:grid-cols-2 lg:px-0">
+        <div className="bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r">
           <div className="absolute inset-0 bg-zinc-900" />
           <div className="relative z-20 flex items-center text-lg font-medium">
             <svg
@@ -126,7 +138,7 @@ const LoginPageComponent = ({
               <h1 className="text-2xl font-semibold tracking-tight">
                 {isSignUp ? "Create an account" : "Sign in"}
               </h1>
-              <p className="text-sm leading-none text-muted-foreground">
+              <p className="text-muted-foreground text-sm leading-none">
                 {isSignUp
                   ? invitationToken
                     ? "Finish creating your HavenHost account to join your company."
@@ -188,7 +200,7 @@ const LoginPageComponent = ({
                     : "Sign in"}
               </Button>
             </Form>
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-muted-foreground text-center text-sm">
               {isSignUp ? "Already have an account?" : "Need an account?"}
               {allowModeSwitch ? (
                 <Button
@@ -215,7 +227,10 @@ type RoutedLoginPageProps = {
   allowModeSwitch?: boolean;
 };
 
-export const LoginPage = ({ redirectTo, allowModeSwitch }: RoutedLoginPageProps) => (
+export const LoginPage = ({
+  redirectTo,
+  allowModeSwitch,
+}: RoutedLoginPageProps) => (
   <LoginPageComponent
     redirectTo={redirectTo}
     defaultMode="login"
@@ -223,7 +238,10 @@ export const LoginPage = ({ redirectTo, allowModeSwitch }: RoutedLoginPageProps)
   />
 );
 
-export const SignupPage = ({ redirectTo, allowModeSwitch }: RoutedLoginPageProps) => (
+export const SignupPage = ({
+  redirectTo,
+  allowModeSwitch,
+}: RoutedLoginPageProps) => (
   <LoginPageComponent
     redirectTo={redirectTo}
     defaultMode="signup"

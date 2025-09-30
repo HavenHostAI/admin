@@ -25,7 +25,7 @@ import type { FieldProps } from "@/lib/field.type";
 export const FileField = <
   RecordType extends Record<string, unknown> = Record<string, unknown>,
 >(
-  props: FileFieldProps<RecordType>
+  props: FileFieldProps<RecordType>,
 ) => {
   const {
     className,

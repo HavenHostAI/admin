@@ -37,7 +37,8 @@ export const findInvitationByCompanyEmail = internalQuery({
     const invitations = await ctx.db.query("companyInvitations").collect();
     return (
       invitations.find(
-        (inv) => inv.companyId === companyId && inv.email.toLowerCase() === emailLower,
+        (inv) =>
+          inv.companyId === companyId && inv.email.toLowerCase() === emailLower,
       ) ?? null
     );
   },

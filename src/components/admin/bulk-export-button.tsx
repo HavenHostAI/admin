@@ -50,7 +50,7 @@ export const BulkExportButton = <T extends RaRecord>({
       role="button"
       variant="outline"
       size="sm"
-      className="flex items-center gap-2 h-9"
+      className="flex h-9 items-center gap-2"
       {...sanitizeRestProps(props)}
     >
       {icon}

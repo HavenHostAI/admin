@@ -76,7 +76,7 @@ export const SelectInput = (props: SelectInputProps) => {
   useEffect(() => {
     if (emptyValue == null) {
       throw new Error(
-        `emptyValue being set to null or undefined is not supported. Use parse to turn the empty string into null.`
+        `emptyValue being set to null or undefined is not supported. Use parse to turn the empty string into null.`,
       );
     }
   }, [emptyValue]);
@@ -99,13 +99,13 @@ export const SelectInput = (props: SelectInputProps) => {
 
   if (source === undefined) {
     throw new Error(
-      `If you're not wrapping the SelectInput inside a ReferenceInput, you must provide the source prop`
+      `If you're not wrapping the SelectInput inside a ReferenceInput, you must provide the source prop`,
     );
   }
 
   if (!isPending && !fetchError && allChoices === undefined) {
     throw new Error(
-      `If you're not wrapping the SelectInput inside a ReferenceInput, you must provide the choices prop`
+      `If you're not wrapping the SelectInput inside a ReferenceInput, you must provide the choices prop`,
     );
   }
 
@@ -146,7 +146,7 @@ export const SelectInput = (props: SelectInputProps) => {
 
   const renderMenuItemOption = useCallback(
     (choice: unknown) => getChoiceText(choice),
-    [getChoiceText]
+    [getChoiceText],
   );
 
   const handleChange = useCallback(
@@ -156,12 +156,12 @@ export const SelectInput = (props: SelectInputProps) => {
       } else {
         // Find the choice by value and pass it to field.onChange
         const choice = allChoices?.find(
-          (choice) => getChoiceValue(choice) === value
+          (choice) => getChoiceValue(choice) === value,
         );
         field.onChange(choice ? getChoiceValue(choice) : value);
       }
     },
-    [field, getChoiceValue, emptyValue, allChoices]
+    [field, getChoiceValue, emptyValue, allChoices],
   );
 
   const {
@@ -196,7 +196,7 @@ export const SelectInput = (props: SelectInputProps) => {
           </FormLabel>
         )}
         <div className="relative">
-          <Skeleton className="w-full h-9" />
+          <Skeleton className="h-9 w-full" />
         </div>
         <InputHelperText helperText={helperText} />
         <FormError />
@@ -245,7 +245,7 @@ export const SelectInput = (props: SelectInputProps) => {
             onValueChange={handleChangeWithCreateSupport}
           >
             <SelectTrigger
-              className={cn("w-full transition-all hover:bg-accent")}
+              className={cn("hover:bg-accent w-full transition-all")}
               disabled={field.disabled}
             >
               <SelectValue placeholder={renderEmptyItemOption()} />
@@ -253,7 +253,7 @@ export const SelectInput = (props: SelectInputProps) => {
               {field.value && field.value !== emptyValue ? (
                 <div
                   role="button"
-                  className="p-0 ml-auto pointer-events-auto hover:bg-transparent text-muted-foreground opacity-50 hover:opacity-100"
+                  className="text-muted-foreground pointer-events-auto ml-auto p-0 opacity-50 hover:bg-transparent hover:opacity-100"
                   onClick={handleReset}
                 >
                   <X className="h-4 w-4" />
@@ -275,7 +275,7 @@ export const SelectInput = (props: SelectInputProps) => {
                     {renderMenuItemOption(
                       !!createItem && choice?.id === createItem.id
                         ? createItem
-                        : choice
+                        : choice,
                     )}
                   </SelectItem>
                 );

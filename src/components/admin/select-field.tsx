@@ -69,7 +69,7 @@ import { genericMemo } from "@/lib/genericMemo";
 const SelectFieldImpl = <
   RecordType extends Record<string, unknown> = Record<string, unknown>,
 >(
-  props: SelectFieldProps<RecordType>
+  props: SelectFieldProps<RecordType>,
 ) => {
   const {
     className,

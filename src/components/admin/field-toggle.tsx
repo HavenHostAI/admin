@@ -22,7 +22,7 @@ export const FieldToggle = (props: FieldToggleProps) => {
   const handleDragStart = () => {
     document.addEventListener(
       "dragover",
-      handleDocumentDragOver as EventListener
+      handleDocumentDragOver as EventListener,
     );
   };
 
@@ -36,7 +36,7 @@ export const FieldToggle = (props: FieldToggleProps) => {
     }
     const elementAtDragCoordinates = document.elementFromPoint(
       x.current,
-      y.current
+      y.current,
     );
     let dropItem =
       elementAtDragCoordinates === null
@@ -104,7 +104,7 @@ export const FieldToggle = (props: FieldToggleProps) => {
     selectedItem.dataset.dragActive = "false";
     document.removeEventListener(
       "dragover",
-      handleDocumentDragOver as EventListener
+      handleDocumentDragOver as EventListener,
     );
   };
 
@@ -124,13 +124,13 @@ export const FieldToggle = (props: FieldToggleProps) => {
       onDragOver={onMove ? handleDragOver : undefined}
       data-index={index}
       className={cn(
-        "flex justify-between items-center py-1",
-        "data-[drag-active=true]:bg-transparent data-[drag-active=true]:text-transparent data-[drag-active=true]:outline data-[drag-active=true]:outline-1 data-[drag-active=true]:outline-border"
+        "flex items-center justify-between py-1",
+        "data-[drag-active=true]:outline-border data-[drag-active=true]:bg-transparent data-[drag-active=true]:text-transparent data-[drag-active=true]:outline data-[drag-active=true]:outline-1",
       )}
     >
       <label
         htmlFor={`switch_${index}`}
-        className="flex items-center gap-2 cursor-pointer"
+        className="flex cursor-pointer items-center gap-2"
       >
         <Switch
           id={`switch_${index}`}
@@ -143,7 +143,7 @@ export const FieldToggle = (props: FieldToggleProps) => {
         </span>
       </label>
       {onMove && (
-        <GripVertical className="cursor-move dragIcon w-4 h-4 text-muted-foreground" />
+        <GripVertical className="dragIcon text-muted-foreground h-4 w-4 cursor-move" />
       )}
     </li>
   );
@@ -155,7 +155,7 @@ export interface FieldToggleProps {
   onToggle?: (event: boolean) => void;
   onMove?: (
     dragIndex: string | number,
-    dropIndex: string | number | null
+    dropIndex: string | number | null,
   ) => void;
   source: string;
   index: number | string;

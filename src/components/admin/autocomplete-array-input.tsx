@@ -40,7 +40,7 @@ export const AutocompleteArrayInput = (
       inputText?:
         | React.ReactNode
         | ((option: unknown | undefined) => React.ReactNode);
-    }
+    },
 ) => {
   const { filterToQuery = DefaultFilterToQuery, inputText } = props;
   const {
@@ -69,7 +69,7 @@ export const AutocompleteArrayInput = (
 
   const handleUnselect = useEvent((choice: unknown) => {
     field.onChange(
-      field.value.filter((v: unknown) => v !== getChoiceValue(choice))
+      field.value.filter((v: unknown) => v !== getChoiceValue(choice)),
     );
   });
 
@@ -89,10 +89,10 @@ export const AutocompleteArrayInput = (
   });
 
   const availableChoices = allChoices.filter(
-    (choice) => !field.value.includes(getChoiceValue(choice))
+    (choice) => !field.value.includes(getChoiceValue(choice)),
   );
   const selectedChoices = allChoices.filter((choice) =>
-    field.value.includes(getChoiceValue(choice))
+    field.value.includes(getChoiceValue(choice)),
   );
   const [filterValue, setFilterValue] = React.useState("");
 
@@ -106,7 +106,7 @@ export const AutocompleteArrayInput = (
       }
       return getChoiceText(selectedChoice);
     },
-    [inputText, getChoiceText]
+    [inputText, getChoiceText],
   );
 
   return (
@@ -127,13 +127,13 @@ export const AutocompleteArrayInput = (
           shouldFilter={!isFromReference}
           className="overflow-visible bg-transparent"
         >
-          <div className="group rounded-md bg-transparent dark:bg-input/30 border border-input px-3 py-1.75 text-sm transition-all ring-offset-background focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]">
+          <div className="group dark:bg-input/30 border-input ring-offset-background focus-within:border-ring focus-within:ring-ring/50 rounded-md border bg-transparent px-3 py-1.75 text-sm transition-all focus-within:ring-[3px]">
             <div className="flex flex-wrap gap-1">
               {selectedChoices.map((choice) => (
                 <Badge key={getChoiceValue(choice)} variant="outline">
                   {getInputText(choice)}
                   <button
-                    className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    className="ring-offset-background focus:ring-ring ml-1 rounded-full outline-none focus:ring-2 focus:ring-offset-2"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         handleUnselect(choice);
@@ -172,21 +172,21 @@ export const AutocompleteArrayInput = (
                 onBlur={() => setOpen(false)}
                 onFocus={() => setOpen(true)}
                 placeholder={placeholder}
-                className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+                className="placeholder:text-muted-foreground ml-2 flex-1 bg-transparent outline-none"
               />
             </div>
           </div>
           <div className="relative">
             <CommandList>
               {open && availableChoices.length > 0 ? (
-                <div className="absolute top-2 z-10 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
+                <div className="bg-popover text-popover-foreground animate-in absolute top-2 z-10 w-full rounded-md border shadow-md outline-none">
                   <CommandGroup className="h-full overflow-auto">
                     {availableChoices.map((choice) => {
                       return (
                         <CommandItem
                           key={getChoiceValue(choice)}
                           onMouseDown={(
-                            event: React.MouseEvent<HTMLDivElement>
+                            event: React.MouseEvent<HTMLDivElement>,
                           ) => {
                             event.preventDefault();
                             event.stopPropagation();

@@ -43,7 +43,7 @@ export const BooleanInput = (props: BooleanInputProps) => {
       // Ensure field is considered as touched
       field.onBlur();
     },
-    [field]
+    [field],
   );
 
   return (

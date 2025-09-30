@@ -33,7 +33,7 @@ import set from "lodash/set";
  * - getOptionDisabled: a function which should be passed to the input to disable the create choice when the filter is empty (to make it a hint).
  */
 export const useSupportCreateSuggestion = <T = unknown,>(
-  options: SupportCreateSuggestionOptions<T>
+  options: SupportCreateSuggestionOptions<T>,
 ): UseSupportCreateValue<T> => {
   const {
     create,
@@ -71,7 +71,7 @@ export const useSupportCreateSuggestion = <T = unknown,>(
             : createItemLabel(filter)
           : typeof createLabel === "string"
             ? translate(createLabel, { _: createLabel })
-            : createLabel
+            : createLabel,
       );
     },
     handleChange: async (eventOrValue: MouseEvent | unknown) => {
@@ -84,7 +84,7 @@ export const useSupportCreateSuggestion = <T = unknown,>(
             // this should never happen because the createValue is only added if a create function is provided
             // @see AutocompleteInput:filterOptions
             throw new Error(
-              "To create a new option, you must pass an onCreate function or a create element."
+              "To create a new option, you must pass an onCreate function or a create element.",
             );
           }
           const newSuggestion = await onCreate(filter);
@@ -173,7 +173,7 @@ export const useCreateSuggestionContext = () => {
   const context = useContext(CreateSuggestionContext);
   if (!context) {
     throw new Error(
-      "useCreateSuggestionContext must be used inside a CreateSuggestionContext.Provider"
+      "useCreateSuggestionContext must be used inside a CreateSuggestionContext.Provider",
     );
   }
   return context;

@@ -64,7 +64,7 @@ import {
 const defaultBulkActionButtons = <BulkActionsToolbarChildren />;
 
 export function DataTable<RecordType extends RaRecord = RaRecord>(
-  props: DataTableProps<RecordType>
+  props: DataTableProps<RecordType>,
 ) {
   const {
     children,
@@ -129,9 +129,9 @@ const DataTableHead = ({ children }: { children: ReactNode }) => {
         ? selectedIds.concat(
             data
               .filter((record) => !selectedIds.includes(record.id))
-              .map((record) => record.id)
+              .map((record) => record.id),
           )
-        : []
+        : [],
     );
   };
   const selectableIds = Array.isArray(data)
@@ -214,7 +214,7 @@ const DataTableRow = ({
       if (!handleToggleItem) return;
       handleToggleItem(record.id, event);
     },
-    [handleToggleItem, record.id]
+    [handleToggleItem, record.id],
   );
 
   const handleClick = useCallback(async () => {
@@ -359,7 +359,7 @@ function DataTableHeadCell<
               <Button
                 variant="ghost"
                 size="sm"
-                className="-ml-3 -mr-3 h-8 data-[state=open]:bg-accent cursor-pointer"
+                className="data-[state=open]:bg-accent -mr-3 -ml-3 h-8 cursor-pointer"
                 data-field={source}
                 onClick={handleSort}
               >
@@ -423,7 +423,7 @@ function DataTableCell<
   if (isColumnHidden) return null;
   if (!render && !field && !children && !source) {
     throw new Error(
-      "DataTableColumn: Missing at least one of the following props: render, field, children, or source"
+      "DataTableColumn: Missing at least one of the following props: render, field, children, or source",
     );
   }
 
@@ -433,7 +433,7 @@ function DataTableCell<
         "py-1",
         className,
         cellClassName,
-        record && conditionalClassName?.(record)
+        record && conditionalClassName?.(record),
       )}
     >
       {children ??
