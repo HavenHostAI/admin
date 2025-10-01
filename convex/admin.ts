@@ -304,6 +304,11 @@ export const dashboard = query({
     const timeline = createDateWindow(windowDays);
     const timelineSet = new Set(timeline);
 
+    const windowStartKey = timeline[0];
+    const windowEndKey = timeline[timeline.length - 1];
+    const windowStart = Date.parse(`${windowStartKey}T00:00:00.000Z`);
+    const windowEndExclusive = Date.parse(`${windowEndKey}T23:59:59.999Z`) + 1;
+
     const [properties, interactions, escalations] = await Promise.all([
       ctx.db
         .query("properties")
@@ -311,9 +316,17 @@ export const dashboard = query({
         .collect(),
       ctx.db
         .query("interactions")
+        .withIndex("by_company_createdAt", (q) =>
+          q
+            .eq("companyId", args.companyId)
+            .gte("createdAt", windowStart)
+            .lt("createdAt", windowEndExclusive),
+        )
+        .collect(),
+      ctx.db
+        .query("escalations")
         .withIndex("by_company", (q) => q.eq("companyId", args.companyId))
         .collect(),
-      ctx.db.query("escalations").collect(),
     ]);
 
     const relevantEscalations = escalations.filter(
