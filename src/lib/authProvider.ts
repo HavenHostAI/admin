@@ -1,9 +1,23 @@
 import type { AuthProvider } from "ra-core";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
+import {
+  clearStoredToken,
+  clearStoredUser,
+  getStoredToken,
+  loadStoredUser,
+  saveStoredUser,
+  setStoredToken,
+} from "./authStorage";
 
-const TOKEN_KEY = "better-auth:token";
-const USER_KEY = "better-auth:user";
+type StoredAuthUser = {
+  id: string;
+  email: string;
+  name?: string | null;
+  image?: string | null;
+  role?: string | null;
+  status?: string | null;
+};
 
 const convexUrl = import.meta.env.VITE_CONVEX_URL;
 
@@ -33,25 +47,6 @@ const getClient = () => {
   return client;
 };
 
-const persistUser = (user: unknown) => {
-  try {
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-  } catch (error) {
-    console.error("Failed to persist user", error);
-  }
-};
-
-const loadUser = () => {
-  const raw = localStorage.getItem(USER_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch (error) {
-    console.warn("Failed to parse persisted user", error);
-    return null;
-  }
-};
-
 export const authProvider: AuthProvider = {
   async login({ email, password }) {
     if (!convexUrl) {
@@ -63,12 +58,12 @@ export const authProvider: AuthProvider = {
       email,
       password,
     });
-    localStorage.setItem(TOKEN_KEY, result.token);
-    persistUser(result.user);
+    setStoredToken(result.token);
+    saveStoredUser(result.user);
   },
 
   async logout() {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = getStoredToken();
     if (token) {
       try {
         if (convexUrl) {
@@ -79,8 +74,8 @@ export const authProvider: AuthProvider = {
         console.warn("Failed to revoke session", error);
       }
     }
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    clearStoredToken();
+    clearStoredUser();
   },
 
   async checkAuth() {
@@ -88,18 +83,18 @@ export const authProvider: AuthProvider = {
       return Promise.reject(missingConvexUrlError());
     }
 
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = getStoredToken();
     if (!token) {
       throw new Error("Not authenticated");
     }
     const convex = getClient();
     const session = await convex.action(api.auth.validateSession, { token });
     if (!session) {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
+      clearStoredToken();
+      clearStoredUser();
       throw new Error("Session expired");
     }
-    persistUser(session.user);
+    saveStoredUser(session.user);
   },
 
   async checkError() {
@@ -107,12 +102,12 @@ export const authProvider: AuthProvider = {
   },
 
   async getPermissions() {
-    const user = loadUser();
+    const user = loadStoredUser<StoredAuthUser>();
     return user?.role ?? null;
   },
 
   async getIdentity() {
-    const user = loadUser();
+    const user = loadStoredUser<StoredAuthUser>();
     if (!user) return null;
     return {
       id: user.id,

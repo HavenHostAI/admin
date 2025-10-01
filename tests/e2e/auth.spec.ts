@@ -1,5 +1,6 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 import { jsonToConvex } from "convex/values";
+import { TOKEN_STORAGE_KEY } from "../../src/lib/authStorage";
 
 type AuthUser = {
   id: string;
@@ -171,7 +172,10 @@ test.describe("Authentication flows", () => {
 
     await expect
       .poll(() =>
-        page.evaluate(() => window.localStorage.getItem("better-auth:token")),
+        page.evaluate(
+          (key) => window.localStorage.getItem(key),
+          TOKEN_STORAGE_KEY,
+        ),
       )
       .toBe("test-session-token");
 
@@ -209,7 +213,10 @@ test.describe("Authentication flows", () => {
 
     await expect
       .poll(() =>
-        page.evaluate(() => window.localStorage.getItem("better-auth:token")),
+        page.evaluate(
+          (key) => window.localStorage.getItem(key),
+          TOKEN_STORAGE_KEY,
+        ),
       )
       .toBe("test-session-token");
 

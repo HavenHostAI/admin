@@ -3,6 +3,7 @@ import { useNotify } from "ra-core";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
 import { BookOpen, Pencil, PlusCircle, Trash2 } from "lucide-react";
+import { getStoredToken } from "@/lib/authStorage";
 
 import {
   Card,
@@ -159,7 +160,7 @@ export const KnowledgeBasePage = () => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const token = localStorage.getItem("better-auth:token");
+    const token = getStoredToken();
     if (token) {
       convexClient.setAuth(token);
     } else {
