@@ -683,6 +683,9 @@ export interface components {
             createdAt: number;
             piiHash?: string | null;
             transcriptRef?: string | null;
+            /** Format: int64 */
+            reviewedAt?: number | null;
+            reviewedByUserId?: string | null;
         };
         Escalation: {
             _id: string;

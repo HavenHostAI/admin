@@ -20,6 +20,7 @@ import { UserCreate, UserEdit, UserList, UserShow } from "@/resources/users";
 import { PhoneNumberList } from "@/resources/numbers";
 import { SignupPage } from "@/components/admin/login-page";
 import KnowledgeBasePage from "@/pages/knowledge-base";
+import InteractionsPage from "@/pages/interactions";
 
 function App() {
   return (
@@ -59,6 +60,7 @@ function App() {
         options={{ label: "Phone Numbers" }}
       />
       <CustomRoutes>
+        <Route path="/interactions" element={<InteractionsPage />} />
         <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
       </CustomRoutes>
       <CustomRoutes noLayout>

@@ -253,6 +253,8 @@ export default defineSchema({
     createdAt: v.number(),
     piiHash: v.optional(v.string()),
     transcriptRef: v.optional(v.string()),
+    reviewedAt: v.optional(v.number()),
+    reviewedByUserId: v.optional(v.string()),
   })
     .index("by_company", ["companyId"])
     .index("by_property", ["propertyId"])
