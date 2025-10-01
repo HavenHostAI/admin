@@ -17,12 +17,7 @@ import {
   PropertyShow,
 } from "@/resources/properties";
 import { UserCreate, UserEdit, UserList, UserShow } from "@/resources/users";
-import {
-  NumberCreate,
-  NumberEdit,
-  NumberList,
-  NumberShow,
-} from "@/resources/numbers";
+import { PhoneNumberList } from "@/resources/numbers";
 import { SignupPage } from "@/components/admin/login-page";
 import KnowledgeBasePage from "@/pages/knowledge-base";
 
@@ -59,11 +54,9 @@ function App() {
       />
       <Resource
         name="numbers"
-        list={NumberList}
-        create={NumberCreate}
-        edit={NumberEdit}
-        show={NumberShow}
+        list={PhoneNumberList}
         recordRepresentation="e164"
+        options={{ label: "Phone Numbers" }}
       />
       <CustomRoutes>
         <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
