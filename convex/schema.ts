@@ -252,6 +252,7 @@ export default defineSchema({
     transcriptRef: v.optional(v.string()),
   })
     .index("by_company", ["companyId"])
+    .index("by_company_createdAt", ["companyId", "createdAt"])
     .index("by_property", ["propertyId"])
     .index("by_intent", ["intent"]),
 
@@ -267,6 +268,8 @@ export default defineSchema({
     summary: v.optional(v.string()),
     transcriptRef: v.optional(v.string()),
   })
+    .index("by_company", ["companyId"])
+    .index("by_company_createdAt", ["companyId", "createdAt"])
     .index("by_property_status", ["propertyId", "status"])
     .index("by_priority", ["propertyId", "priority"]),
 
