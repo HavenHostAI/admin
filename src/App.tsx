@@ -20,6 +20,7 @@ import { UserCreate, UserEdit, UserList, UserShow } from "@/resources/users";
 import { PhoneNumberList } from "@/resources/numbers";
 import { SignupPage } from "@/components/admin/login-page";
 import KnowledgeBasePage from "@/pages/knowledge-base";
+import EscalationsPage from "@/pages/escalations";
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
       />
       <CustomRoutes>
         <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
+        <Route path="/escalations" element={<EscalationsPage />} />
       </CustomRoutes>
       <CustomRoutes noLayout>
         <Route

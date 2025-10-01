@@ -21,7 +21,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BookOpen, House, List, Shell } from "lucide-react";
+import { AlertTriangle, BookOpen, House, List, Shell } from "lucide-react";
 
 export function AppSidebar() {
   const hasDashboard = useHasDashboard();
@@ -57,6 +57,7 @@ export function AppSidebar() {
                 <DashboardMenuItem onClick={handleClick} />
               ) : null}
               <KnowledgeBaseMenuItem onClick={handleClick} />
+              <EscalationsMenuItem onClick={handleClick} />
               {Object.keys(resources)
                 .filter((name) => resources[name].hasList)
                 .map((name) => (
@@ -105,6 +106,20 @@ export const KnowledgeBaseMenuItem = ({
         <Link to="/knowledge-base" onClick={onClick}>
           <BookOpen />
           Knowledge Base
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+};
+
+export const EscalationsMenuItem = ({ onClick }: { onClick?: () => void }) => {
+  const match = useMatch({ path: "/escalations", end: false });
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={!!match}>
+        <Link to="/escalations" onClick={onClick}>
+          <AlertTriangle />
+          Escalations
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
