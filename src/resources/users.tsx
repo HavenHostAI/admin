@@ -19,6 +19,7 @@ import { BooleanInput } from "@/components/admin/boolean-input";
 import { NumberInput } from "@/components/admin/number-input";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
+import { getStoredToken } from "@/lib/authStorage";
 
 const roleChoices = [
   { id: "owner", name: "Owner" },
@@ -67,10 +68,7 @@ export const UserCreate = () => {
   }, []);
 
   const handleSubmit: SubmitHandler<FieldValues> = async (values) => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("better-auth:token")
-        : null;
+    const token = typeof window !== "undefined" ? getStoredToken() : null;
     if (!token) {
       notify("Your session has expired. Please sign in again.", {
         type: "warning",

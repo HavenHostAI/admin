@@ -20,6 +20,7 @@ import type * as authHelpers from "../authHelpers.js";
 import type * as authStore from "../authStore.js";
 import type * as company from "../company.js";
 import type * as companyStore from "../companyStore.js";
+import type * as escalations from "../escalations.js";
 import type * as knowledgeBase from "../knowledgeBase.js";
 import type * as utils from "../utils.js";
 
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   authStore: typeof authStore;
   company: typeof company;
   companyStore: typeof companyStore;
+  escalations: typeof escalations;
   knowledgeBase: typeof knowledgeBase;
   utils: typeof utils;
 }>;
