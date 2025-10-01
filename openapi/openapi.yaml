@@ -1448,6 +1448,13 @@ components:
         transcriptRef:
           type: string
           nullable: true
+        reviewedAt:
+          type: integer
+          format: int64
+          nullable: true
+        reviewedByUserId:
+          type: string
+          nullable: true
     Escalation:
       type: object
       required:
