@@ -2,6 +2,7 @@ import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
+import { KNOWLEDGE_BASE_EMBEDDING_DIMENSION } from "./constants";
 
 type FaqDoc = Doc<"faqs">;
 type LocalRecDoc = Doc<"localRecs">;
@@ -69,15 +70,16 @@ const formatLocalRec = (doc: LocalRecDoc): LocalRecResponse => ({
 });
 
 const computeMockEmbedding = (content: string) => {
-  const dimension = 32;
-  const accumulator = new Array<number>(dimension).fill(0);
+  const accumulator = new Array<number>(KNOWLEDGE_BASE_EMBEDDING_DIMENSION).fill(
+    0,
+  );
   if (!content) {
     return accumulator;
   }
   const normalized = content.normalize("NFKD");
   for (let index = 0; index < normalized.length; index += 1) {
     const charCode = normalized.charCodeAt(index);
-    accumulator[index % dimension] += charCode / 255;
+    accumulator[index % KNOWLEDGE_BASE_EMBEDDING_DIMENSION] += charCode / 255;
   }
   return accumulator.map((value) => Number(value.toFixed(6)));
 };
