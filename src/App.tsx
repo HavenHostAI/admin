@@ -24,6 +24,7 @@ import {
   NumberShow,
 } from "@/resources/numbers";
 import { SignupPage } from "@/components/admin/login-page";
+import KnowledgeBasePage from "@/pages/knowledge-base";
 
 function App() {
   return (
@@ -64,6 +65,9 @@ function App() {
         show={NumberShow}
         recordRepresentation="e164"
       />
+      <CustomRoutes>
+        <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
+      </CustomRoutes>
       <CustomRoutes noLayout>
         <Route
           path="/signup"
