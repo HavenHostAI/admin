@@ -92,6 +92,34 @@ const assertCompanyAccess = async (
   return viewer;
 };
 
+const resolveReviewerIdForCompany = async (
+  ctx: MutationCtx,
+  viewer: Doc<"users"> & { companyId: Id<"companies"> },
+  reviewerId: string | null | undefined,
+) => {
+  const candidateId = reviewerId?.trim();
+
+  if (!candidateId || candidateId === viewer.id) {
+    return viewer.id;
+  }
+
+  const matches = await ctx.db
+    .query("users")
+    .withIndex("by_auth_id", (q) => q.eq("id", candidateId))
+    .collect();
+
+  const reviewer = matches[0];
+  if (!reviewer) {
+    return viewer.id;
+  }
+
+  if (reviewer.companyId !== viewer.companyId) {
+    return viewer.id;
+  }
+
+  return reviewer.id;
+};
+
 const clampLimit = (limit?: number | null) => {
   if (!limit || Number.isNaN(limit)) {
     return DEFAULT_LIMIT;
@@ -203,17 +231,18 @@ const resolveReviewer = async (
   ctx: QueryCtx,
   reviewerId: string | null | undefined,
 ): Promise<ReviewerSummary | null> => {
-  if (!reviewerId) return null;
+  const candidateId = reviewerId?.trim();
+  if (!candidateId) return null;
 
   const matches = await ctx.db
     .query("users")
-    .withIndex("by_auth_id", (q) => q.eq("id", reviewerId))
+    .withIndex("by_auth_id", (q) => q.eq("id", candidateId))
     .collect();
 
   const reviewer = matches[0];
   if (!reviewer) {
     return {
-      id: reviewerId,
+      id: candidateId,
       name: null,
       email: null,
     };
@@ -334,7 +363,11 @@ export const markReviewed = mutation({
     const viewer = await assertCompanyAccess(ctx, interaction.companyId);
 
     const reviewedAt = Date.now();
-    const reviewerId = args.reviewerId ?? viewer.id;
+    const reviewerId = await resolveReviewerIdForCompany(
+      ctx,
+      viewer,
+      args.reviewerId,
+    );
 
     await ctx.db.patch(args.interactionId, {
       reviewedAt,
