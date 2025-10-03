@@ -85,7 +85,7 @@ export const setupConvexMocks = async (
   let currentUser: AuthUser = { ...baseUser, ...options.user };
 
   const respond = (route: Route, value: unknown) =>
-    route.fulfill(convexSuccessResponse(value));
+    route.fulfill(convexSuccessResponse(convexToJson(value)));
 
   await page.route("**/api/query_ts", (route) =>
     route.fulfill({
@@ -454,6 +454,12 @@ export const setupConvexMocks = async (
         },
         user: currentUser,
       });
+      return;
+    }
+
+    if (path === "auth:signOut") {
+      activeToken = null;
+      await respond(route, {});
       return;
     }
 

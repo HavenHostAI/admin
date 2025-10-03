@@ -298,7 +298,12 @@ export const Dashboard = () => {
             {isLoading ? (
               <Skeleton className="h-[260px] w-full" />
             ) : (
-              <div className="h-[260px] w-full">
+              <div
+                className="h-[260px] w-full"
+                data-testid="calls-over-time-chart"
+                role="group"
+                aria-label="Calls over time chart"
+              >
                 {callsOverTime.some((point) => isNonZero(point.count)) ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
@@ -357,7 +362,12 @@ export const Dashboard = () => {
             {isLoading ? (
               <Skeleton className="h-[260px] w-full" />
             ) : escalationsByPriority.length ? (
-              <div className="h-[260px] w-full">
+              <div
+                className="h-[260px] w-full"
+                data-testid="escalations-by-priority-chart"
+                role="group"
+                aria-label="Escalations by priority chart"
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
