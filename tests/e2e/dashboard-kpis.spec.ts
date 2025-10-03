@@ -4,7 +4,24 @@ import { TOKEN_STORAGE_KEY, USER_STORAGE_KEY } from "../../src/lib/authStorage";
 
 import { setupConvexMocks } from "./utils/convexMocks";
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const createDeferred = <T = void>() => {
+  type Resolve = (value: T | PromiseLike<T>) => void;
+  type Reject = (reason?: unknown) => void;
+
+  let resolve: Resolve | undefined;
+  let reject: Reject | undefined;
+
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  if (!resolve || !reject) {
+    throw new Error("Failed to create deferred promise");
+  }
+
+  return { promise, resolve, reject };
+};
 
 const loginExistingUser = async (page: Page) => {
   await page.goto("/login");
@@ -61,14 +78,15 @@ test.describe("Dashboard KPIs", () => {
       lastUpdated: Date.UTC(2024, 4, 12, 15, 30, 0),
     };
 
+    const metricsResponse = createDeferred<typeof dashboardResponse>();
+
     let dashboardCallCount = 0;
 
     await setupConvexMocks(page, {
       queryHandlers: {
         "admin:dashboard": async () => {
           dashboardCallCount += 1;
-          await delay(3500);
-          return dashboardResponse;
+          return metricsResponse.promise;
         },
       },
     });
@@ -77,19 +95,11 @@ test.describe("Dashboard KPIs", () => {
 
     await page.goto("/");
 
-    await expect
-      .poll(() => dashboardCallCount, { timeout: 15000 })
-      .toBeGreaterThan(0);
+    await expect.poll(() => dashboardCallCount).toBeGreaterThan(0);
 
-    await expect
-      .poll(
-        () =>
-          page.evaluate(
-            () => document.querySelectorAll('[data-slot="skeleton"]').length,
-          ),
-        { timeout: 15000 },
-      )
-      .toBeGreaterThan(0);
+    await expect(page.locator('[data-slot="skeleton"]').first()).toBeVisible();
+
+    metricsResponse.resolve(dashboardResponse);
 
     const numberFormatter = new Intl.NumberFormat(undefined, {
       maximumFractionDigits: 0,
@@ -113,15 +123,7 @@ test.describe("Dashboard KPIs", () => {
       ),
     } as const;
 
-    await expect
-      .poll(
-        () =>
-          page.evaluate(
-            () => document.querySelectorAll('[data-slot="skeleton"]').length,
-          ),
-        { timeout: 15000 },
-      )
-      .toBe(0);
+    await expect(page.locator('[data-slot="skeleton"]')).toHaveCount(0);
 
     for (const [label, value] of Object.entries(expectedMetrics)) {
       const card = page.locator('div[data-slot="card"]').filter({
@@ -145,14 +147,15 @@ test.describe("Dashboard KPIs", () => {
   test("shows outage fallback messaging when dashboard data is unavailable", async ({
     page,
   }) => {
+    const outageResponse = createDeferred<null>();
+
     let outageCallCount = 0;
 
     await setupConvexMocks(page, {
       queryHandlers: {
         "admin:dashboard": async () => {
           outageCallCount += 1;
-          await delay(10000);
-          return null;
+          return outageResponse.promise;
         },
       },
     });
@@ -161,35 +164,18 @@ test.describe("Dashboard KPIs", () => {
 
     await page.goto("/");
 
-    await expect
-      .poll(() => outageCallCount, { timeout: 20000 })
-      .toBeGreaterThan(0);
+    await expect.poll(() => outageCallCount).toBeGreaterThan(0);
 
-    await expect
-      .poll(
-        () =>
-          page.evaluate(
-            () =>
-              document
-                .querySelector('[data-slot="alert-title"]')
-                ?.textContent?.trim() ?? null,
-          ),
-        { timeout: 20000 },
-      )
-      .toBe("Live data is temporarily unavailable");
+    await expect(page.locator('[data-slot="alert-title"]').first()).toHaveText(
+      "Live data is temporarily unavailable",
+      { timeout: 15000 },
+    );
 
-    await expect
-      .poll(
-        () =>
-          page.evaluate(
-            () =>
-              document
-                .querySelector('[data-slot="alert-description"]')
-                ?.textContent?.trim() ?? null,
-          ),
-        { timeout: 20000 },
-      )
-      .toContain("We couldn't reach Convex to refresh metrics.");
+    await expect(
+      page.locator('[data-slot="alert-description"]').first(),
+    ).toContainText("We couldn't reach Convex to refresh metrics.", {
+      timeout: 15000,
+    });
 
     const fallbackMetrics = {
       "Calls handled": "0",
@@ -205,5 +191,7 @@ test.describe("Dashboard KPIs", () => {
       await expect(card).toHaveCount(1);
       await expect(card.getByText(value, { exact: true })).toBeVisible();
     }
+
+    outageResponse.resolve(null);
   });
 });
