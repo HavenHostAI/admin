@@ -1,4 +1,4 @@
-import { required } from "ra-core";
+import { required, usePermissions } from "ra-core";
 import { useMemo } from "react";
 import { useNotify, useRedirect } from "ra-core";
 import type { SubmitHandler, FieldValues } from "react-hook-form";
@@ -158,19 +158,24 @@ export const UserEdit = () => (
   </Edit>
 );
 
-export const UserShow = () => (
-  <Show>
-    <div className="flex flex-col gap-4">
-      <RecordField source="email" label="Email" />
-      <RecordField source="name" label="Name" />
-      <RecordField source="role" label="Role" />
-      <RecordField source="status" label="Status" />
-      <RecordField source="emailVerified" label="Email Verified" />
-      <RecordField label="Company">
-        <ReferenceField reference="companies" source="companyId">
-          <TextField source="name" />
-        </ReferenceField>
-      </RecordField>
-    </div>
-  </Show>
-);
+export const UserShow = () => {
+  const { permissions } = usePermissions<string | null>();
+  const canEdit = permissions != null && permissions !== "viewer";
+
+  return (
+    <Show actions={canEdit ? undefined : false}>
+      <div className="flex flex-col gap-4">
+        <RecordField source="email" label="Email" />
+        <RecordField source="name" label="Name" />
+        <RecordField source="role" label="Role" />
+        <RecordField source="status" label="Status" />
+        <RecordField source="emailVerified" label="Email Verified" />
+        <RecordField label="Company">
+          <ReferenceField reference="companies" source="companyId">
+            <TextField source="name" />
+          </ReferenceField>
+        </RecordField>
+      </div>
+    </Show>
+  );
+};
