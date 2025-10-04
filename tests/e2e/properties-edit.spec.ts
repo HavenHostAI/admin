@@ -176,29 +176,45 @@ const setupPropertyEditTest = async (page: Page): Promise<SetupResult> => {
   await page.route("**/api/query", handleQuery);
   await page.route("**/api/query_at_ts", handleQuery);
 
+  const recordMutation = (
+    path: string,
+    updateArgs: UpdateArgs,
+  ): PropertyRecord => {
+    const updates = updateArgs.data;
+    const nextFlags = {
+      ...propertyRecord.flags,
+      ...(updates.flags ?? {}),
+    };
+    const nextAddress = updates.address
+      ? {
+          ...propertyRecord.address,
+          ...updates.address,
+        }
+      : propertyRecord.address;
+
+    propertyRecord = {
+      ...propertyRecord,
+      ...updates,
+      address: nextAddress,
+      flags: nextFlags,
+      updatedAt: Date.now(),
+    };
+
+    updateCalls.push({
+      path,
+      args: JSON.parse(JSON.stringify(updateArgs)) as UpdateArgs,
+    });
+
+    return propertyRecord;
+  };
+
   await page.route("**/api/mutation", (route) => {
     const { path, args } = decodeConvexRequest(route);
     if (path === "admin:update") {
       const updateArgs = args as UpdateArgs;
       if (updateArgs.table === "properties") {
-        const updates = updateArgs.data;
-        const nextFlags = {
-          ...propertyRecord.flags,
-          ...(updates.flags ?? {}),
-        };
-
-        propertyRecord = {
-          ...propertyRecord,
-          ...updates,
-          flags: nextFlags,
-          updatedAt: Date.now(),
-        };
-        updateCalls.push({
-          path,
-          args: JSON.parse(JSON.stringify(updateArgs)) as UpdateArgs,
-        });
-
-        return respond(route, propertyRecord);
+        const updatedRecord = recordMutation(path, updateArgs);
+        return respond(route, updatedRecord);
       }
     }
 
@@ -225,25 +241,8 @@ const setupPropertyEditTest = async (page: Page): Promise<SetupResult> => {
     if (path === "admin:update") {
       const updateArgs = args as UpdateArgs;
       if (updateArgs.table === "properties") {
-        const updates = updateArgs.data;
-        const nextFlags = {
-          ...propertyRecord.flags,
-          ...(updates.flags ?? {}),
-        };
-
-        propertyRecord = {
-          ...propertyRecord,
-          ...updates,
-          flags: nextFlags,
-          updatedAt: Date.now(),
-        };
-
-        updateCalls.push({
-          path,
-          args: JSON.parse(JSON.stringify(updateArgs)) as UpdateArgs,
-        });
-
-        return respond(route, propertyRecord);
+        const updatedRecord = recordMutation(path, updateArgs);
+        return respond(route, updatedRecord);
       }
     }
 
