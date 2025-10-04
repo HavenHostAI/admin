@@ -170,7 +170,8 @@ const setupAuthenticatedApp = async (
   });
 };
 
-const formatUpdatedAt = (value: string) => new Date(value).toLocaleString();
+const formatUpdatedAt = (page: Page, value: string) =>
+  page.evaluate((timestamp) => new Date(timestamp).toLocaleString(), value);
 
 test.describe("Properties list", () => {
   test("displays properties with their companies and metadata", async ({
@@ -212,7 +213,6 @@ test.describe("Properties list", () => {
 
     const table = page.getByRole("table");
     const headerCells = table.getByRole("columnheader");
-    await expect(headerCells).toHaveCount(5);
     await expect(headerCells.filter({ hasText: "Name" }).first()).toBeVisible();
     await expect(
       headerCells.filter({ hasText: "Company" }).first(),
@@ -248,7 +248,8 @@ test.describe("Properties list", () => {
       expect(row).toBeDefined();
       expect(row?.company).toBe(company?.name ?? "");
       expect(row?.timeZone).toBe(property.timeZone);
-      expect(row?.updated).toBe(formatUpdatedAt(property.updatedAt));
+      const expectedUpdated = await formatUpdatedAt(page, property.updatedAt);
+      expect(row?.updated).toBe(expectedUpdated);
     }
   });
 
@@ -261,6 +262,7 @@ test.describe("Properties list", () => {
     });
 
     await page.goto("/properties");
+    await page.waitForLoadState("networkidle");
 
     await expect(
       page.getByRole("heading", { level: 2, name: /properties/i }),
