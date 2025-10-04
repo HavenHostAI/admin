@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNotify } from "ra-core";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
+import { resolveConvexUrl } from "../lib/convexUrl";
 import { BookOpen, Pencil, PlusCircle, Trash2 } from "lucide-react";
 import { getStoredToken } from "@/lib/authStorage";
 
@@ -145,13 +146,9 @@ const formatDateTime = (value: number) =>
 
 export const KnowledgeBasePage = () => {
   const notify = useNotify();
-  const convexUrl = import.meta.env.VITE_CONVEX_URL;
-
-  if (!convexUrl) {
-    throw new Error(
-      "VITE_CONVEX_URL must be defined to use the Knowledge Base management tools.",
-    );
-  }
+  const convexUrl = resolveConvexUrl(
+    "VITE_CONVEX_URL must be defined to use the Knowledge Base management tools.",
+  );
 
   const convexClient = useMemo(
     () => new ConvexHttpClient(convexUrl),

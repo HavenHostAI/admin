@@ -70,9 +70,9 @@ const formatLocalRec = (doc: LocalRecDoc): LocalRecResponse => ({
 });
 
 const computeMockEmbedding = (content: string) => {
-  const accumulator = new Array<number>(KNOWLEDGE_BASE_EMBEDDING_DIMENSION).fill(
-    0,
-  );
+  const accumulator = new Array<number>(
+    KNOWLEDGE_BASE_EMBEDDING_DIMENSION,
+  ).fill(0);
   if (!content) {
     return accumulator;
   }
@@ -98,14 +98,12 @@ export const listFaqs = query({
     const search = args.search?.trim().toLowerCase() ?? "";
     const category = args.category?.trim().toLowerCase() ?? "";
 
-    let faqsQuery = ctx.db.query("faqs");
-    if (propertyId) {
-      faqsQuery = faqsQuery.withIndex("by_property", (q) =>
-        q.eq("propertyId", propertyId),
-      );
-    }
-
-    const faqs = await faqsQuery.collect();
+    const faqs = await (propertyId
+      ? ctx.db
+          .query("faqs")
+          .withIndex("by_property", (q) => q.eq("propertyId", propertyId))
+          .collect()
+      : ctx.db.query("faqs").collect());
 
     return faqs
       .filter((faq) => {
@@ -142,14 +140,12 @@ export const listLocalRecommendations = query({
     const search = args.search?.trim().toLowerCase() ?? "";
     const category = args.category?.trim().toLowerCase() ?? "";
 
-    let recsQuery = ctx.db.query("localRecs");
-    if (propertyId) {
-      recsQuery = recsQuery.withIndex("by_property", (q) =>
-        q.eq("propertyId", propertyId),
-      );
-    }
-
-    const recs = await recsQuery.collect();
+    const recs = await (propertyId
+      ? ctx.db
+          .query("localRecs")
+          .withIndex("by_property", (q) => q.eq("propertyId", propertyId))
+          .collect()
+      : ctx.db.query("localRecs").collect());
 
     return recs
       .filter((rec) => {

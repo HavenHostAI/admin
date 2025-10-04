@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNotify } from "ra-core";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
+import { resolveConvexUrl } from "../lib/convexUrl";
 import { AlertTriangle, CheckCircle2, UserRound } from "lucide-react";
 import { getStoredToken } from "@/lib/authStorage";
 
@@ -127,13 +128,9 @@ const ALL_OPTION = "__all__";
 
 const EscalationsPage = () => {
   const notify = useNotify();
-  const convexUrl = import.meta.env.VITE_CONVEX_URL;
-
-  if (!convexUrl) {
-    throw new Error(
-      "VITE_CONVEX_URL must be defined to manage escalation records.",
-    );
-  }
+  const convexUrl = resolveConvexUrl(
+    "VITE_CONVEX_URL must be defined to manage escalation records.",
+  );
 
   const convexClient = useMemo(
     () => new ConvexHttpClient(convexUrl),

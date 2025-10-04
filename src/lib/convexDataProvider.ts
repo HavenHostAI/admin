@@ -23,6 +23,7 @@ import {
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
 import type { TableNames } from "../../convex/_generated/dataModel";
+import { resolveConvexUrl } from "./convexUrl";
 
 const TABLES = [
   "companies",
@@ -56,12 +57,9 @@ let client: ConvexHttpClient | null = null;
 
 const getClient = () => {
   if (!client) {
-    const convexUrl = import.meta.env.VITE_CONVEX_URL;
-    if (!convexUrl) {
-      throw new Error(
-        "VITE_CONVEX_URL is required to initialise the Convex data provider.",
-      );
-    }
+    const convexUrl = resolveConvexUrl(
+      "VITE_CONVEX_URL is required to initialise the Convex data provider.",
+    );
     client = new ConvexHttpClient(convexUrl);
   }
 

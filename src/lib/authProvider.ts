@@ -1,6 +1,8 @@
 import type { AuthProvider } from "ra-core";
 import { ConvexHttpClient } from "convex/browser";
+import type { Id } from "../../convex/_generated/dataModel";
 import { api } from "../../convex/_generated/api";
+import { resolveConvexUrl } from "./convexUrl";
 import {
   clearStoredToken,
   clearStoredUser,
@@ -11,34 +13,22 @@ import {
 } from "./authStorage";
 
 type StoredAuthUser = {
-  id: string;
+  id?: string | null;
+  _id?: string | null;
   email: string;
   name?: string | null;
   image?: string | null;
   role?: string | null;
   status?: string | null;
-};
-
-const convexUrl = import.meta.env.VITE_CONVEX_URL;
-
-const missingConvexUrlError = () => {
-  const error = new Error(
-    "VITE_CONVEX_URL must be defined to enable authentication in the admin UI.",
-  );
-
-  if (import.meta.env.DEV) {
-    console.error(error.message);
-  }
-
-  return error;
+  companyId?: Id<"companies"> | null;
 };
 
 let client: ConvexHttpClient | null = null;
 
 const getClient = () => {
-  if (!convexUrl) {
-    throw missingConvexUrlError();
-  }
+  const convexUrl = resolveConvexUrl(
+    "VITE_CONVEX_URL must be defined to enable authentication in the admin UI.",
+  );
 
   if (!client) {
     client = new ConvexHttpClient(convexUrl);
@@ -49,10 +39,6 @@ const getClient = () => {
 
 export const authProvider: AuthProvider = {
   async login({ email, password }) {
-    if (!convexUrl) {
-      return Promise.reject(missingConvexUrlError());
-    }
-
     const convex = getClient();
     const result = await convex.action(api.auth.signIn, {
       email,
@@ -66,10 +52,8 @@ export const authProvider: AuthProvider = {
     const token = getStoredToken();
     if (token) {
       try {
-        if (convexUrl) {
-          const convex = getClient();
-          await convex.action(api.auth.signOut, { token });
-        }
+        const convex = getClient();
+        await convex.action(api.auth.signOut, { token });
       } catch (error) {
         console.warn("Failed to revoke session", error);
       }
@@ -79,10 +63,6 @@ export const authProvider: AuthProvider = {
   },
 
   async checkAuth() {
-    if (!convexUrl) {
-      return Promise.reject(missingConvexUrlError());
-    }
-
     const token = getStoredToken();
     if (!token) {
       throw new Error("Not authenticated");
@@ -108,12 +88,28 @@ export const authProvider: AuthProvider = {
 
   async getIdentity() {
     const user = loadStoredUser<StoredAuthUser>();
-    if (!user) return null;
+    if (!user) {
+      return null;
+    }
+
+    const id = user.id ?? user._id ?? undefined;
+    if (!id) {
+      throw new Error("User identity is not available");
+    }
+
+    const { email, name, image, role, status, companyId } = user;
+    const typedCompanyId = companyId ?? undefined;
+
     return {
-      id: user.id,
-      fullName: user.name ?? user.email,
-      avatar: user.image ?? null,
-      ...user,
+      id,
+      fullName: name ?? email,
+      avatar: image ?? undefined,
+      email,
+      name: name ?? undefined,
+      image: image ?? undefined,
+      role: role ?? undefined,
+      status: status ?? undefined,
+      companyId: typedCompanyId,
     };
   },
 };

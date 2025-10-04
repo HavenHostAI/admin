@@ -4,14 +4,11 @@ import { BrowserRouter } from "react-router-dom";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import "./index.css";
 import App from "./App.tsx";
+import { resolveConvexUrl } from "./lib/convexUrl";
 
-const convexUrl = import.meta.env.VITE_CONVEX_URL;
-
-if (!convexUrl) {
-  throw new Error(
-    "VITE_CONVEX_URL must be defined to enable real-time dashboard data.",
-  );
-}
+const convexUrl = resolveConvexUrl(
+  "VITE_CONVEX_URL must be defined to enable real-time dashboard data.",
+);
 
 const convexClient = new ConvexReactClient(convexUrl);
 

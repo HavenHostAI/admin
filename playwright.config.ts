@@ -3,6 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = 4173;
 const CONVEX_URL = process.env.VITE_CONVEX_URL ?? "http://127.0.0.1:3999";
 
+process.env.VITE_CONVEX_URL = CONVEX_URL;
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
@@ -21,7 +23,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npm run dev -- --host 127.0.0.1 --port ${PORT}`,
+    command: `pnpm run dev --host 127.0.0.1 --port ${PORT}`,
     port: PORT,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
