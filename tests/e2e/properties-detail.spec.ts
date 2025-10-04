@@ -1,172 +1,7 @@
-import { expect, test, type Page, type Route } from "@playwright/test";
-import { jsonToConvex } from "convex/values";
+import { expect, test } from "@playwright/test";
 
 import { TOKEN_STORAGE_KEY } from "../../src/lib/authStorage";
-
-type AuthUser = {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  companyId: string;
-  status: string;
-};
-
-type ConvexCall = Record<string, unknown>;
-
-type ConvexMocks = {
-  signInCalls: ConvexCall[];
-  validateSessionCalls: ConvexCall[];
-  getCurrentUser: () => AuthUser;
-};
-
-type PropertyTestContext = {
-  property: Record<string, unknown>;
-  company: Record<string, unknown>;
-};
-
-const baseUser: AuthUser = {
-  id: "user_1",
-  email: "test.user@example.com",
-  name: "Test User",
-  role: "owner",
-  companyId: "company_1",
-  status: "active",
-};
-
-const convexSuccessResponse = (value: unknown) => ({
-  status: 200,
-  contentType: "application/json",
-  body: JSON.stringify({
-    status: "success",
-    value,
-    logLines: [],
-  }),
-});
-
-const decodeConvexRequest = (route: Route) => {
-  const bodyText = route.request().postData() ?? "{}";
-  const body = JSON.parse(bodyText) as {
-    path?: string;
-    args?: unknown[];
-  };
-  const [encodedArgs] = body.args ?? [];
-  const decodedArgs = encodedArgs
-    ? (jsonToConvex(encodedArgs as unknown) as Record<string, unknown>)
-    : {};
-  return { path: body.path, args: decodedArgs };
-};
-
-const setupConvexMocks = async (
-  page: Page,
-  context: PropertyTestContext,
-): Promise<ConvexMocks> => {
-  const signInCalls: ConvexCall[] = [];
-  const validateSessionCalls: ConvexCall[] = [];
-
-  let activeToken: string | null = null;
-  let currentUser: AuthUser = { ...baseUser };
-
-  const respond = (route: Route, value: unknown) =>
-    route.fulfill(convexSuccessResponse(value));
-
-  await page.route("**/api/query_ts", (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ ts: Date.now().toString() }),
-    }),
-  );
-
-  const handleAdminQuery = (route: Route) => {
-    const { path, args } = decodeConvexRequest(route);
-
-    if (path === "admin:get" && args.table === "properties") {
-      if (String(args.id) === String(context.property._id)) {
-        return respond(route, context.property);
-      }
-      return respond(route, null);
-    }
-
-    if (path === "admin:get" && args.table === "companies") {
-      if (String(args.id) === String(context.company._id)) {
-        return respond(route, context.company);
-      }
-      return respond(route, null);
-    }
-
-    if (path === "admin:getMany" && args.table === "companies") {
-      const ids = (args.ids as string[] | undefined) ?? [];
-      const matches = ids.includes(String(context.company._id))
-        ? [context.company]
-        : [];
-      return respond(route, matches);
-    }
-
-    if (path?.startsWith("admin:")) {
-      if (path === "admin:list") {
-        return respond(route, { data: [], total: 0 });
-      }
-      if (path === "admin:getManyReference") {
-        return respond(route, { data: [], total: 0 });
-      }
-      return respond(route, null);
-    }
-
-    return respond(route, null);
-  };
-
-  await page.route("**/api/query", handleAdminQuery);
-  await page.route("**/api/query_at_ts", handleAdminQuery);
-
-  await page.route("**/api/mutation", (route) => respond(route, {}));
-
-  await page.route("**/api/action", (route) => {
-    const { path, args } = decodeConvexRequest(route);
-
-    if (path === "auth:signIn") {
-      signInCalls.push(args);
-      currentUser = {
-        ...currentUser,
-        email: String(args.email),
-      };
-      activeToken = "test-session-token";
-      return respond(route, { token: activeToken, user: currentUser });
-    }
-
-    if (path === "auth:validateSession") {
-      validateSessionCalls.push(args);
-      if (!activeToken) {
-        return respond(route, null);
-      }
-      const now = new Date();
-      return respond(route, {
-        session: {
-          token: activeToken,
-          userId: currentUser.id,
-          createdAt: now.toISOString(),
-          updatedAt: now.toISOString(),
-          expiresAt: new Date(
-            now.getTime() + 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        },
-        user: currentUser,
-      });
-    }
-
-    if (path === "auth:signUp") {
-      return respond(route, {});
-    }
-
-    return respond(route, {});
-  });
-
-  return {
-    signInCalls,
-    validateSessionCalls,
-    getCurrentUser: () => currentUser,
-  };
-};
+import { setupConvexMocks } from "./utils/convexMocks";
 
 test.describe("Property detail view", () => {
   test("renders property information in read-only form", async ({ page }) => {
@@ -199,8 +34,29 @@ test.describe("Property detail view", () => {
     };
 
     const mocks = await setupConvexMocks(page, {
-      property: propertyRecord,
-      company: companyRecord,
+      queryHandlers: {
+        "admin:get": ({ table, id }) => {
+          if (table === "properties" && String(id) === propertyRecord._id) {
+            return propertyRecord;
+          }
+          if (table === "companies" && String(id) === companyRecord._id) {
+            return companyRecord;
+          }
+          return null;
+        },
+        "admin:getMany": ({ table, ids }) => {
+          if (table === "companies") {
+            const requestedIds = (Array.isArray(ids) ? ids : []).map(String);
+            if (requestedIds.includes(companyRecord._id)) {
+              return [companyRecord];
+            }
+            return [];
+          }
+          return [];
+        },
+        "admin:list": () => ({ data: [], total: 0 }),
+        "admin:getManyReference": () => ({ data: [], total: 0 }),
+      },
     });
 
     await page.goto("/login");
