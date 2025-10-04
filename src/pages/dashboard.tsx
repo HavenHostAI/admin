@@ -97,9 +97,8 @@ const fallbackData = createFallbackData(DEFAULT_WINDOW_DAYS);
 const isNonZero = (value: number) => value > 0;
 
 export const Dashboard = () => {
-  const { data: identity, isLoading: identityLoading } =
-    useGetIdentity<IdentityWithCompany>();
-  const companyId = identity?.companyId;
+  const { data: identity, isLoading: identityLoading } = useGetIdentity();
+  const companyId = (identity as IdentityWithCompany | undefined)?.companyId;
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -119,6 +118,11 @@ export const Dashboard = () => {
   useEffect(() => {
     if (!companyId) {
       setHasError(false);
+      return;
+    }
+
+    if (dashboardData === null) {
+      setHasError(true);
       return;
     }
 
@@ -299,7 +303,12 @@ export const Dashboard = () => {
             {isLoading ? (
               <Skeleton className="h-[260px] w-full" />
             ) : (
-              <div className="h-[260px] w-full">
+              <div
+                className="h-[260px] w-full"
+                data-testid="calls-over-time-chart"
+                role="group"
+                aria-label="Calls over time chart"
+              >
                 {callsOverTime.some((point) => isNonZero(point.count)) ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
@@ -358,7 +367,12 @@ export const Dashboard = () => {
             {isLoading ? (
               <Skeleton className="h-[260px] w-full" />
             ) : escalationsByPriority.length ? (
-              <div className="h-[260px] w-full">
+              <div
+                className="h-[260px] w-full"
+                data-testid="escalations-by-priority-chart"
+                role="group"
+                aria-label="Escalations by priority chart"
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
