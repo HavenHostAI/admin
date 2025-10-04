@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { TOKEN_STORAGE_KEY } from "../../src/lib/authStorage";
-import { setupConvexMocks } from "./utils/convex";
+import { setupConvexMocks } from "./utils/convexMocks";
 
 test.describe("Authentication flows", () => {
   test("allows a new owner to sign up and sign in", async ({ page }) => {

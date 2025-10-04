@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { setupConvexMocks } from "./utils/convex";
+import { setupConvexMocks } from "./utils/convexMocks";
 
 test.describe("Company detail view", () => {
   test("renders company metadata as read-only for limited roles", async ({
@@ -26,24 +26,21 @@ test.describe("Company detail view", () => {
         role: "agent",
         companyId: companyRecord._id,
       },
-      onQuery: async ({ request, respond }) => {
-        const args = request.args as { table?: string; id?: string };
-        if (
-          request.path === "admin:get" &&
-          args.table === "companies" &&
-          args.id === companyRecord._id
-        ) {
-          await respond({
-            _id: companyRecord._id,
-            name: companyRecord.name,
-            plan: companyRecord.plan,
-            timezone: companyRecord.timezone,
-            branding: companyRecord.branding,
-            createdAt: companyRecord.createdAt,
-          });
-          return true;
-        }
-        return false;
+      queryHandlers: {
+        "admin:get": async (args) => {
+          const { table, id } = args as { table?: string; id?: string };
+          if (table === "companies" && id === companyRecord._id) {
+            return {
+              _id: companyRecord._id,
+              name: companyRecord.name,
+              plan: companyRecord.plan,
+              timezone: companyRecord.timezone,
+              branding: companyRecord.branding,
+              createdAt: companyRecord.createdAt,
+            };
+          }
+          return null;
+        },
       },
     });
 
