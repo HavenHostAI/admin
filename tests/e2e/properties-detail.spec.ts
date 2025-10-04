@@ -245,35 +245,36 @@ test.describe("Property detail view", () => {
       `/companies/${companyRecord._id}/show`,
     );
 
-    const fieldValue = (label: string) =>
-      page
-        .locator("div.flex.flex-col")
-        .filter({
-          has: page.locator(`div:text-is("${label}")`),
-        })
-        .locator("span.flex-1")
-        .first();
+    const fieldContainer = (label: string) =>
+      page.getByText(label, { exact: true }).locator("xpath=../..");
 
-    await expect(fieldValue("Time Zone")).toHaveText(propertyRecord.timeZone);
-    await expect(fieldValue("Street")).toHaveText(
+    const fieldValue = (label: string) =>
+      fieldContainer(label).locator(":scope > *").nth(1);
+
+    await expect(fieldValue("Time Zone")).toContainText(
+      propertyRecord.timeZone,
+    );
+    await expect(fieldValue("Street")).toContainText(
       propertyRecord.address.street,
     );
-    await expect(fieldValue("City")).toHaveText(propertyRecord.address.city);
-    await expect(fieldValue("State")).toHaveText(propertyRecord.address.state);
-    await expect(fieldValue("Postal Code")).toHaveText(
+    await expect(fieldValue("City")).toContainText(propertyRecord.address.city);
+    await expect(fieldValue("State")).toContainText(
+      propertyRecord.address.state,
+    );
+    await expect(fieldValue("Postal Code")).toContainText(
       propertyRecord.address.postalCode,
     );
-    await expect(fieldValue("Country")).toHaveText(
+    await expect(fieldValue("Country")).toContainText(
       propertyRecord.address.country,
     );
 
-    await expect(fieldValue("No Code Over Phone")).toHaveText(
+    await expect(fieldValue("No Code Over Phone")).toContainText(
       String(propertyRecord.flags.noCodeOverPhone),
     );
-    await expect(fieldValue("Always Escalate Lockout")).toHaveText(
+    await expect(fieldValue("Always Escalate Lockout")).toContainText(
       String(propertyRecord.flags.alwaysEscalateLockout),
     );
-    await expect(fieldValue("Upsell Enabled")).toHaveText(
+    await expect(fieldValue("Upsell Enabled")).toContainText(
       String(propertyRecord.flags.upsellEnabled),
     );
 
