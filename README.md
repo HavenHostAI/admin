@@ -71,3 +71,31 @@ export default defineConfig([
   },
 ])
 ```
+
+## Testing
+
+Run the full validation suite locally:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm format:check
+pnpm openapi:validate
+pnpm test
+pnpm test:e2e
+```
+
+## End-to-end testing prerequisites
+
+The Playwright suites rely on the local browser binaries and system libraries. Run the following commands once before executing the E2E tests on a new machine:
+
+```bash
+pnpm exec playwright install
+pnpm exec playwright install-deps
+```
+
+After the prerequisites are installed, run the end-to-end suites with:
+
+```bash
+pnpm test:e2e
+```
