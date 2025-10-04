@@ -167,7 +167,7 @@ test.describe("Authentication flows", () => {
     await page.getByRole("button", { name: "Create account" }).click();
 
     await expect(
-      page.getByRole("heading", { level: 2, name: /companies/i }),
+      page.getByRole("heading", { level: 1, name: /dashboard/i }),
     ).toBeVisible();
 
     await expect
@@ -208,7 +208,7 @@ test.describe("Authentication flows", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await expect(
-      page.getByRole("heading", { level: 2, name: /companies/i }),
+      page.getByRole("heading", { level: 1, name: /dashboard/i }),
     ).toBeVisible();
 
     await expect
