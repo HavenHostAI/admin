@@ -71,3 +71,17 @@ export default defineConfig([
   },
 ])
 ```
+
+## End-to-end testing prerequisites
+
+The Playwright suites rely on the local browser binaries and system libraries. Run the following command once before executing the E2E tests (it installs the Playwright browsers and any required OS dependencies):
+
+```bash
+pnpm playwright:install
+```
+
+After the prerequisites are installed, run the dashboard and authentication journeys with:
+
+```bash
+pnpm test:e2e
+```
