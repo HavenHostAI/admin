@@ -70,9 +70,9 @@ const formatLocalRec = (doc: LocalRecDoc): LocalRecResponse => ({
 });
 
 const computeMockEmbedding = (content: string) => {
-  const accumulator = new Array<number>(KNOWLEDGE_BASE_EMBEDDING_DIMENSION).fill(
-    0,
-  );
+  const accumulator = new Array<number>(
+    KNOWLEDGE_BASE_EMBEDDING_DIMENSION,
+  ).fill(0);
   if (!content) {
     return accumulator;
   }
