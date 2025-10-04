@@ -210,32 +210,46 @@ test.describe("Properties list", () => {
       page.getByRole("heading", { level: 2, name: /properties/i }),
     ).toBeVisible();
 
-    const headerCells = page.locator("thead th");
+    const table = page.getByRole("table");
+    const headerCells = table.getByRole("columnheader");
     await expect(headerCells).toHaveCount(5);
-    await expect(headerCells.nth(1)).toHaveText("Name");
-    await expect(headerCells.nth(2)).toHaveText("Company");
-    await expect(headerCells.nth(3)).toHaveText("Time Zone");
-    await expect(headerCells.nth(4)).toHaveText("Updated");
+    await expect(headerCells.filter({ hasText: "Name" }).first()).toBeVisible();
+    await expect(
+      headerCells.filter({ hasText: "Company" }).first(),
+    ).toBeVisible();
+    await expect(
+      headerCells.filter({ hasText: "Time Zone" }).first(),
+    ).toBeVisible();
+    await expect(
+      headerCells.filter({ hasText: "Updated" }).first(),
+    ).toBeVisible();
 
-    const rows = page.locator("tbody tr");
+    const rows = table.locator("tbody tr");
     await expect(rows).toHaveCount(propertyDocs.length);
 
-    await Promise.all(
-      propertyDocs.map(async (property, index) => {
-        const company = companyDocs.find(
-          (doc) => doc._id === property.companyId,
-        );
-        const row = rows.nth(index);
-        const cells = row.locator("td");
+    const actualRows = new Map<
+      string,
+      { company: string; timeZone: string; updated: string }
+    >();
+    const rowCount = await rows.count();
+    for (let index = 0; index < rowCount; index += 1) {
+      const cells = rows.nth(index).locator("td");
+      const name = (await cells.nth(1).innerText()).trim();
+      actualRows.set(name, {
+        company: (await cells.nth(2).innerText()).trim(),
+        timeZone: (await cells.nth(3).innerText()).trim(),
+        updated: (await cells.nth(4).innerText()).trim(),
+      });
+    }
 
-        await expect(cells.nth(1)).toHaveText(property.name);
-        await expect(cells.nth(2)).toHaveText(company?.name ?? "");
-        await expect(cells.nth(3)).toHaveText(property.timeZone);
-        await expect(cells.nth(4)).toHaveText(
-          formatUpdatedAt(property.updatedAt),
-        );
-      }),
-    );
+    for (const property of propertyDocs) {
+      const company = companyDocs.find((doc) => doc._id === property.companyId);
+      const row = actualRows.get(property.name);
+      expect(row).toBeDefined();
+      expect(row?.company).toBe(company?.name ?? "");
+      expect(row?.timeZone).toBe(property.timeZone);
+      expect(row?.updated).toBe(formatUpdatedAt(property.updatedAt));
+    }
   });
 
   test("shows the empty state when no properties are returned", async ({
