@@ -1,9 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Identifier,
   RaRecord,
@@ -86,7 +81,9 @@ const AssignPropertyButton = ({
     return null;
   }
 
-  const label = record.assignedPropertyId ? "Change assignment" : "Assign property";
+  const label = record.assignedPropertyId
+    ? "Change assignment"
+    : "Assign property";
 
   return (
     <Button
@@ -116,7 +113,9 @@ const AssignPropertyDialog = ({
   useEffect(() => {
     if (record) {
       setSelectedValue(
-        record.assignedPropertyId != null ? String(record.assignedPropertyId) : "",
+        record.assignedPropertyId != null
+          ? String(record.assignedPropertyId)
+          : "",
       );
     } else {
       setSelectedValue("");
@@ -129,7 +128,7 @@ const AssignPropertyDialog = ({
     const nextValue =
       selectedValue === ""
         ? null
-        : valueToId.get(selectedValue) ?? selectedValue;
+        : (valueToId.get(selectedValue) ?? selectedValue);
 
     try {
       await update(
@@ -179,7 +178,8 @@ const AssignPropertyDialog = ({
         {error ? (
           <Alert variant="destructive">
             <AlertDescription>
-              We were unable to load the list of properties. Please try again later.
+              We were unable to load the list of properties. Please try again
+              later.
             </AlertDescription>
           </Alert>
         ) : (
@@ -204,18 +204,26 @@ const AssignPropertyDialog = ({
 
             {!isLoading && options.length === 0 ? (
               <p className={placeholderTextClassName}>
-                No properties are available yet. Add a property to assign this number.
+                No properties are available yet. Add a property to assign this
+                number.
               </p>
             ) : null}
           </div>
         )}
 
         <DialogFooter>
-          <Button type="button" variant="ghost" onClick={onClose} disabled={isPending}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            disabled={isPending}
+          >
             Cancel
           </Button>
           <Button type="button" onClick={handleSubmit} disabled={disableSubmit}>
-            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : null}
             Save
           </Button>
         </DialogFooter>
@@ -225,9 +233,8 @@ const AssignPropertyDialog = ({
 };
 
 export const PhoneNumberList = () => {
-  const [selectedRecord, setSelectedRecord] = useState<PhoneNumberRecord | null>(
-    null,
-  );
+  const [selectedRecord, setSelectedRecord] =
+    useState<PhoneNumberRecord | null>(null);
 
   const handleOpenDialog = useCallback((record: PhoneNumberRecord) => {
     setSelectedRecord(record);
@@ -276,13 +283,19 @@ export const PhoneNumberList = () => {
             <ReferenceField
               reference="properties"
               source="assignedPropertyId"
-              empty={<span className={placeholderTextClassName}>Unassigned</span>}
+              empty={
+                <span className={placeholderTextClassName}>Unassigned</span>
+              }
               link={false}
             >
               <TextField source="name" />
             </ReferenceField>
           </DataTable.Col>
-          <DataTable.Col source="assignedQueue" label="Assigned Queue" disableSort>
+          <DataTable.Col
+            source="assignedQueue"
+            label="Assigned Queue"
+            disableSort
+          >
             <AssignedQueueCell />
           </DataTable.Col>
           <DataTable.Col label="Actions" disableSort>
