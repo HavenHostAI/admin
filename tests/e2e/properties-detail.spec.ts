@@ -82,14 +82,14 @@ const setupConvexMocks = async (
     const { path, args } = decodeConvexRequest(route);
 
     if (path === "admin:get" && args.table === "properties") {
-      if (args.id === String(context.property._id)) {
+      if (String(args.id) === String(context.property._id)) {
         return respond(route, context.property);
       }
       return respond(route, null);
     }
 
     if (path === "admin:get" && args.table === "companies") {
-      if (args.id === String(context.company._id)) {
+      if (String(args.id) === String(context.company._id)) {
         return respond(route, context.company);
       }
       return respond(route, null);
@@ -97,17 +97,19 @@ const setupConvexMocks = async (
 
     if (path === "admin:getMany" && args.table === "companies") {
       const ids = (args.ids as string[] | undefined) ?? [];
-      const results = ids.includes(String(context.company._id))
+      const matches = ids.includes(String(context.company._id))
         ? [context.company]
         : [];
-      return respond(route, results);
-    }
-
-    if (path === "admin:list") {
-      return respond(route, { data: [], total: 0 });
+      return respond(route, matches);
     }
 
     if (path?.startsWith("admin:")) {
+      if (path === "admin:list") {
+        return respond(route, { data: [], total: 0 });
+      }
+      if (path === "admin:getManyReference") {
+        return respond(route, { data: [], total: 0 });
+      }
       return respond(route, null);
     }
 
@@ -223,15 +225,11 @@ test.describe("Property detail view", () => {
 
     await page.goto(`/properties/${propertyRecord._id}/show`);
 
-    await expect(
-      page.getByRole("heading", {
-        name: `Property ${propertyRecord.name}`,
-      }),
-    ).toBeVisible();
+    const heading = page.getByRole("heading", { level: 2 });
+    await expect(heading).toContainText(propertyRecord.name);
 
-    const breadcrumbLink = page
-      .getByLabel("breadcrumb")
-      .getByRole("link", { name: "Properties" });
+    const breadcrumb = page.getByLabel("breadcrumb");
+    const breadcrumbLink = breadcrumb.getByRole("link", { name: "Properties" });
     await expect(breadcrumbLink).toBeVisible();
     await expect(breadcrumbLink).toHaveAttribute("href", "/properties");
 
@@ -247,56 +245,44 @@ test.describe("Property detail view", () => {
       `/companies/${companyRecord._id}/show`,
     );
 
-    await expect(page.getByText(propertyRecord.timeZone)).toBeVisible();
+    const fieldValue = (label: string) =>
+      page
+        .locator("div.flex.flex-col")
+        .filter({
+          has: page.locator(`div:text-is("${label}")`),
+        })
+        .locator("span.flex-1")
+        .first();
 
-    await expect(
-      page.getByText(propertyRecord.address.street, { exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByText(propertyRecord.address.city, { exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByText(propertyRecord.address.state, { exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByText(propertyRecord.address.postalCode, { exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByText(propertyRecord.address.country, { exact: true }),
-    ).toBeVisible();
-
-    const siblingTextForLabel = async (labelText: string) => {
-      const sibling = await page.evaluate((text) => {
-        const label = Array.from(document.querySelectorAll("div")).find(
-          (element) => element.textContent?.trim() === text,
-        );
-
-        return label?.nextElementSibling?.textContent ?? "";
-      }, labelText);
-
-      expect(sibling).not.toEqual("");
-      return sibling;
-    };
-
-    const noCodeText = await siblingTextForLabel("No Code Over Phone");
-    expect(noCodeText).toMatch(
-      propertyRecord.flags.noCodeOverPhone ? /true/i : /false/i,
+    await expect(fieldValue("Time Zone")).toHaveText(propertyRecord.timeZone);
+    await expect(fieldValue("Street")).toHaveText(
+      propertyRecord.address.street,
+    );
+    await expect(fieldValue("City")).toHaveText(propertyRecord.address.city);
+    await expect(fieldValue("State")).toHaveText(propertyRecord.address.state);
+    await expect(fieldValue("Postal Code")).toHaveText(
+      propertyRecord.address.postalCode,
+    );
+    await expect(fieldValue("Country")).toHaveText(
+      propertyRecord.address.country,
     );
 
-    const lockoutText = await siblingTextForLabel("Always Escalate Lockout");
-    expect(lockoutText).toMatch(
-      propertyRecord.flags.alwaysEscalateLockout ? /true/i : /false/i,
+    await expect(fieldValue("No Code Over Phone")).toHaveText(
+      String(propertyRecord.flags.noCodeOverPhone),
+    );
+    await expect(fieldValue("Always Escalate Lockout")).toHaveText(
+      String(propertyRecord.flags.alwaysEscalateLockout),
+    );
+    await expect(fieldValue("Upsell Enabled")).toHaveText(
+      String(propertyRecord.flags.upsellEnabled),
     );
 
-    const upsellText = await siblingTextForLabel("Upsell Enabled");
-    expect(upsellText).toMatch(
-      propertyRecord.flags.upsellEnabled ? /true/i : /false/i,
-    );
+    const expectedCreated = new Date(propertyRecord.createdAt).toLocaleString();
+    const expectedUpdated = new Date(propertyRecord.updatedAt).toLocaleString();
 
-    const createdText = await siblingTextForLabel("Created");
-    expect(createdText).toMatch(/2024/);
+    await expect(fieldValue("Created")).toContainText(expectedCreated);
+    await expect(fieldValue("Updated")).toContainText(expectedUpdated);
 
-    const updatedText = await siblingTextForLabel("Updated");
-    expect(updatedText).toMatch(/2024/);
+    expect(mocks.validateSessionCalls.length).toBeGreaterThan(0);
   });
 });

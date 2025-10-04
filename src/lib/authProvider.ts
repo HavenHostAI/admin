@@ -17,7 +17,6 @@ type StoredAuthUser = {
   image?: string | null;
   role?: string | null;
   status?: string | null;
-  companyId?: string | null;
 };
 
 const convexUrl = import.meta.env.VITE_CONVEX_URL;
@@ -109,22 +108,12 @@ export const authProvider: AuthProvider = {
 
   async getIdentity() {
     const user = loadStoredUser<StoredAuthUser>();
-    if (!user) {
-      throw new Error("User identity is not available");
-    }
-
-    const { id, email, name, image, role, status, companyId } = user;
-
+    if (!user) return null;
     return {
-      id,
-      fullName: name ?? email,
-      avatar: image ?? undefined,
-      email,
-      name: name ?? undefined,
-      image: image ?? undefined,
-      role: role ?? undefined,
-      status: status ?? undefined,
-      companyId: companyId ?? undefined,
+      id: user.id,
+      fullName: user.name ?? user.email,
+      avatar: user.image ?? null,
+      ...user,
     };
   },
 };

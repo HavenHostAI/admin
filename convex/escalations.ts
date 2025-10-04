@@ -71,14 +71,14 @@ export const listEscalations = query({
       ? ctx.db.normalizeId("properties", args.propertyId)
       : null;
 
-    const escalations = await (propertyFilter
-      ? ctx.db
-          .query("escalations")
-          .withIndex("by_property_status", (q) =>
-            q.eq("propertyId", propertyFilter),
-          )
-          .collect()
-      : ctx.db.query("escalations").collect());
+    let escalationQuery = ctx.db.query("escalations");
+    if (propertyFilter) {
+      escalationQuery = escalationQuery.withIndex("by_property_status", (q) =>
+        q.eq("propertyId", propertyFilter),
+      );
+    }
+
+    const escalations = await escalationQuery.collect();
 
     const priorityFilter = normalizeFilterValue(args.priority);
     const statusFilter = normalizeFilterValue(args.status);
