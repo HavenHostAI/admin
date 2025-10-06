@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { TOKEN_STORAGE_KEY } from "../../src/lib/authStorage";
-import { setupConvexMocks } from "./utils/convexMocks";
+import { pollForStoredToken, setupConvexMocks } from "./convexMocks";
 
 test.describe("Authentication flows", () => {
   test("allows a new owner to sign up and sign in", async ({ page }) => {
@@ -29,14 +28,7 @@ test.describe("Authentication flows", () => {
       page.getByRole("heading", { level: 1, name: /dashboard/i }),
     ).toBeVisible();
 
-    await expect
-      .poll(() =>
-        page.evaluate(
-          (key) => window.localStorage.getItem(key),
-          TOKEN_STORAGE_KEY,
-        ),
-      )
-      .toBe("test-session-token");
+    await pollForStoredToken(page);
 
     expect(mocks.signUpCalls).toHaveLength(1);
     expect(mocks.signUpCalls[0]).toMatchObject({
@@ -70,14 +62,7 @@ test.describe("Authentication flows", () => {
       page.getByRole("heading", { level: 1, name: /dashboard/i }),
     ).toBeVisible();
 
-    await expect
-      .poll(() =>
-        page.evaluate(
-          (key) => window.localStorage.getItem(key),
-          TOKEN_STORAGE_KEY,
-        ),
-      )
-      .toBe("test-session-token");
+    await pollForStoredToken(page);
 
     expect(mocks.signUpCalls).toHaveLength(0);
     expect(mocks.signInCalls).toHaveLength(1);
