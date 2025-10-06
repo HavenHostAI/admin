@@ -123,7 +123,7 @@ export const UserCreate = () => {
 };
 
 export const UserEdit = () => (
-  <Edit>
+  <Edit mutationMode="pessimistic">
     <SimpleForm>
       <ReferenceInput source="companyId" reference="companies">
         <AutocompleteInput
@@ -152,8 +152,8 @@ export const UserEdit = () => (
         validate={[required()]}
       />
       <BooleanInput source="emailVerified" label="Email Verified" />
-      <NumberInput source="createdAt" label="Created At (epoch ms)" />
-      <NumberInput source="updatedAt" label="Updated At (epoch ms)" />
+      <NumberInput source="createdAt" label="Created At (epoch ms)" disabled />
+      <NumberInput source="updatedAt" label="Updated At (epoch ms)" disabled />
     </SimpleForm>
   </Edit>
 );
