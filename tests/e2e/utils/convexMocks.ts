@@ -30,7 +30,6 @@ type MutationHandler = (
 type ActionHandler = (
   args: Record<string, unknown>,
 ) => unknown | Promise<unknown>;
-
 type ExposedQueryPayload = {
   path: string;
   args: unknown[];
@@ -506,7 +505,6 @@ export const setupConvexMocks = async (
         }
       }
     }
-
     await respond(route, {});
   });
 
@@ -518,4 +516,11 @@ export const setupConvexMocks = async (
   };
 };
 
-export type { AuthUser, ConvexMocks, SetupConvexMocksOptions };
+export type {
+  ActionHandler,
+  AuthUser,
+  ConvexMocks,
+  MutationHandler,
+  QueryHandler,
+  SetupConvexMocksOptions,
+};
