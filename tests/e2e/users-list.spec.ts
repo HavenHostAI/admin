@@ -1,6 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { setupConvexMocks } from "./utils/convexMocks";
-import { TOKEN_STORAGE_KEY } from "../../src/lib/authStorage";
+import { pollForStoredToken, setupConvexMocks } from "./convexMocks";
 
 const signInAsOwner = async (page: Page) => {
   await page.goto("/login");
@@ -12,14 +11,7 @@ const signInAsOwner = async (page: Page) => {
     page.getByRole("heading", { level: 1, name: /dashboard/i }),
   ).toBeVisible();
 
-  await expect
-    .poll(() =>
-      page.evaluate(
-        (key) => window.localStorage.getItem(key),
-        TOKEN_STORAGE_KEY,
-      ),
-    )
-    .toBe("test-session-token");
+  await pollForStoredToken(page);
 };
 
 test.describe("Users list", () => {
