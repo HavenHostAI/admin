@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-import { pollForStoredToken, setupConvexMocks } from "./convexMocks";
+import { pollForStoredToken } from "./convexMocks";
+import { setupConvexAuth } from "./utils/convex-auth";
 
 test.describe("Authentication flows", () => {
   test("allows a new owner to sign up and sign in", async ({ page }) => {
-    const mocks = await setupConvexMocks(page);
+    const mocks = await setupConvexAuth(page);
 
     await page.goto("/login");
     await page.waitForLoadState("networkidle");
@@ -24,6 +25,10 @@ test.describe("Authentication flows", () => {
     await page.getByLabel("Password").fill("Sup3rSecret!");
     await page.getByRole("button", { name: "Create account" }).click();
 
+    const companiesNav = page.getByRole("link", { name: /^companies$/i });
+    await expect(companiesNav).toBeVisible();
+    await companiesNav.click();
+    await page.waitForLoadState("networkidle");
     await expect(
       page.getByRole("heading", { level: 1, name: /dashboard/i }),
     ).toBeVisible();
@@ -48,7 +53,7 @@ test.describe("Authentication flows", () => {
   });
 
   test("allows an existing user to sign in", async ({ page }) => {
-    const mocks = await setupConvexMocks(page, {
+    const mocks = await setupConvexAuth(page, {
       user: { id: "user_existing", name: "Existing Owner" },
     });
 
@@ -58,6 +63,10 @@ test.describe("Authentication flows", () => {
     await page.getByLabel("Password").fill("owner-password!");
     await page.getByRole("button", { name: "Sign in" }).click();
 
+    const companiesNav = page.getByRole("link", { name: /^companies$/i });
+    await expect(companiesNav).toBeVisible();
+    await companiesNav.click();
+    await page.waitForLoadState("networkidle");
     await expect(
       page.getByRole("heading", { level: 1, name: /dashboard/i }),
     ).toBeVisible();
