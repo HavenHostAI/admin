@@ -4,7 +4,7 @@ import { pollForStoredToken, setupConvexMocks } from "./convexMocks";
 
 test.describe("Authentication flows", () => {
   test("allows a new owner to sign up and sign in", async ({ page }) => {
-    const mocks = await setupConvexMocks(page);
+    const mocks = await setupConvexAuth(page);
 
     await page.goto("/login");
     await page.waitForLoadState("networkidle");
@@ -52,7 +52,7 @@ test.describe("Authentication flows", () => {
   });
 
   test("allows an existing user to sign in", async ({ page }) => {
-    const mocks = await setupConvexMocks(page, {
+    const mocks = await setupConvexAuth(page, {
       user: { id: "user_existing", name: "Existing Owner" },
     });
 
