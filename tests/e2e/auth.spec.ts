@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-import { pollForStoredToken, setupConvexMocks } from "./convexMocks";
+import { pollForStoredToken } from "./convexMocks";
+import { setupConvexAuth } from "./utils/convex-auth";
 
 test.describe("Authentication flows", () => {
   test("allows a new owner to sign up and sign in", async ({ page }) => {

@@ -1,6 +1,7 @@
 import { type Page, type Route } from "@playwright/test";
 import { convexToJson, jsonToConvex } from "convex/values";
 
+import { TOKEN_STORAGE_KEY } from "../../../src/lib/authStorage";
 type AuthUser = {
   id: string;
   email: string;
@@ -60,7 +61,7 @@ const convexSuccessResponse = (value: unknown) => ({
   }),
 });
 
-const decodeConvexRequest = (route: Route) => {
+export const decodeConvexRequest = (route: Route) => {
   const bodyText = route.request().postData() ?? "{}";
   const body = JSON.parse(bodyText) as {
     path?: string;
@@ -73,6 +74,8 @@ const decodeConvexRequest = (route: Route) => {
   return { path: body.path, args: decodedArgs };
 };
 
+export const fulfillConvexResponse = (route: Route, value: unknown) =>
+  route.fulfill(convexSuccessResponse(convexToJson(value)));
 export const setupConvexMocks = async (
   page: Page,
   options: SetupConvexMocksOptions = {},
@@ -85,7 +88,7 @@ export const setupConvexMocks = async (
   let currentUser: AuthUser = { ...baseUser, ...options.user };
 
   const respond = (route: Route, value: unknown) =>
-    route.fulfill(convexSuccessResponse(convexToJson(value)));
+    fulfillConvexResponse(route, value);
 
   await page.route("**/api/query_ts", (route) =>
     route.fulfill({
@@ -466,6 +469,23 @@ export const setupConvexMocks = async (
     await respond(route, {});
   });
 
+  const storageSentinelKey = "__convex_e2e_token_cleared";
+  await page.addInitScript(
+    (tokenKey: string, sentinelKey: string) => {
+      try {
+        const hasCleared = window.sessionStorage.getItem(sentinelKey);
+        if (!hasCleared) {
+          window.localStorage.removeItem(tokenKey);
+          window.sessionStorage.setItem(sentinelKey, "true");
+        }
+      } catch (error) {
+        console.warn("Failed to clear stored Convex token", error);
+        window.localStorage.removeItem(tokenKey);
+      }
+    },
+    TOKEN_STORAGE_KEY,
+    storageSentinelKey,
+  );
   return {
     signUpCalls,
     signInCalls,
