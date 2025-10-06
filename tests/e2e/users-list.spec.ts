@@ -92,42 +92,41 @@ test.describe("Users list", () => {
       "Email",
       "Role",
       "Status",
-      expect.stringMatching(/verified|verification/i),
+      "Email Verified",
       "Company",
     ]);
 
     const rows = page.locator("tbody tr");
     await expect(rows).toHaveCount(users.length);
 
-    const firstRow = (
-      await rows
-        .first()
+    const readRow = async (index: number) => {
+      const cellTexts = await rows
+        .nth(index)
         .locator("td")
         .evaluateAll((cells) =>
           cells.map((cell) => cell.textContent?.trim() ?? ""),
-        )
-    ).slice(1);
+        );
+      if (cellTexts[0] === "") {
+        cellTexts.shift();
+      }
+      return cellTexts;
+    };
+
+    const firstRow = await readRow(0);
     expect(firstRow).toEqual([
       users[0].email,
       users[0].role,
       users[0].status,
-      String(users[0].emailVerified),
+      users[0].emailVerified ? "true" : "false",
       companies[0].name,
     ]);
 
-    const secondRow = (
-      await rows
-        .nth(1)
-        .locator("td")
-        .evaluateAll((cells) =>
-          cells.map((cell) => cell.textContent?.trim() ?? ""),
-        )
-    ).slice(1);
+    const secondRow = await readRow(1);
     expect(secondRow).toEqual([
       users[1].email,
       users[1].role,
       users[1].status,
-      String(users[1].emailVerified),
+      users[1].emailVerified ? "true" : "false",
       companies[1].name,
     ]);
   });
