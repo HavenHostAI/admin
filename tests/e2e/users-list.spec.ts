@@ -99,18 +99,19 @@ test.describe("Users list", () => {
     const rows = page.locator("tbody tr");
     await expect(rows).toHaveCount(users.length);
 
-    const readRow = async (index: number) => {
-      const cellTexts = await rows
+    const readRow = async (index: number) =>
+      rows
         .nth(index)
         .locator("td")
         .evaluateAll((cells) =>
-          cells.map((cell) => cell.textContent?.trim() ?? ""),
+          cells
+            .filter(
+              (cell) =>
+                !cell.querySelector("[data-slot='checkbox']") &&
+                !cell.querySelector("[role='checkbox']"),
+            )
+            .map((cell) => cell.textContent?.trim() ?? ""),
         );
-      if (cellTexts[0] === "") {
-        cellTexts.shift();
-      }
-      return cellTexts;
-    };
 
     const firstRow = await readRow(0);
     expect(firstRow).toEqual([
