@@ -176,7 +176,9 @@ test.describe("Property management", () => {
     const nameInput = page.getByLabel("Name");
     await expect(nameInput).toBeVisible();
 
-    const companyInput = page.getByRole("combobox").first();
+    const comboboxes = page.getByRole("combobox");
+    await expect(comboboxes).toHaveCount(1);
+    const companyInput = comboboxes.first();
     await expect(companyInput).toBeVisible();
     await companyInput.click();
     const companyOption = page.getByRole("option", {
