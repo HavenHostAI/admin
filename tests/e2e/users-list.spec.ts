@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { setupConvexMocks } from "./support/convexMocks";
+import { setupConvexMocks } from "./utils/convexMocks";
 import { TOKEN_STORAGE_KEY } from "../../src/lib/authStorage";
 
 const signInAsOwner = async (page: Page) => {
@@ -49,14 +49,14 @@ test.describe("Users list", () => {
 
     await setupConvexMocks(page, {
       queryHandlers: {
-        "admin:list": ({ args }) => {
+        "admin:list": (args) => {
           const table = String(args.table ?? "");
           if (table === "users") {
             return { data: users, total: users.length };
           }
           return { data: [], total: 0 };
         },
-        "admin:getMany": ({ args }) => {
+        "admin:getMany": (args) => {
           const table = String(args.table ?? "");
           if (table === "companies") {
             const ids = Array.isArray(args.ids)
@@ -134,7 +134,7 @@ test.describe("Users list", () => {
   test("renders the empty state when no users exist", async ({ page }) => {
     await setupConvexMocks(page, {
       queryHandlers: {
-        "admin:list": ({ args }) => {
+        "admin:list": (args) => {
           const table = String(args.table ?? "");
           if (table === "users") {
             return { data: [], total: 0 };
