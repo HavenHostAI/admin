@@ -17,6 +17,10 @@ export type ConvexQueryHandler = (request: {
   args: Record<string, unknown>;
 }) => unknown | Promise<unknown>;
 
+export type ConvexMutationHandler = ConvexQueryHandler;
+
+export type ConvexActionHandler = ConvexQueryHandler;
+
 export type ConvexMocks = {
   signUpCalls: ConvexCall[];
   signInCalls: ConvexCall[];
@@ -27,6 +31,8 @@ export type ConvexMocks = {
 export type SetupConvexMocksOptions = {
   user?: Partial<AuthUser>;
   queryHandlers?: Record<string, ConvexQueryHandler>;
+  mutationHandlers?: Record<string, ConvexMutationHandler>;
+  actionHandlers?: Record<string, ConvexActionHandler>;
 };
 
 const baseUser: AuthUser = {
@@ -108,9 +114,26 @@ export const setupConvexMocks = async (
   await page.route("**/api/query", handleQuery);
   await page.route("**/api/query_at_ts", handleQuery);
 
-  await page.route("**/api/mutation", (route) => respond(route, {}));
+  await page.route("**/api/mutation", async (route) => {
+    const { path, args } = decodeConvexRequest(route);
 
-  await page.route("**/api/action", (route) => {
+    if (path) {
+      const handler = options.mutationHandlers?.[path];
+      if (handler) {
+        const result = await handler({
+          path,
+          args: args as Record<string, unknown>,
+        });
+        if (result !== undefined) {
+          return respond(route, result);
+        }
+      }
+    }
+
+    return respond(route, {});
+  });
+
+  await page.route("**/api/action", async (route) => {
     const { path, args } = decodeConvexRequest(route);
 
     if (path === "auth:signUp") {
@@ -154,6 +177,20 @@ export const setupConvexMocks = async (
         },
         user: currentUser,
       });
+    }
+
+    if (path) {
+      const handler = options.actionHandlers?.[path];
+      if (handler) {
+        const result = await handler({
+          path,
+          args: args as Record<string, unknown>,
+        });
+        if (result !== undefined) {
+          return respond(route, result);
+        }
+        return respond(route, {});
+      }
     }
 
     return respond(route, {});
