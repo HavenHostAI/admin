@@ -55,7 +55,7 @@ const convexSuccessResponse = (value: unknown) => ({
   contentType: "application/json",
   body: JSON.stringify({
     status: "success",
-    value,
+    value: convexToJson(value),
     logLines: [],
   }),
 });

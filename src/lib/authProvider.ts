@@ -20,7 +20,7 @@ type StoredAuthUser = {
   image?: string | null;
   role?: string | null;
   status?: string | null;
-  companyId?: Id<"companies"> | null;
+  companyId?: Id<"companies"> | string | null;
 };
 
 let client: ConvexHttpClient | null = null;
