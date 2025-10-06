@@ -440,7 +440,13 @@ export const setupConvexMocks = async (
 
     if (path === "auth:validateSession") {
       validateSessionCalls.push(args);
-      if (!activeToken) {
+
+      const providedToken =
+        args && typeof args === "object" && "token" in args
+          ? (args as { token?: unknown }).token
+          : undefined;
+
+      if (!activeToken || providedToken !== activeToken) {
         await respond(route, null);
         return;
       }
@@ -462,7 +468,7 @@ export const setupConvexMocks = async (
 
     if (path === "auth:signOut") {
       activeToken = null;
-      await respond(route, {});
+      await respond(route, null);
       return;
     }
 
