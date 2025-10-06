@@ -82,13 +82,22 @@ test.describe("Dashboard KPIs", () => {
 
     const metricsResponse = createDeferred<typeof dashboardResponse>();
 
+    let dashboardCallCount = 0;
+
     await setupConvexMocks(page, {
       queryHandlers: {
-        "admin:dashboard": async () => metricsResponse.promise,
+        "admin:dashboard": async () => {
+          dashboardCallCount += 1;
+          return metricsResponse.promise;
+        },
       },
     });
 
     await loginExistingUser(page);
+
+    await page.goto("/");
+
+    await expect.poll(() => dashboardCallCount).toBeGreaterThan(0);
 
     await expect(page.locator('[data-slot="skeleton"]').first()).toBeVisible();
 
@@ -142,13 +151,22 @@ test.describe("Dashboard KPIs", () => {
   }) => {
     const outageResponse = createDeferred<null>();
 
+    let outageCallCount = 0;
+
     await setupConvexMocks(page, {
       queryHandlers: {
-        "admin:dashboard": async () => outageResponse.promise,
+        "admin:dashboard": async () => {
+          outageCallCount += 1;
+          return outageResponse.promise;
+        },
       },
     });
 
     await loginExistingUser(page);
+
+    await page.goto("/");
+
+    await expect.poll(() => outageCallCount).toBeGreaterThan(0);
 
     await expect(page.locator('[data-slot="alert-title"]').first()).toHaveText(
       "Live data is temporarily unavailable",
