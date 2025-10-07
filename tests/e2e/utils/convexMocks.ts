@@ -18,7 +18,9 @@ type ConvexMocks = {
   signUpCalls: ConvexCall[];
   signInCalls: ConvexCall[];
   validateSessionCalls: ConvexCall[];
+  inviteUserCalls: ConvexCall[];
   getCurrentUser: () => AuthUser;
+  setActiveToken: (token: string | null) => void;
 };
 
 type QueryHandler = (
@@ -51,6 +53,7 @@ type SetupConvexMocksOptions = {
   queryHandlers?: Record<string, QueryHandler>;
   mutationHandlers?: Record<string, MutationHandler>;
   actionHandlers?: Record<string, ActionHandler>;
+  initialToken?: string | null;
 };
 
 const baseUser: AuthUser = {
@@ -71,6 +74,32 @@ const convexSuccessResponse = (value: unknown) => ({
     logLines: [],
   }),
 });
+
+const createDashboardFallback = () => {
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+
+  const windowLength = 7;
+  const callsOverTime = Array.from({ length: windowLength }, (_, index) => {
+    const date = new Date(today);
+    date.setUTCDate(today.getUTCDate() - (windowLength - index - 1));
+    return { date: date.toISOString().slice(0, 10), count: 0 };
+  });
+
+  return {
+    metrics: {
+      callsHandled: 0,
+      aiResolutionRate: 0,
+      openEscalations: 0,
+      unitsUnderManagement: 0,
+    },
+    charts: {
+      callsOverTime,
+      escalationsByPriority: [],
+    },
+    lastUpdated: null,
+  };
+};
 
 export const decodeConvexRequest = (route: Route) => {
   const bodyText = route.request().postData() ?? "{}";
@@ -95,8 +124,10 @@ export const setupConvexMocks = async (
   const signUpCalls: ConvexCall[] = [];
   const signInCalls: ConvexCall[] = [];
   const validateSessionCalls: ConvexCall[] = [];
+  const inviteUserCalls: ConvexCall[] = [];
 
-  let activeToken: string | null = null;
+  let activeToken: string | null =
+    options.initialToken !== undefined ? options.initialToken : null;
   let currentUser: AuthUser = { ...baseUser, ...options.user };
 
   const respond = (route: Route, value: unknown) =>
@@ -414,6 +445,11 @@ export const setupConvexMocks = async (
       }
     }
 
+    if (path === "admin:dashboard") {
+      await respond(route, createDashboardFallback());
+      return;
+    }
+
     if (path?.startsWith("admin:")) {
       await respond(route, { data: [], total: 0 });
       return;
@@ -502,6 +538,12 @@ export const setupConvexMocks = async (
       return;
     }
 
+    if (path === "company:inviteUser") {
+      inviteUserCalls.push(recordArgs);
+      await respond(route, {});
+      return;
+    }
+
     if (path) {
       const handler = options.actionHandlers?.[path];
       if (handler) {
@@ -538,7 +580,11 @@ export const setupConvexMocks = async (
     signUpCalls,
     signInCalls,
     validateSessionCalls,
+    inviteUserCalls,
     getCurrentUser: () => currentUser,
+    setActiveToken: (token: string | null) => {
+      activeToken = token;
+    },
   };
 };
 

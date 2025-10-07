@@ -121,6 +121,11 @@ export const Dashboard = () => {
       return;
     }
 
+    if (dashboardData === null) {
+      setHasError(true);
+      return;
+    }
+
     if (dashboardData !== undefined) {
       setHasError(false);
       return;
