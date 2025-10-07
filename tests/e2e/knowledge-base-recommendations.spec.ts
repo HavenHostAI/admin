@@ -1,5 +1,6 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 import { jsonToConvex } from "convex/values";
+import { TOKEN_STORAGE_KEY, USER_STORAGE_KEY } from "../../src/lib/authStorage";
 
 type LocalRecommendation = {
   id: string;
@@ -57,6 +58,14 @@ const decodeConvexRequest = (route: Route) => {
 const setupKnowledgeBaseMocks = async (
   page: Page,
 ): Promise<KnowledgeBaseMocks> => {
+  const token = "test-admin-session";
+  const storedUser = {
+    id: "user_owner",
+    email: "owner@example.com",
+    name: "Operator Owner",
+    role: "owner",
+  };
+
   const properties = [
     { id: "property_1", name: "Riverside Retreat" },
     { id: "property_2", name: "Hudson Loft" },
@@ -93,6 +102,22 @@ const setupKnowledgeBaseMocks = async (
     deleteCalls: [],
     deleteSettled: 0,
   };
+
+  await page.addInitScript(
+    (
+      tokenKey: string,
+      tokenValue: string,
+      userKey: string,
+      userValue: unknown,
+    ) => {
+      window.localStorage.setItem(tokenKey, tokenValue);
+      window.localStorage.setItem(userKey, JSON.stringify(userValue));
+    },
+    TOKEN_STORAGE_KEY,
+    token,
+    USER_STORAGE_KEY,
+    storedUser,
+  );
 
   const respond = (route: Route, value: unknown) =>
     route.fulfill(convexSuccessResponse(value));
@@ -190,7 +215,24 @@ const setupKnowledgeBaseMocks = async (
     return respond(route, null);
   });
 
-  await page.route("**/api/action", (route) => respond(route, {}));
+  await page.route("**/api/action", (route) => {
+    const { path } = decodeConvexRequest(route);
+    if (path === "auth:validateSession") {
+      const timestamp = new Date().toISOString();
+      return respond(route, {
+        session: {
+          token,
+          userId: storedUser.id,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+          expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
+        },
+        user: storedUser,
+      });
+    }
+
+    return respond(route, {});
+  });
 
   return mocks;
 };
