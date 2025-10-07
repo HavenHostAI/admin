@@ -8,6 +8,7 @@ import {
   Translate,
   useCreatePath,
   useHasDashboard,
+  usePermissions,
   useShowContext,
   useGetRecordRepresentation,
   useGetResourceLabel,
@@ -85,6 +86,12 @@ export const ShowView = ({
   const recordRepresentation = getRecordRepresentation(context.record);
 
   const { hasEdit } = useResourceDefinition({ resource });
+  const { permissions } = usePermissions<string>();
+  const canEdit =
+    hasEdit &&
+    (permissions === "owner" ||
+      permissions === "manager" ||
+      permissions === "admin");
   const hasDashboard = useHasDashboard();
 
   if (context.isLoading || !context.record) {
@@ -120,7 +127,7 @@ export const ShowView = ({
         </h2>
         {actions ?? (
           <div className="flex items-center justify-end">
-            {hasEdit ? <EditButton /> : null}
+            {canEdit ? <EditButton /> : null}
           </div>
         )}
       </div>
