@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+
 import { pollForStoredToken } from "./convexMocks";
 import { setupConvexAuth } from "./utils/convex-auth";
 
@@ -24,10 +25,14 @@ test.describe("Authentication flows", () => {
     await page.getByLabel("Password").fill("Sup3rSecret!");
     await page.getByRole("button", { name: "Create account" }).click();
 
+    await expect(
+      page.getByRole("heading", { level: 1, name: /dashboard/i }),
+    ).toBeVisible();
+
     const companiesNav = page.getByRole("link", { name: /^companies$/i });
     await expect(companiesNav).toBeVisible();
     await companiesNav.click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForURL(/\/companies(?:$|[?#])/);
     await expect(
       page.getByRole("heading", { level: 2, name: /companies/i }),
     ).toBeVisible();
@@ -62,10 +67,14 @@ test.describe("Authentication flows", () => {
     await page.getByLabel("Password").fill("owner-password!");
     await page.getByRole("button", { name: "Sign in" }).click();
 
+    await expect(
+      page.getByRole("heading", { level: 1, name: /dashboard/i }),
+    ).toBeVisible();
+
     const companiesNav = page.getByRole("link", { name: /^companies$/i });
     await expect(companiesNav).toBeVisible();
     await companiesNav.click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForURL(/\/companies(?:$|[?#])/);
     await expect(
       page.getByRole("heading", { level: 2, name: /companies/i }),
     ).toBeVisible();

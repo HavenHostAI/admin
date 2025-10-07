@@ -1,4 +1,5 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Page, type Route } from "@playwright/test";
+import { jsonToConvex } from "convex/values";
 
 import { TOKEN_STORAGE_KEY } from "../../src/lib/authStorage";
 import {
@@ -21,6 +22,29 @@ type AdminTableState = {
 
 export type ConvexMocks = BaseConvexMocks & {
   setAdminListResponse: (table: string, response: AdminListResult) => void;
+};
+
+export const convexSuccessResponse = (value: unknown) => ({
+  status: 200,
+  contentType: "application/json",
+  body: JSON.stringify({
+    status: "success",
+    value,
+    logLines: [],
+  }),
+});
+
+export const decodeConvexRequest = (route: Route) => {
+  const bodyText = route.request().postData() ?? "{}";
+  const body = JSON.parse(bodyText) as {
+    path?: string;
+    args?: unknown[];
+  };
+  const [encodedArgs] = body.args ?? [];
+  const decodedArgs = encodedArgs
+    ? (jsonToConvex(encodedArgs as unknown) as Record<string, unknown>)
+    : {};
+  return { path: body.path, args: decodedArgs };
 };
 
 const getRecordIdentifier = (record: Record<string, unknown>) => {
