@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-
 import { pollForStoredToken } from "./convexMocks";
 import { setupConvexAuth } from "./utils/convex-auth";
 

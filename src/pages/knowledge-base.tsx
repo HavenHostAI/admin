@@ -138,6 +138,20 @@ const defaultLocalRecForm: LocalRecFormState = {
   tags: [],
 };
 
+const normalizeTags = (tags: string[]) => {
+  const seen = new Set<string>();
+  const normalized: string[] = [];
+  for (const tag of tags) {
+    const formatted = tag.trim().toLowerCase();
+    if (!formatted || seen.has(formatted)) {
+      continue;
+    }
+    seen.add(formatted);
+    normalized.push(formatted);
+  }
+  return normalized;
+};
+
 const formatDateTime = (value: number) =>
   new Date(value).toLocaleString(undefined, {
     dateStyle: "medium",
@@ -373,7 +387,8 @@ export const KnowledgeBasePage = () => {
         return;
       }
 
-      if (!localFormState.category) {
+      const trimmedCategory = localFormState.category.trim();
+      if (!trimmedCategory) {
         notify("Choose a category for the recommendation", {
           type: "warning",
         });
@@ -386,17 +401,22 @@ export const KnowledgeBasePage = () => {
         return;
       }
 
+      const trimmedUrl = localFormState.url.trim();
+      const trimmedTips = localFormState.tips.trim();
+      const trimmedHours = localFormState.hours.trim();
+      const normalizedTags = normalizeTags(localFormState.tags);
+
       setLocalSubmitting(true);
       try {
         await convexClient.mutation(api.knowledgeBase.saveLocalRecommendation, {
           id: editingLocalRec?.id,
           propertyId: localFormState.propertyId,
           name: trimmedName,
-          category: localFormState.category,
-          url: localFormState.url || undefined,
-          tips: localFormState.tips || undefined,
-          hours: localFormState.hours || undefined,
-          tags: localFormState.tags,
+          category: trimmedCategory,
+          url: trimmedUrl || undefined,
+          tips: trimmedTips || undefined,
+          hours: trimmedHours || undefined,
+          tags: normalizedTags,
         });
         notify("Recommendation saved", { type: "success" });
         closeLocalDialog();
@@ -439,17 +459,19 @@ export const KnowledgeBasePage = () => {
   const confirmLocalDelete = useCallback(async () => {
     if (!localPendingDelete) return;
     setLocalDeleting(true);
+    const pending = localPendingDelete;
+    setLocalPendingDelete(null);
+    setLocalRecs((current) => current.filter((rec) => rec.id !== pending.id));
     try {
       await convexClient.mutation(api.knowledgeBase.deleteLocalRecommendation, {
-        id: localPendingDelete.id,
+        id: pending.id,
       });
       notify("Recommendation deleted", { type: "success" });
-      setLocalPendingDelete(null);
-      await fetchLocalRecs();
     } catch (error) {
       console.error(error);
       notify("Unable to delete recommendation", { type: "error" });
     } finally {
+      await fetchLocalRecs();
       setLocalDeleting(false);
     }
   }, [convexClient, fetchLocalRecs, localPendingDelete, notify]);
