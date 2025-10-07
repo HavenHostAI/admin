@@ -3,6 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = 4173;
 const CONVEX_URL = process.env.VITE_CONVEX_URL ?? "http://127.0.0.1:3999";
 
+process.env.VITE_CONVEX_URL = CONVEX_URL;
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,

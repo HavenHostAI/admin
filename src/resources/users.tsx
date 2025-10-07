@@ -20,6 +20,7 @@ import { NumberInput } from "@/components/admin/number-input";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
 import { getStoredToken } from "@/lib/authStorage";
+import { resolveConvexUrl } from "../lib/convexUrl";
 
 const roleChoices = [
   { id: "owner", name: "Owner" },
@@ -61,10 +62,10 @@ export const UserCreate = () => {
   const notify = useNotify();
   const redirect = useRedirect();
   const convexClient = useMemo(() => {
-    if (!import.meta.env.VITE_CONVEX_URL) {
-      throw new Error("VITE_CONVEX_URL is not defined");
-    }
-    return new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL);
+    const convexUrl = resolveConvexUrl(
+      "VITE_CONVEX_URL must be defined to manage users.",
+    );
+    return new ConvexHttpClient(convexUrl);
   }, []);
 
   const handleSubmit: SubmitHandler<FieldValues> = async (values) => {
@@ -123,7 +124,7 @@ export const UserCreate = () => {
 };
 
 export const UserEdit = () => (
-  <Edit>
+  <Edit mutationMode="pessimistic">
     <SimpleForm>
       <ReferenceInput source="companyId" reference="companies">
         <AutocompleteInput
@@ -152,8 +153,8 @@ export const UserEdit = () => (
         validate={[required()]}
       />
       <BooleanInput source="emailVerified" label="Email Verified" />
-      <NumberInput source="createdAt" label="Created At (epoch ms)" />
-      <NumberInput source="updatedAt" label="Updated At (epoch ms)" />
+      <NumberInput source="createdAt" label="Created At (epoch ms)" disabled />
+      <NumberInput source="updatedAt" label="Updated At (epoch ms)" disabled />
     </SimpleForm>
   </Edit>
 );

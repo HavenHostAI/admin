@@ -81,6 +81,12 @@ pnpm exec playwright install
 pnpm exec playwright install-deps
 ```
 
+After the prerequisites are installed, run the dashboard and authentication journeys with:
+
+```bash
+pnpm test:e2e
+```
+
 ## Testing
 
 Run the full validation suite locally:
@@ -91,11 +97,5 @@ pnpm typecheck
 pnpm format:check
 pnpm openapi:validate
 pnpm test
-pnpm test:e2e
-```
-
-After the prerequisites are installed, run the end-to-end suites with:
-
-```bash
 pnpm test:e2e
 ```

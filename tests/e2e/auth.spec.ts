@@ -30,7 +30,7 @@ test.describe("Authentication flows", () => {
     await companiesNav.click();
     await page.waitForLoadState("networkidle");
     await expect(
-      page.getByRole("heading", { level: 1, name: /dashboard/i }),
+      page.getByRole("heading", { level: 2, name: /companies/i }),
     ).toBeVisible();
 
     await pollForStoredToken(page);
@@ -68,7 +68,7 @@ test.describe("Authentication flows", () => {
     await companiesNav.click();
     await page.waitForLoadState("networkidle");
     await expect(
-      page.getByRole("heading", { level: 1, name: /dashboard/i }),
+      page.getByRole("heading", { level: 2, name: /companies/i }),
     ).toBeVisible();
 
     await pollForStoredToken(page);
