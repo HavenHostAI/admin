@@ -22,27 +22,40 @@ type CompanyRecord = {
   } | null;
 };
 
+type CompanyRecordSource =
+  | "name"
+  | "branding"
+  | "branding.logoUrl"
+  | "branding.greetingName";
+
 type LogoPreviewFieldProps = {
   className?: string;
-  source?: string;
+  source?: CompanyRecordSource;
   empty?: ReactNode;
 } & HTMLAttributes<HTMLSpanElement>;
 
-const LogoPreviewField = ({
+export const LogoPreviewField = ({
   className,
   source,
   empty,
+  ...rest
 }: LogoPreviewFieldProps) => {
   const record = useRecordContext<CompanyRecord>();
-  const value = useFieldValue({ source, record });
+  const fieldSource: CompanyRecordSource = (source ??
+    "branding.logoUrl") as CompanyRecordSource;
+  const value = useFieldValue({ source: fieldSource, record });
 
   if (typeof value !== "string" || value.trim().length === 0) {
     if (empty !== undefined) {
-      return <span className={cn(className)}>{empty}</span>;
+      return (
+        <span className={cn(className)} {...rest}>
+          {empty}
+        </span>
+      );
     }
 
     return (
-      <span className={cn("text-muted-foreground", className)}>
+      <span className={cn("text-muted-foreground", className)} {...rest}>
         No logo provided
       </span>
     );
@@ -54,7 +67,7 @@ const LogoPreviewField = ({
       : "Company logo preview";
 
   return (
-    <span className={cn("flex items-center gap-3", className)}>
+    <span className={cn("flex items-center gap-3", className)} {...rest}>
       <a
         href={value}
         target="_blank"
