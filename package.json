@@ -20,6 +20,7 @@
     "playwright:install": "playwright install --with-deps",
     "pretest:e2e": "pnpm playwright:install",
     "test:e2e": "playwright test",
+    "playwright:setup": "node scripts/setup-playwright.mjs",
     "typecheck": "tsc --noEmit",
     "prepare": "husky"
   },

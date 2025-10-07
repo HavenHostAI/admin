@@ -71,7 +71,6 @@ export default defineConfig([
   },
 ])
 ```
-
 ## End-to-end testing prerequisites
 
 The Playwright suites rely on the local browser binaries and system libraries. Run the following commands once before executing the E2E tests on a new machine:
