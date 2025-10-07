@@ -1,4 +1,4 @@
-import { required } from "ra-core";
+import { required, usePermissions } from "ra-core";
 import { useMemo } from "react";
 import { useNotify, useRedirect } from "ra-core";
 import type { SubmitHandler, FieldValues } from "react-hook-form";
@@ -123,7 +123,7 @@ export const UserCreate = () => {
 };
 
 export const UserEdit = () => (
-  <Edit>
+  <Edit mutationMode="pessimistic">
     <SimpleForm>
       <ReferenceInput source="companyId" reference="companies">
         <AutocompleteInput
@@ -152,25 +152,30 @@ export const UserEdit = () => (
         validate={[required()]}
       />
       <BooleanInput source="emailVerified" label="Email Verified" />
-      <NumberInput source="createdAt" label="Created At (epoch ms)" />
-      <NumberInput source="updatedAt" label="Updated At (epoch ms)" />
+      <NumberInput source="createdAt" label="Created At (epoch ms)" disabled />
+      <NumberInput source="updatedAt" label="Updated At (epoch ms)" disabled />
     </SimpleForm>
   </Edit>
 );
 
-export const UserShow = () => (
-  <Show>
-    <div className="flex flex-col gap-4">
-      <RecordField source="email" label="Email" />
-      <RecordField source="name" label="Name" />
-      <RecordField source="role" label="Role" />
-      <RecordField source="status" label="Status" />
-      <RecordField source="emailVerified" label="Email Verified" />
-      <RecordField label="Company">
-        <ReferenceField reference="companies" source="companyId">
-          <TextField source="name" />
-        </ReferenceField>
-      </RecordField>
-    </div>
-  </Show>
-);
+export const UserShow = () => {
+  const { permissions } = usePermissions<string | null>();
+  const canEdit = permissions != null && permissions !== "viewer";
+
+  return (
+    <Show actions={canEdit ? undefined : false}>
+      <div className="flex flex-col gap-4">
+        <RecordField source="email" label="Email" />
+        <RecordField source="name" label="Name" />
+        <RecordField source="role" label="Role" />
+        <RecordField source="status" label="Status" />
+        <RecordField source="emailVerified" label="Email Verified" />
+        <RecordField label="Company">
+          <ReferenceField reference="companies" source="companyId">
+            <TextField source="name" />
+          </ReferenceField>
+        </RecordField>
+      </div>
+    </Show>
+  );
+};

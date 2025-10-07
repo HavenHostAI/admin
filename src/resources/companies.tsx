@@ -1,4 +1,4 @@
-import { required } from "ra-core";
+import { required, useFieldValue, useRecordContext } from "ra-core";
 import { Create } from "@/components/admin/create";
 import { DataTable } from "@/components/admin/data-table";
 import { DateField } from "@/components/admin/date-field";
@@ -11,6 +11,66 @@ import { SelectInput } from "@/components/admin/select-input";
 import { TextField } from "@/components/admin/text-field";
 import { TextInput } from "@/components/admin/text-input";
 import { NumberInput } from "@/components/admin/number-input";
+import { cn } from "@/lib/utils";
+import type { HTMLAttributes, ReactNode } from "react";
+
+type CompanyRecord = {
+  name?: string | null;
+  branding?: {
+    logoUrl?: string | null;
+    greetingName?: string | null;
+  } | null;
+};
+
+type LogoPreviewFieldProps = {
+  className?: string;
+  source?: string;
+  empty?: ReactNode;
+} & HTMLAttributes<HTMLSpanElement>;
+
+const LogoPreviewField = ({
+  className,
+  source,
+  empty,
+}: LogoPreviewFieldProps) => {
+  const record = useRecordContext<CompanyRecord>();
+  const value = useFieldValue({ source, record });
+
+  if (typeof value !== "string" || value.trim().length === 0) {
+    if (empty !== undefined) {
+      return <span className={cn(className)}>{empty}</span>;
+    }
+
+    return (
+      <span className={cn("text-muted-foreground", className)}>
+        No logo provided
+      </span>
+    );
+  }
+
+  const altText =
+    record?.name && record.name.trim().length > 0
+      ? `${record.name} logo preview`
+      : "Company logo preview";
+
+  return (
+    <span className={cn("flex items-center gap-3", className)}>
+      <a
+        href={value}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-primary max-w-[16rem] truncate underline"
+      >
+        {value}
+      </a>
+      <img
+        alt={altText}
+        src={value}
+        className="h-12 w-12 rounded-md border bg-white object-contain"
+      />
+    </span>
+  );
+};
 
 const planChoices = [
   { id: "starter", name: "Starter" },
@@ -90,7 +150,11 @@ export const CompanyShow = () => (
       <RecordField source="name" label="Name" />
       <RecordField source="plan" label="Plan" />
       <RecordField source="timezone" label="Timezone" />
-      <RecordField source="branding.logoUrl" label="Logo URL" />
+      <RecordField
+        source="branding.logoUrl"
+        label="Logo URL"
+        field={LogoPreviewField}
+      />
       <RecordField source="branding.greetingName" label="Greeting Name" />
       <RecordField source="createdAt" label="Created">
         <DateField source="createdAt" showTime />

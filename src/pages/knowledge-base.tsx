@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useId } from "react";
 import { useNotify } from "ra-core";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
@@ -228,6 +228,11 @@ export const KnowledgeBasePage = () => {
     useState<LocalRecommendationRecord | null>(null);
   const [localDeleting, setLocalDeleting] = useState(false);
 
+  const faqPropertyLabelId = useId();
+  const faqCategoryLabelId = useId();
+  const localPropertyLabelId = useId();
+  const localCategoryLabelId = useId();
+
   const propertyNameMap = useMemo(() => {
     const entries: Record<string, string> = {};
     for (const property of properties) {
@@ -337,20 +342,23 @@ export const KnowledgeBasePage = () => {
   const handleFaqSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+      if (!faqFormState.propertyId) {
+        notify("Select a property before saving", { type: "warning" });
+        return;
+      }
+
+      const trimmedText = faqFormState.text.trim();
+      if (!trimmedText) {
+        notify("FAQ content cannot be empty", { type: "warning" });
+        return;
+      }
+
       setFaqSubmitting(true);
       try {
-        if (!faqFormState.propertyId) {
-          notify("Select a property before saving", { type: "warning" });
-          return;
-        }
-        if (!faqFormState.text.trim()) {
-          notify("FAQ content cannot be empty", { type: "warning" });
-          return;
-        }
         await convexClient.mutation(api.knowledgeBase.saveFaq, {
           id: editingFaq?.id,
           propertyId: faqFormState.propertyId,
-          text: faqFormState.text,
+          text: trimmedText,
           category: faqFormState.category || undefined,
           tags: faqFormState.tags,
         });
@@ -377,28 +385,32 @@ export const KnowledgeBasePage = () => {
   const handleLocalSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+      if (!localFormState.propertyId) {
+        notify("Select a property before saving", { type: "warning" });
+        return;
+      }
+
+      const trimmedCategory = localFormState.category.trim();
+      if (!trimmedCategory) {
+        notify("Choose a category for the recommendation", {
+          type: "warning",
+        });
+        return;
+      }
+
+      const trimmedName = localFormState.name.trim();
+      if (!trimmedName) {
+        notify("Recommendation name cannot be empty", { type: "warning" });
+        return;
+      }
+
+      const trimmedUrl = localFormState.url.trim();
+      const trimmedTips = localFormState.tips.trim();
+      const trimmedHours = localFormState.hours.trim();
+      const normalizedTags = normalizeTags(localFormState.tags);
+
       setLocalSubmitting(true);
       try {
-        if (!localFormState.propertyId) {
-          notify("Select a property before saving", { type: "warning" });
-          return;
-        }
-        const trimmedCategory = localFormState.category.trim();
-        if (!trimmedCategory) {
-          notify("Choose a category for the recommendation", {
-            type: "warning",
-          });
-          return;
-        }
-        const trimmedName = localFormState.name.trim();
-        if (!trimmedName) {
-          notify("Recommendation name cannot be empty", { type: "warning" });
-          return;
-        }
-        const trimmedUrl = localFormState.url.trim();
-        const trimmedTips = localFormState.tips.trim();
-        const trimmedHours = localFormState.hours.trim();
-        const normalizedTags = normalizeTags(localFormState.tags);
         await convexClient.mutation(api.knowledgeBase.saveLocalRecommendation, {
           id: editingLocalRec?.id,
           propertyId: localFormState.propertyId,
@@ -584,7 +596,10 @@ export const KnowledgeBasePage = () => {
                     setFaqPropertyFilter(value === "all" ? null : value)
                   }
                 >
-                  <SelectTrigger className="w-[220px]">
+                  <SelectTrigger
+                    className="w-[220px]"
+                    aria-label="FAQ property filter"
+                  >
                     <SelectValue placeholder="Filter by property" />
                   </SelectTrigger>
                   <SelectContent>
@@ -602,7 +617,10 @@ export const KnowledgeBasePage = () => {
                     setFaqCategoryFilter(value === "all" ? null : value)
                   }
                 >
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger
+                    className="w-[200px]"
+                    aria-label="FAQ category filter"
+                  >
                     <SelectValue placeholder="Filter by category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -740,7 +758,10 @@ export const KnowledgeBasePage = () => {
                     setLocalPropertyFilter(value === "all" ? null : value)
                   }
                 >
-                  <SelectTrigger className="w-[220px]">
+                  <SelectTrigger
+                    className="w-[220px]"
+                    aria-label="Local recommendation property filter"
+                  >
                     <SelectValue placeholder="Filter by property" />
                   </SelectTrigger>
                   <SelectContent>
@@ -758,7 +779,10 @@ export const KnowledgeBasePage = () => {
                     setLocalCategoryFilter(value === "all" ? null : value)
                   }
                 >
-                  <SelectTrigger className="w-[220px]">
+                  <SelectTrigger
+                    className="w-[220px]"
+                    aria-label="Local recommendation category filter"
+                  >
                     <SelectValue placeholder="Filter by category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -901,7 +925,9 @@ export const KnowledgeBasePage = () => {
           </DialogHeader>
           <form onSubmit={handleFaqSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Property</label>
+              <label className="text-sm font-medium" id={faqPropertyLabelId}>
+                Property
+              </label>
               <Select
                 disabled={propertiesLoading || propertyOptions.length === 0}
                 value={faqFormState.propertyId || undefined}
@@ -912,7 +938,7 @@ export const KnowledgeBasePage = () => {
                   }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger aria-labelledby={faqPropertyLabelId}>
                   <SelectValue placeholder="Select property" />
                 </SelectTrigger>
                 <SelectContent>
@@ -944,7 +970,9 @@ export const KnowledgeBasePage = () => {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Category</label>
+                <label className="text-sm font-medium" id={faqCategoryLabelId}>
+                  Category
+                </label>
                 <Select
                   value={faqFormState.category || ""}
                   onValueChange={(value) =>
@@ -954,7 +982,7 @@ export const KnowledgeBasePage = () => {
                     }))
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger aria-labelledby={faqCategoryLabelId}>
                     <SelectValue placeholder="Pick a category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1008,7 +1036,12 @@ export const KnowledgeBasePage = () => {
           <form onSubmit={handleLocalSubmit} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Property</label>
+                <label
+                  className="text-sm font-medium"
+                  id={localPropertyLabelId}
+                >
+                  Property
+                </label>
                 <Select
                   disabled={propertiesLoading || propertyOptions.length === 0}
                   value={localFormState.propertyId || undefined}
@@ -1019,7 +1052,7 @@ export const KnowledgeBasePage = () => {
                     }))
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger aria-labelledby={localPropertyLabelId}>
                     <SelectValue placeholder="Select property" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1051,7 +1084,12 @@ export const KnowledgeBasePage = () => {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Category</label>
+                <label
+                  className="text-sm font-medium"
+                  id={localCategoryLabelId}
+                >
+                  Category
+                </label>
                 <Select
                   value={localFormState.category || undefined}
                   onValueChange={(value) =>
@@ -1061,7 +1099,7 @@ export const KnowledgeBasePage = () => {
                     }))
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger aria-labelledby={localCategoryLabelId}>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
