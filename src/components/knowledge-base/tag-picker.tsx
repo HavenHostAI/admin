@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useId, useMemo, useState } from "react";
 import { X, Plus } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ export const TagPicker = ({
   className,
 }: TagPickerProps) => {
   const [inputValue, setInputValue] = useState("");
+  const inputId = useId();
 
   const lowercased = useMemo(
     () => new Set(value.map((tag) => tag.toLowerCase())),
@@ -68,7 +69,10 @@ export const TagPicker = ({
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       {label ? (
-        <label className="text-foreground/80 text-sm font-medium">
+        <label
+          className="text-foreground/80 text-sm font-medium"
+          htmlFor={inputId}
+        >
           {label}
         </label>
       ) : null}
@@ -93,6 +97,7 @@ export const TagPicker = ({
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <Input
+          id={inputId}
           value={inputValue}
           onChange={(event) => setInputValue(event.target.value)}
           onKeyDown={handleKeyDown}
