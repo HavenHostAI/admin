@@ -2,6 +2,7 @@ import { type Page, type Route } from "@playwright/test";
 import { convexToJson, jsonToConvex } from "convex/values";
 
 import { TOKEN_STORAGE_KEY } from "../../../src/lib/authStorage";
+
 type AuthUser = {
   id: string;
   email: string;
@@ -24,6 +25,14 @@ type QueryHandler = (
   args: Record<string, unknown>,
 ) => unknown | Promise<unknown>;
 
+type MutationHandler = (
+  args: Record<string, unknown>,
+) => unknown | Promise<unknown>;
+
+type ActionHandler = (
+  args: Record<string, unknown>,
+) => unknown | Promise<unknown>;
+
 type ExposedQueryPayload = {
   path: string;
   args: unknown[];
@@ -40,6 +49,8 @@ declare global {
 type SetupConvexMocksOptions = {
   user?: Partial<AuthUser>;
   queryHandlers?: Record<string, QueryHandler>;
+  mutationHandlers?: Record<string, MutationHandler>;
+  actionHandlers?: Record<string, ActionHandler>;
 };
 
 const baseUser: AuthUser = {
@@ -76,6 +87,7 @@ export const decodeConvexRequest = (route: Route) => {
 
 export const fulfillConvexResponse = (route: Route, value: unknown) =>
   route.fulfill(convexSuccessResponse(convexToJson(value)));
+
 export const setupConvexMocks = async (
   page: Page,
   options: SetupConvexMocksOptions = {},
@@ -114,6 +126,9 @@ export const setupConvexMocks = async (
           ? (decodedArgs[0] as Record<string, unknown>)
           : {};
       const result = await handler(firstArg);
+      if (typeof result === "undefined") {
+        return { value: null };
+      }
       return { value: convexToJson(result) };
     },
   );
@@ -178,7 +193,6 @@ export const setupConvexMocks = async (
         this.isConvexSocket = urlString.includes("/api");
 
         if (!this.isConvexSocket) {
-          // Delegate to the original WebSocket implementation for non-Convex URLs.
           return new OriginalWebSocket(
             url,
             protocols,
@@ -387,13 +401,16 @@ export const setupConvexMocks = async (
 
   const handleQuery = async (route: Route) => {
     const { path, args } = decodeConvexRequest(route);
+    const recordArgs = (args ?? {}) as Record<string, unknown>;
 
     if (path) {
       const handler = options.queryHandlers?.[path];
       if (handler) {
-        const value = await handler(args ?? {});
-        await respond(route, value);
-        return;
+        const value = await handler(recordArgs);
+        if (typeof value !== "undefined") {
+          await respond(route, value);
+          return;
+        }
       }
     }
 
@@ -408,18 +425,35 @@ export const setupConvexMocks = async (
   await page.route("**/api/query", handleQuery);
   await page.route("**/api/query_at_ts", handleQuery);
 
-  await page.route("**/api/mutation", (route) => respond(route, {}));
+  await page.route("**/api/mutation", async (route) => {
+    const { path, args } = decodeConvexRequest(route);
+    const recordArgs = (args ?? {}) as Record<string, unknown>;
+
+    if (path) {
+      const handler = options.mutationHandlers?.[path];
+      if (handler) {
+        const value = await handler(recordArgs);
+        if (typeof value !== "undefined") {
+          await respond(route, value);
+          return;
+        }
+      }
+    }
+
+    await respond(route, {});
+  });
 
   await page.route("**/api/action", async (route) => {
     const { path, args } = decodeConvexRequest(route);
+    const recordArgs = (args ?? {}) as Record<string, unknown>;
 
     if (path === "auth:signUp") {
-      signUpCalls.push(args);
+      signUpCalls.push(recordArgs);
       currentUser = {
         ...currentUser,
         id: "user_signup",
-        email: (args.email as string | undefined) ?? currentUser.email,
-        name: (args.name as string | undefined) ?? currentUser.name,
+        email: (recordArgs.email as string | undefined) ?? currentUser.email,
+        name: (recordArgs.name as string | undefined) ?? currentUser.name,
         role: "owner",
       };
       activeToken = "test-signup-token";
@@ -428,10 +462,10 @@ export const setupConvexMocks = async (
     }
 
     if (path === "auth:signIn") {
-      signInCalls.push(args);
+      signInCalls.push(recordArgs);
       currentUser = {
         ...currentUser,
-        email: (args.email as string | undefined) ?? currentUser.email,
+        email: (recordArgs.email as string | undefined) ?? currentUser.email,
       };
       activeToken = "test-session-token";
       await respond(route, { token: activeToken, user: currentUser });
@@ -439,13 +473,9 @@ export const setupConvexMocks = async (
     }
 
     if (path === "auth:validateSession") {
-      validateSessionCalls.push(args);
-
+      validateSessionCalls.push(recordArgs);
       const providedToken =
-        args && typeof args === "object" && "token" in args
-          ? (args as { token?: unknown }).token
-          : undefined;
-
+        typeof recordArgs.token === "string" ? recordArgs.token : undefined;
       if (!activeToken || providedToken !== activeToken) {
         await respond(route, null);
         return;
@@ -472,6 +502,17 @@ export const setupConvexMocks = async (
       return;
     }
 
+    if (path) {
+      const handler = options.actionHandlers?.[path];
+      if (handler) {
+        const value = await handler(recordArgs);
+        if (typeof value !== "undefined") {
+          await respond(route, value);
+          return;
+        }
+      }
+    }
+
     await respond(route, {});
   });
 
@@ -492,6 +533,7 @@ export const setupConvexMocks = async (
     TOKEN_STORAGE_KEY,
     storageSentinelKey,
   );
+
   return {
     signUpCalls,
     signInCalls,
@@ -500,4 +542,11 @@ export const setupConvexMocks = async (
   };
 };
 
-export type { AuthUser, ConvexMocks, SetupConvexMocksOptions };
+export type {
+  ActionHandler,
+  AuthUser,
+  ConvexMocks,
+  MutationHandler,
+  QueryHandler,
+  SetupConvexMocksOptions,
+};
