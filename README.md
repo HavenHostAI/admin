@@ -71,22 +71,3 @@ export default defineConfig([
   },
 ])
 ```
-
-## End-to-end testing prerequisites
-
-The Playwright suites rely on the local browser binaries and system libraries. Run the following commands once before executing the E2E tests:
-
-```bash
-pnpm test:e2e
-```
-
-The test runner will download the Chromium browser and any missing system
-libraries on the first run via the bundled `pretest:e2e` hook. If you prefer to
-install them ahead of time (for example in CI), run:
-
-```bash
-pnpm exec playwright install --with-deps chromium
-```
-
-Once the prerequisites are cached, reruns of `pnpm test:e2e` reuse the existing
-installation.
