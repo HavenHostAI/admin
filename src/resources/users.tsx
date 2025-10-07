@@ -1,4 +1,4 @@
-import { required } from "ra-core";
+import { required, usePermissions } from "ra-core";
 import { useMemo } from "react";
 import { useNotify, useRedirect } from "ra-core";
 import type { SubmitHandler, FieldValues } from "react-hook-form";
@@ -20,6 +20,7 @@ import { NumberInput } from "@/components/admin/number-input";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
 import { getStoredToken } from "@/lib/authStorage";
+import { resolveConvexUrl } from "../lib/convexUrl";
 
 const roleChoices = [
   { id: "owner", name: "Owner" },
@@ -61,10 +62,10 @@ export const UserCreate = () => {
   const notify = useNotify();
   const redirect = useRedirect();
   const convexClient = useMemo(() => {
-    if (!import.meta.env.VITE_CONVEX_URL) {
-      throw new Error("VITE_CONVEX_URL is not defined");
-    }
-    return new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL);
+    const convexUrl = resolveConvexUrl(
+      "VITE_CONVEX_URL must be defined to manage users.",
+    );
+    return new ConvexHttpClient(convexUrl);
   }, []);
 
   const handleSubmit: SubmitHandler<FieldValues> = async (values) => {
@@ -123,7 +124,7 @@ export const UserCreate = () => {
 };
 
 export const UserEdit = () => (
-  <Edit>
+  <Edit mutationMode="pessimistic">
     <SimpleForm>
       <ReferenceInput source="companyId" reference="companies">
         <AutocompleteInput
@@ -152,25 +153,30 @@ export const UserEdit = () => (
         validate={[required()]}
       />
       <BooleanInput source="emailVerified" label="Email Verified" />
-      <NumberInput source="createdAt" label="Created At (epoch ms)" />
-      <NumberInput source="updatedAt" label="Updated At (epoch ms)" />
+      <NumberInput source="createdAt" label="Created At (epoch ms)" disabled />
+      <NumberInput source="updatedAt" label="Updated At (epoch ms)" disabled />
     </SimpleForm>
   </Edit>
 );
 
-export const UserShow = () => (
-  <Show>
-    <div className="flex flex-col gap-4">
-      <RecordField source="email" label="Email" />
-      <RecordField source="name" label="Name" />
-      <RecordField source="role" label="Role" />
-      <RecordField source="status" label="Status" />
-      <RecordField source="emailVerified" label="Email Verified" />
-      <RecordField label="Company">
-        <ReferenceField reference="companies" source="companyId">
-          <TextField source="name" />
-        </ReferenceField>
-      </RecordField>
-    </div>
-  </Show>
-);
+export const UserShow = () => {
+  const { permissions } = usePermissions<string | null>();
+  const canEdit = permissions != null && permissions !== "viewer";
+
+  return (
+    <Show actions={canEdit ? undefined : false}>
+      <div className="flex flex-col gap-4">
+        <RecordField source="email" label="Email" />
+        <RecordField source="name" label="Name" />
+        <RecordField source="role" label="Role" />
+        <RecordField source="status" label="Status" />
+        <RecordField source="emailVerified" label="Email Verified" />
+        <RecordField label="Company">
+          <ReferenceField reference="companies" source="companyId">
+            <TextField source="name" />
+          </ReferenceField>
+        </RecordField>
+      </div>
+    </Show>
+  );
+};

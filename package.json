@@ -17,7 +17,8 @@
     "preview": "vite preview",
     "test": "vitest --run",
     "test:watch": "vitest",
-    "pretest:e2e": "playwright install chromium",
+    "playwright:install": "playwright install --with-deps",
+    "pretest:e2e": "pnpm playwright:install",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "prepare": "husky"

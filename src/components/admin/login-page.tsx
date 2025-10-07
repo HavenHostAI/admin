@@ -7,6 +7,7 @@ import { TextInput } from "@/components/admin/text-input";
 import { Notification } from "@/components/admin/notification";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../convex/_generated/api";
+import { resolveConvexUrl } from "../../lib/convexUrl";
 
 type LoginMode = "login" | "signup";
 
@@ -38,10 +39,10 @@ const LoginPageComponent = ({
   const login = useLogin();
   const notify = useNotify();
   const convexClient = useMemo(() => {
-    if (!import.meta.env.VITE_CONVEX_URL) {
-      throw new Error("VITE_CONVEX_URL is not defined");
-    }
-    return new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL);
+    const convexUrl = resolveConvexUrl(
+      "VITE_CONVEX_URL must be defined to enable authentication in the admin UI.",
+    );
+    return new ConvexHttpClient(convexUrl);
   }, []);
 
   useEffect(() => {
