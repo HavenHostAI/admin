@@ -23,12 +23,13 @@ type StoredAuthUser = {
   companyId?: Id<"companies"> | string | null;
 };
 
+const missingConvexUrlMessage =
+  "VITE_CONVEX_URL must be defined to enable authentication in the admin UI.";
+
 let client: ConvexHttpClient | null = null;
 
 const getClient = () => {
-  const convexUrl = resolveConvexUrl(
-    "VITE_CONVEX_URL must be defined to enable authentication in the admin UI.",
-  );
+  const convexUrl = resolveConvexUrl(missingConvexUrlMessage);
 
   if (!client) {
     client = new ConvexHttpClient(convexUrl);
@@ -89,7 +90,7 @@ export const authProvider: AuthProvider = {
   async getIdentity() {
     const user = loadStoredUser<StoredAuthUser>();
     if (!user) {
-      return null;
+      throw new Error("User identity is not available");
     }
 
     const id = user.id ?? user._id ?? undefined;

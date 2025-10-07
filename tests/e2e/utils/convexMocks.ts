@@ -1,6 +1,8 @@
 import { type Page, type Route } from "@playwright/test";
 import { convexToJson, jsonToConvex } from "convex/values";
 
+import { TOKEN_STORAGE_KEY } from "../../../src/lib/authStorage";
+
 type AuthUser = {
   id: string;
   email: string;
@@ -16,10 +18,20 @@ type ConvexMocks = {
   signUpCalls: ConvexCall[];
   signInCalls: ConvexCall[];
   validateSessionCalls: ConvexCall[];
+  inviteUserCalls: ConvexCall[];
   getCurrentUser: () => AuthUser;
+  setActiveToken: (token: string | null) => void;
 };
 
 type QueryHandler = (
+  args: Record<string, unknown>,
+) => unknown | Promise<unknown>;
+
+type MutationHandler = (
+  args: Record<string, unknown>,
+) => unknown | Promise<unknown>;
+
+type ActionHandler = (
   args: Record<string, unknown>,
 ) => unknown | Promise<unknown>;
 
@@ -39,6 +51,9 @@ declare global {
 type SetupConvexMocksOptions = {
   user?: Partial<AuthUser>;
   queryHandlers?: Record<string, QueryHandler>;
+  mutationHandlers?: Record<string, MutationHandler>;
+  actionHandlers?: Record<string, ActionHandler>;
+  initialToken?: string | null;
 };
 
 const baseUser: AuthUser = {
@@ -55,12 +70,38 @@ const convexSuccessResponse = (value: unknown) => ({
   contentType: "application/json",
   body: JSON.stringify({
     status: "success",
-    value: convexToJson(value),
+    value,
     logLines: [],
   }),
 });
 
-const decodeConvexRequest = (route: Route) => {
+const createDashboardFallback = () => {
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+
+  const windowLength = 7;
+  const callsOverTime = Array.from({ length: windowLength }, (_, index) => {
+    const date = new Date(today);
+    date.setUTCDate(today.getUTCDate() - (windowLength - index - 1));
+    return { date: date.toISOString().slice(0, 10), count: 0 };
+  });
+
+  return {
+    metrics: {
+      callsHandled: 0,
+      aiResolutionRate: 0,
+      openEscalations: 0,
+      unitsUnderManagement: 0,
+    },
+    charts: {
+      callsOverTime,
+      escalationsByPriority: [],
+    },
+    lastUpdated: null,
+  };
+};
+
+export const decodeConvexRequest = (route: Route) => {
   const bodyText = route.request().postData() ?? "{}";
   const body = JSON.parse(bodyText) as {
     path?: string;
@@ -73,6 +114,9 @@ const decodeConvexRequest = (route: Route) => {
   return { path: body.path, args: decodedArgs };
 };
 
+export const fulfillConvexResponse = (route: Route, value: unknown) =>
+  route.fulfill(convexSuccessResponse(convexToJson(value)));
+
 export const setupConvexMocks = async (
   page: Page,
   options: SetupConvexMocksOptions = {},
@@ -80,19 +124,14 @@ export const setupConvexMocks = async (
   const signUpCalls: ConvexCall[] = [];
   const signInCalls: ConvexCall[] = [];
   const validateSessionCalls: ConvexCall[] = [];
+  const inviteUserCalls: ConvexCall[] = [];
 
-  let activeToken: string | null = null;
+  let activeToken: string | null =
+    options.initialToken !== undefined ? options.initialToken : null;
   let currentUser: AuthUser = { ...baseUser, ...options.user };
 
-  page.on("console", (message) => {
-    console.log(`[browser:${message.type()}] ${message.text()}`);
-  });
-  page.on("pageerror", (error) => {
-    console.log(`[browser:pageerror] ${error}`);
-  });
-
   const respond = (route: Route, value: unknown) =>
-    route.fulfill(convexSuccessResponse(value));
+    fulfillConvexResponse(route, value);
 
   await page.route("**/api/query_ts", (route) =>
     route.fulfill({
@@ -118,6 +157,9 @@ export const setupConvexMocks = async (
           ? (decodedArgs[0] as Record<string, unknown>)
           : {};
       const result = await handler(firstArg);
+      if (typeof result === "undefined") {
+        return { value: null };
+      }
       return { value: convexToJson(result) };
     },
   );
@@ -182,7 +224,6 @@ export const setupConvexMocks = async (
         this.isConvexSocket = urlString.includes("/api");
 
         if (!this.isConvexSocket) {
-          // Delegate to the original WebSocket implementation for non-Convex URLs.
           return new OriginalWebSocket(
             url,
             protocols,
@@ -391,14 +432,22 @@ export const setupConvexMocks = async (
 
   const handleQuery = async (route: Route) => {
     const { path, args } = decodeConvexRequest(route);
+    const recordArgs = (args ?? {}) as Record<string, unknown>;
 
     if (path) {
       const handler = options.queryHandlers?.[path];
       if (handler) {
-        const value = await handler(args ?? {});
-        await respond(route, value);
-        return;
+        const value = await handler(recordArgs);
+        if (typeof value !== "undefined") {
+          await respond(route, value);
+          return;
+        }
       }
+    }
+
+    if (path === "admin:dashboard") {
+      await respond(route, createDashboardFallback());
+      return;
     }
 
     if (path?.startsWith("admin:")) {
@@ -412,18 +461,35 @@ export const setupConvexMocks = async (
   await page.route("**/api/query", handleQuery);
   await page.route("**/api/query_at_ts", handleQuery);
 
-  await page.route("**/api/mutation", (route) => respond(route, {}));
+  await page.route("**/api/mutation", async (route) => {
+    const { path, args } = decodeConvexRequest(route);
+    const recordArgs = (args ?? {}) as Record<string, unknown>;
+
+    if (path) {
+      const handler = options.mutationHandlers?.[path];
+      if (handler) {
+        const value = await handler(recordArgs);
+        if (typeof value !== "undefined") {
+          await respond(route, value);
+          return;
+        }
+      }
+    }
+
+    await respond(route, {});
+  });
 
   await page.route("**/api/action", async (route) => {
     const { path, args } = decodeConvexRequest(route);
+    const recordArgs = (args ?? {}) as Record<string, unknown>;
 
     if (path === "auth:signUp") {
-      signUpCalls.push(args);
+      signUpCalls.push(recordArgs);
       currentUser = {
         ...currentUser,
         id: "user_signup",
-        email: (args.email as string | undefined) ?? currentUser.email,
-        name: (args.name as string | undefined) ?? currentUser.name,
+        email: (recordArgs.email as string | undefined) ?? currentUser.email,
+        name: (recordArgs.name as string | undefined) ?? currentUser.name,
         role: "owner",
       };
       activeToken = "test-signup-token";
@@ -432,10 +498,10 @@ export const setupConvexMocks = async (
     }
 
     if (path === "auth:signIn") {
-      signInCalls.push(args);
+      signInCalls.push(recordArgs);
       currentUser = {
         ...currentUser,
-        email: (args.email as string | undefined) ?? currentUser.email,
+        email: (recordArgs.email as string | undefined) ?? currentUser.email,
       };
       activeToken = "test-session-token";
       await respond(route, { token: activeToken, user: currentUser });
@@ -443,8 +509,10 @@ export const setupConvexMocks = async (
     }
 
     if (path === "auth:validateSession") {
-      validateSessionCalls.push(args);
-      if (!activeToken) {
+      validateSessionCalls.push(recordArgs);
+      const providedToken =
+        typeof recordArgs.token === "string" ? recordArgs.token : undefined;
+      if (!activeToken || providedToken !== activeToken) {
         await respond(route, null);
         return;
       }
@@ -466,19 +534,65 @@ export const setupConvexMocks = async (
 
     if (path === "auth:signOut") {
       activeToken = null;
+      await respond(route, null);
+      return;
+    }
+
+    if (path === "company:inviteUser") {
+      inviteUserCalls.push(recordArgs);
       await respond(route, {});
       return;
+    }
+
+    if (path) {
+      const handler = options.actionHandlers?.[path];
+      if (handler) {
+        const value = await handler(recordArgs);
+        if (typeof value !== "undefined") {
+          await respond(route, value);
+          return;
+        }
+      }
     }
 
     await respond(route, {});
   });
 
+  const storageSentinelKey = "__convex_e2e_token_cleared";
+  await page.addInitScript(
+    (tokenKey: string, sentinelKey: string) => {
+      try {
+        const hasCleared = window.sessionStorage.getItem(sentinelKey);
+        if (!hasCleared) {
+          window.localStorage.removeItem(tokenKey);
+          window.sessionStorage.setItem(sentinelKey, "true");
+        }
+      } catch (error) {
+        console.warn("Failed to clear stored Convex token", error);
+        window.localStorage.removeItem(tokenKey);
+      }
+    },
+    TOKEN_STORAGE_KEY,
+    storageSentinelKey,
+  );
+
   return {
     signUpCalls,
     signInCalls,
     validateSessionCalls,
+    inviteUserCalls,
     getCurrentUser: () => currentUser,
+    setActiveToken: (token: string | null) => {
+      activeToken = token;
+    },
   };
 };
 
-export type { AuthUser, ConvexMocks, SetupConvexMocksOptions };
+export type {
+  ActionHandler,
+  AuthUser,
+  ConvexMocks,
+  MutationHandler,
+  QueryHandler,
+  SetupConvexMocksOptions,
+};
