@@ -121,6 +121,11 @@ export const Dashboard = () => {
       return;
     }
 
+    if (dashboardData === null) {
+      setHasError(true);
+      return;
+    }
+
     if (dashboardData !== undefined) {
       setHasError(false);
       return;
@@ -227,8 +232,7 @@ export const Dashboard = () => {
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
           {lastUpdated ? (
             <span className="text-muted-foreground text-sm">
-              Last updated{" "}
-              {dateFormatter(lastUpdated.toISOString().slice(0, 10))}
+              Last updated {dateLabelFormatter.format(lastUpdated)}
             </span>
           ) : null}
         </div>

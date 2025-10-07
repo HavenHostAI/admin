@@ -45,6 +45,8 @@ const loginExistingUser = async (page: Page) => {
 
   const storedUser = storedUserRaw ? JSON.parse(storedUserRaw) : null;
   expect(storedUser?.companyId).toBeTruthy();
+
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 };
 
 test.describe("Dashboard KPIs", () => {
