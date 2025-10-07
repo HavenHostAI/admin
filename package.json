@@ -18,7 +18,8 @@
     "test": "vitest --run",
     "test:watch": "vitest",
     "playwright:install": "playwright install --with-deps",
-    "test:e2e": "pnpm playwright:install && playwright test",
+    "pretest:e2e": "pnpm playwright:install",
+    "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "prepare": "husky"
   },
