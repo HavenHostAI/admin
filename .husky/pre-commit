@@ -1,4 +1,8 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-pnpm lint && pnpm typecheck && pnpm format:check && pnpm openapi:validate && pnpm test && pnpm test:e2e
+if [ -n "$SKIP_E2E" ]; then
+  pnpm lint && pnpm typecheck && pnpm format:check && pnpm openapi:validate && pnpm test
+else
+  pnpm lint && pnpm typecheck && pnpm format:check && pnpm openapi:validate && pnpm test && pnpm test:e2e
+fi
